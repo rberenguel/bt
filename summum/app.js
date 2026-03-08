@@ -1,4 +1,8 @@
-import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../shared/haptic.js";
 import { saveSessionRecord, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
 import { injectFakeHistory } from "./faker.js";

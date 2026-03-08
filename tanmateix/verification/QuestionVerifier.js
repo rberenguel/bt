@@ -474,7 +474,8 @@ export class QuestionVerifier {
       if (!subjectPos || !refPos) {
         return {
           valid: false,
-          error: "Spatial verification failed: could not place all entities from premises",
+          error:
+            "Spatial verification failed: could not place all entities from premises",
         };
       }
 
@@ -483,7 +484,9 @@ export class QuestionVerifier {
       const normalizedActual = [Math.sign(dx), Math.sign(dy)];
       const claimedVec = question.conclusion.properties.vector;
 
-      const vectorsMatch = normalizedActual.every((v, i) => v === claimedVec[i]);
+      const vectorsMatch = normalizedActual.every(
+        (v, i) => v === claimedVec[i],
+      );
 
       if (vectorsMatch === question.isValid) {
         return { valid: true };

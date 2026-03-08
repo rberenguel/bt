@@ -82,10 +82,16 @@ body {
   line-height: 0;
 }
 
-#round-display {
-  font-size: 1.5rem;
+.round-wrap {
   min-width: 15%;
   max-width: 15%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#round-display {
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -189,6 +195,18 @@ body {
   color: var(--text-color);
   opacity: 0.7;
   font-weight: 500;
+}
+
+.nb-home-link {
+  font-size: 0.6rem;
+  color: var(--text-color);
+  opacity: 0.35;
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  font-family: "Inter", sans-serif;
+}
+.nb-home-link:hover {
+  opacity: 0.7;
 }
 
 /* Grid container - centers the grid */

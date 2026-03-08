@@ -1,5 +1,11 @@
 /* ── Reset & base ─────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
   --bg: #000000;
@@ -10,7 +16,8 @@
   --radius: 12px;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
@@ -68,7 +75,9 @@ header h1 {
   text-decoration: none;
   color: inherit;
 }
-.app-link:hover { background: rgba(255,255,255,0.03); }
+.app-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
 
 .app-icon {
   width: 48px;
@@ -94,7 +103,9 @@ header h1 {
   font-size: 0.8rem;
   color: var(--muted);
 }
-.app-last.muted { opacity: 0.5; }
+.app-last.muted {
+  opacity: 0.5;
+}
 
 .app-week {
   font-size: 0.75rem;
@@ -117,11 +128,18 @@ header h1 {
   cursor: pointer;
   font-size: 1.1rem;
   color: var(--muted);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
 }
-.stats-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-.stats-btn:active { background: rgba(255,255,255,0.1); }
+.stats-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+.stats-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 /* ── History modal ────────────────────────────────────────────── */
 .modal-overlay {
@@ -134,7 +152,9 @@ header h1 {
   z-index: 100;
   transition: opacity 0.2s;
 }
-.modal-overlay.hidden { display: none; }
+.modal-overlay.hidden {
+  display: none;
+}
 
 .modal-content {
   background: var(--surface);
@@ -164,7 +184,9 @@ header h1 {
   font-size: 0.9rem;
   cursor: pointer;
 }
-#close-history-btn:hover { background: #444; }
+#close-history-btn:hover {
+  background: #444;
+}
 
 /* ── Calendar (shared/history.js output) ─────────────────────── */
 .calendar-streak {
@@ -194,8 +216,12 @@ header h1 {
   cursor: pointer;
   font-size: 0.85rem;
 }
-.calendar-nav:hover { background: rgba(255,255,255,0.07); }
-.calendar-nav:active { background: rgba(255,255,255,0.14); }
+.calendar-nav:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.calendar-nav:active {
+  background: rgba(255, 255, 255, 0.14);
+}
 
 .calendar-grid {
   display: grid;
@@ -222,15 +248,23 @@ header h1 {
   position: relative;
   cursor: default;
 }
-.calendar-day.empty { background: transparent; }
+.calendar-day.empty {
+  background: transparent;
+}
 .calendar-day.has-sessions {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
 }
-.calendar-day.has-sessions:hover { background: rgba(255,255,255,0.14); }
-.calendar-day.today { outline: 1px solid var(--muted); }
+.calendar-day.has-sessions:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.calendar-day.today {
+  outline: 1px solid var(--muted);
+}
 
-.calendar-day-number { font-size: 0.7rem; }
+.calendar-day-number {
+  font-size: 0.7rem;
+}
 
 .session-indicator {
   font-size: 0.55rem;
@@ -239,8 +273,12 @@ header h1 {
 }
 
 /* ── Day details ─────────────────────────────────────────────── */
-.day-details { margin-top: 0.75rem; }
-.day-details.hidden { display: none; }
+.day-details {
+  margin-top: 0.75rem;
+}
+.day-details.hidden {
+  display: none;
+}
 
 .day-details-header {
   display: flex;
@@ -248,7 +286,10 @@ header h1 {
   align-items: center;
   margin-bottom: 0.5rem;
 }
-.day-details-header h3 { font-size: 0.85rem; font-weight: 600; }
+.day-details-header h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 
 .close-details {
   background: none;
@@ -259,12 +300,18 @@ header h1 {
   cursor: pointer;
   font-size: 1rem;
 }
-.close-details:hover { background: rgba(255,255,255,0.07); }
+.close-details:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
 
-.day-sessions { display: flex; flex-direction: column; gap: 0.4rem; }
+.day-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 
 .session-card {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 7px;
   padding: 0.5rem 0.65rem;
 }
@@ -275,7 +322,10 @@ header h1 {
   font-weight: 500;
   margin-bottom: 0.25rem;
 }
-.session-time { color: var(--muted); font-size: 0.75rem; }
+.session-time {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
 .session-stats {
   display: flex;
   gap: 0.6rem;
@@ -292,15 +342,24 @@ header h1 {
   margin-top: 0.75rem;
 }
 
-.trend-chart { display: flex; flex-direction: column; gap: 0.3rem; }
+.trend-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
 
 .trend-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.trend-label { font-size: 0.75rem; color: var(--muted); }
-.trend-label strong { color: var(--text); }
+.trend-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.trend-label strong {
+  color: var(--text);
+}
 
 .trend-best {
   display: flex;
@@ -309,7 +368,10 @@ header h1 {
   font-size: 0.7rem;
   color: var(--muted);
 }
-.trend-best svg { width: 12px; height: 12px; }
+.trend-best svg {
+  width: 12px;
+  height: 12px;
+}
 
 .trend-bars {
   display: flex;
@@ -326,9 +388,15 @@ header h1 {
   cursor: pointer;
   min-height: 4px;
 }
-.trend-bar:focus { outline: none; }
-.trend-bar.high { background: #2a9d8f; }
-.trend-bar.low  { background: #e63946; }
+.trend-bar:focus {
+  outline: none;
+}
+.trend-bar.high {
+  background: #2a9d8f;
+}
+.trend-bar.low {
+  background: #e63946;
+}
 
 .trend-tooltip {
   display: none;
@@ -346,4 +414,6 @@ header h1 {
   z-index: 10;
 }
 .trend-bar:hover .trend-tooltip,
-.trend-bar:focus .trend-tooltip { display: block; }
+.trend-bar:focus .trend-tooltip {
+  display: block;
+}

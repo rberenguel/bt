@@ -148,7 +148,9 @@ function computeStreak(sessions) {
   }
 
   let streak = 0;
-  while (daySet.has(`${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`)) {
+  while (
+    daySet.has(`${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`)
+  ) {
     streak++;
     check.setDate(check.getDate() - 1);
   }
@@ -478,9 +480,10 @@ function renderCalendar(sessions) {
   });
 
   const streak = computeStreak(sessions);
-  const streakHtml = streak > 0
-    ? `<div class="calendar-streak"><span class="streak-icon">\ue2de</span> ${streak}-day streak</div>`
-    : "";
+  const streakHtml =
+    streak > 0
+      ? `<div class="calendar-streak"><span class="streak-icon">\ue2de</span> ${streak}-day streak</div>`
+      : "";
 
   let html = `
     <div class="calendar-header">
@@ -802,20 +805,28 @@ let swipeStartX = 0;
 let swipeStartY = 0;
 const historyListEl = document.getElementById("history-list");
 
-historyListEl.addEventListener("touchstart", (e) => {
-  swipeStartX = e.touches[0].clientX;
-  swipeStartY = e.touches[0].clientY;
-}, { passive: true });
+historyListEl.addEventListener(
+  "touchstart",
+  (e) => {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+  },
+  { passive: true },
+);
 
-historyListEl.addEventListener("touchend", (e) => {
-  const dx = e.changedTouches[0].clientX - swipeStartX;
-  const dy = e.changedTouches[0].clientY - swipeStartY;
-  // Require horizontal dominance and minimum distance to avoid interfering with scrolling
-  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-    currentViewDate.setMonth(currentViewDate.getMonth() + (dx < 0 ? 1 : -1));
-    renderCalendar(calendarSessions);
-  }
-}, { passive: true });
+historyListEl.addEventListener(
+  "touchend",
+  (e) => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    // Require horizontal dominance and minimum distance to avoid interfering with scrolling
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      currentViewDate.setMonth(currentViewDate.getMonth() + (dx < 0 ? 1 : -1));
+      renderCalendar(calendarSessions);
+    }
+  },
+  { passive: true },
+);
 
 // Export for external access (keyboard shortcuts)
 export { modal };

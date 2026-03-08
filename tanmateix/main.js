@@ -2,10 +2,10 @@ import { PathBasedQuestionGenerator } from "./generators/PathBasedQuestionGenera
 import { RandomUtils } from "./utils/RandomUtils.js";
 import { EntityFactory } from "./utils/EntityFactory.js";
 import { Renderer } from "./render/Renderer.js";
-import { saveSession }      from "./storage.js";
+import { saveSession } from "./storage.js";
 import { openHistoryModal } from "./history.js";
-import { FireSystem }        from "../shared/fire.js";
-import                         "./faker.js";
+import { FireSystem } from "../shared/fire.js";
+import "./faker.js";
 
 // Timing milestones for linear interpolation
 const TIERS = [
@@ -65,10 +65,7 @@ const gameState = {
 
 // Setup
 const random = new RandomUtils();
-const entityFactory = new EntityFactory(
-  { useIcons: true },
-  random,
-);
+const entityFactory = new EntityFactory({ useIcons: true }, random);
 
 const generator = new PathBasedQuestionGenerator({
   entityFactory,
@@ -486,7 +483,12 @@ function handleTimeout() {
       gameState.questionNumber++;
       updateProgress();
       updateStreak();
-      try { await newQuestion(); } catch (err) { console.error("Q gen failed:", err); showGameOver(); }
+      try {
+        await newQuestion();
+      } catch (err) {
+        console.error("Q gen failed:", err);
+        showGameOver();
+      }
     } else {
       showGameOver();
     }
@@ -559,7 +561,12 @@ function handleAnswer(e) {
       gameState.questionNumber++;
       updateProgress();
       updateStreak();
-      try { await newQuestion(); } catch (err) { console.error("Q gen failed:", err); showGameOver(); }
+      try {
+        await newQuestion();
+      } catch (err) {
+        console.error("Q gen failed:", err);
+        showGameOver();
+      }
     } else {
       showGameOver();
     }
@@ -695,9 +702,9 @@ function showGameOver() {
   setBrainFill(1);
   const accuracy = Math.round((gameState.score / gameState.total) * 100);
   saveSession({
-    score:      gameState.score,
+    score: gameState.score,
     accuracy,
-    maxStreak:  gameState.maxStreak,
+    maxStreak: gameState.maxStreak,
     finalLevel: gameState.difficulty.level,
   });
   const container = document.getElementById("game-container");
@@ -874,8 +881,12 @@ function exportQuestions() {
 
 function setBrainFill(progress) {
   const inset = Math.round(88 - progress * (88 - 8));
-  document.querySelector(".brain-progress-fill").style.setProperty("--progress-inset", inset + "%");
-  document.querySelector(".brain-fire-fill").style.setProperty("--fire-inset", inset + "%");
+  document
+    .querySelector(".brain-progress-fill")
+    .style.setProperty("--progress-inset", inset + "%");
+  document
+    .querySelector(".brain-fire-fill")
+    .style.setProperty("--fire-inset", inset + "%");
   FireSystem.update(progress, inset);
 }
 
@@ -897,6 +908,10 @@ fetch("manifest.json")
     );
     if (versionDisplay && manifest.version) {
       versionDisplay.textContent = `v${manifest.version}`;
+    }
+    const headerVersion = document.getElementById("version-header");
+    if (headerVersion && manifest.version) {
+      headerVersion.textContent = `v${manifest.version}`;
     }
     if (startVersionDisplay && manifest.version) {
       startVersionDisplay.textContent = `v${manifest.version}`;

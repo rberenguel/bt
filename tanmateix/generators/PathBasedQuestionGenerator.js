@@ -265,7 +265,8 @@ export class PathBasedQuestionGenerator {
     }
 
     // Verify the question
-    const verification = await this.verifier.verifyQuestion(verificationQuestion);
+    const verification =
+      await this.verifier.verifyQuestion(verificationQuestion);
 
     if (!verification.valid) {
       console.error(
@@ -274,7 +275,6 @@ export class PathBasedQuestionGenerator {
       );
       console.error("This indicates a bug in question generation!");
       console.error("Details:", verification.details);
-
     } else if (verification.warning) {
       console.warn(`⚠️  ${relationType} verification:`, verification.warning);
     } else {

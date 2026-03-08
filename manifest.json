@@ -1,5 +1,6 @@
 {
   "name": "BT",
+  "version": "0.1.2",
   "short_name": "Train",
   "description": "Brain training apps hub",
   "start_url": "./",
@@ -8,6 +9,11 @@
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "icons": [
-    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ]
 }

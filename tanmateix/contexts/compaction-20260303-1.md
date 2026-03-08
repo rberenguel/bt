@@ -11,6 +11,7 @@
 ### Code Review — Surface Bugs Found and Fixed
 
 Two bugs were found and fixed in `generateSpatialGraphQuestion` (test-only helper, not the main game):
+
 - Conclusion text lookup used the raw (unnormalized) grid vector as the vocab key → fell back to "relates to" for most entity pairs
 - Invalid conclusion text lookup had the same raw-key issue
 - Fix: normalize the conclusion vector before vocab lookup; store normalized vector in the relation

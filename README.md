@@ -5,18 +5,23 @@ A monorepo of cognitive training PWAs, installable and fully offline. A hub at t
 ## Apps
 
 ### [nb](./nb/)
+
 Visual-only [n-back task](https://en.wikipedia.org/wiki/N-back) with dual, triple, and quad modes (position, color, letter, shape). Most implementations use audio cues — this one is purely visual. Tracks position and color matches independently, with fire-particle progress feedback and milestone celebrations every 20 rounds.
 
 ### [clauer](./clauer/)
+
 A stylish implementation of the [Symbol Digit Modalities Test](https://en.wikipedia.org/wiki/Symbol_Digit_Modalities_Test) (SDMT). A symbol-to-digit key is shown at the top; symbols appear one by one and you type the matching digit as fast as possible. Measures throughput (CPM), accuracy, stability (CV), and efficiency (IES).
 
 ### [tanmateix](./tanmateix/)
+
 Fast-paced logic reasoning. Premises about entities and their relationships are shown; you judge whether the conclusion logically follows — True or False — before time runs out. Features linear, spatial, and syllogistic relation types. Difficulty adapts dynamically. Inspired by [Syllogimous-v3](https://github.com/soamsy/Syllogimous-v3). Uses [Tau Prolog](https://tau-prolog.org/) for logical inference.
 
 ### [summum](./summum/)
+
 Arithmetic under pressure. A running sum is shown — tap True or False to confirm whether the latest total is correct. Pace tightens as you go. Measures accuracy and reaction pace across a fixed round set.
 
 ### [stop](./stop/)
+
 [Stop Signal Task](https://en.wikipedia.org/wiki/Stop-signal_task). Arrows appear — tap the matching direction. When a triangle (▲) appears above the arrow, inhibit your response. Measures go accuracy, stop accuracy, average reaction time, and stop-signal delay (SSD), which adapts to keep inhibition at ~50%.
 
 ## Structure

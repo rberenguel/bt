@@ -1,8 +1,13 @@
 // All 8 unit directions: [dx, dy]
 const UNIT_DIRECTIONS = [
-  [-1, 1], [0, 1], [1, 1],
-  [-1, 0],         [1, 0],
-  [-1,-1], [0,-1], [1,-1],
+  [-1, 1],
+  [0, 1],
+  [1, 1],
+  [-1, 0],
+  [1, 0],
+  [-1, -1],
+  [0, -1],
+  [1, -1],
 ];
 
 /**
@@ -16,7 +21,7 @@ const UNIT_DIRECTIONS = [
 export class SpatialGrid {
   constructor() {
     this.entityPositions = new Map(); // entity.id -> [x, y]
-    this.entityObjects = new Map();   // entity.id -> entity (for toString)
+    this.entityObjects = new Map(); // entity.id -> entity (for toString)
   }
 
   /**
@@ -25,7 +30,8 @@ export class SpatialGrid {
    * The reverse of the previous step is excluded to avoid trivial cancellation.
    */
   placeEntitiesAsWalk(entities) {
-    let x = 0, y = 0;
+    let x = 0,
+      y = 0;
     this.entityPositions.set(entities[0].id, [x, y]);
     this.entityObjects.set(entities[0].id, entities[0]);
 
@@ -33,7 +39,9 @@ export class SpatialGrid {
 
     for (let i = 1; i < entities.length; i++) {
       const available = prevDir
-        ? UNIT_DIRECTIONS.filter(([dx, dy]) => !(dx === -prevDir[0] && dy === -prevDir[1]))
+        ? UNIT_DIRECTIONS.filter(
+            ([dx, dy]) => !(dx === -prevDir[0] && dy === -prevDir[1]),
+          )
         : UNIT_DIRECTIONS;
 
       const [dx, dy] = available[Math.floor(Math.random() * available.length)];
@@ -53,7 +61,9 @@ export class SpatialGrid {
       throw new Error("Cannot place more than 9 entities on 3x3 grid");
     }
 
-    const grid = Array(3).fill(null).map(() => Array(3).fill(null));
+    const grid = Array(3)
+      .fill(null)
+      .map(() => Array(3).fill(null));
 
     // Place first entity in center
     grid[1][1] = entities[0];
@@ -132,14 +142,22 @@ export class SpatialGrid {
   toString() {
     if (this.entityPositions.size === 0) return "Empty grid\n";
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
     const posToLabel = new Map();
 
     for (const [id, [x, y]] of this.entityPositions.entries()) {
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
       const entity = this.entityObjects.get(id);
-      posToLabel.set(`${x},${y}`, entity ? entity.displayValue.substring(0, 5) : id.substring(0, 5));
+      posToLabel.set(
+        `${x},${y}`,
+        entity ? entity.displayValue.substring(0, 5) : id.substring(0, 5),
+      );
     }
 
     let result = "Grid (y increases upward):\n";

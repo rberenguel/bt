@@ -8,9 +8,9 @@ export function saveSession(data) {
     timestamp: now,
     dateStr: new Date(now).toISOString().split("T")[0],
     metrics: {
-      score:      data.score,
-      accuracy:   data.accuracy,
-      maxStreak:  data.maxStreak,
+      score: data.score,
+      accuracy: data.accuracy,
+      maxStreak: data.maxStreak,
       finalLevel: data.finalLevel,
     },
   });

@@ -27,6 +27,7 @@ Created `icon-preview.html` — a standalone browser page listing all 82 candida
 ### Layout Fixes
 
 Several CSS/HTML changes to prevent overflow on small screens:
+
 - Entity pills reduced (`0.82rem`, `3px 8px` padding)
 - Body padding reduced to `8px` on mobile; premises-container horizontal padding trimmed
 - Conclusion: `max-width` relaxed, double-padding removed, font size reduced to `1rem`
@@ -43,6 +44,7 @@ Added `window.tanmateix.testSpatial(entities=3)` to force a spatial question, pa
 ## Files Touched
 
 ### Core Logic
+
 - **`utils/SpatialGrid.js`**: Replaced 3×3 bounded grid with `placeEntitiesAsWalk` (unit-step, 8 directions, no reversal). `placeEntitiesRandomly` kept for legacy use. `toString()` now renders from actual positions dynamically.
 - **`verification/QuestionVerifier.js`**: Removed all Prolog code. `verifySpatialQuestion` now pure JS. `verifyQuestion` signature simplified (no `spatialGrid` param).
 - **`generators/PathBasedQuestionGenerator.js`**: Calls `placeEntitiesAsWalk`; removed `spatialGrid` extraction and passing to verifier. Added `testSpatial` helper in `window.tanmateix`.
@@ -50,10 +52,12 @@ Added `window.tanmateix.testSpatial(entities=3)` to force a spatial question, pa
 - **`utils/EntityFactory.js`**: Added `useIcons` mode and `ICON_POOL` constant (82 icons). Word generation retained.
 
 ### Rendering
+
 - **`render/Renderer.js`**: Added `renderEntity()` helper. `renderPremise` and `renderConclusion` use it. `conclusion-tail` wrapper introduced to keep last entity + `?` together.
 - **`render/logic.css`**: Added `.entity-icon` (1.9rem, 0.4px stroke). Reduced entity pill size. Mobile padding fixes for body/premises/conclusion.
 
 ### Tools & Config
+
 - **`icon-preview.html`**: New standalone icon curation page (kept permanently).
 - **`main.js`**: Switched to `useIcons: true`. Added `testSpatial` console helper.
 - **`manifest.json`**: Version `0.9.0`.

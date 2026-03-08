@@ -69,13 +69,16 @@ const FireSystem = {
       p.y += p.vy;
       p.life -= p.decay;
 
-      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      if (p.life > 0.6)      ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
+      if (p.life > 0.6) ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
       else if (p.life > 0.3) ctx.fillStyle = `rgba(255, 160, 20, ${p.life})`;
-      else                   ctx.fillStyle = `rgba(220, 40, 0, ${p.life})`;
+      else ctx.fillStyle = `rgba(220, 40, 0, ${p.life})`;
       ctx.fill();
     }
     requestAnimationFrame(this.loop);

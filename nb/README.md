@@ -104,4 +104,3 @@ Click the brain/battery progress icon (when not playing) to view your training h
 - PWA-ready with service worker support
 - Haptic feedback on iOS devices
 - Monospace (Monoid) font for modals
-

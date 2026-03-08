@@ -8,10 +8,10 @@ export function saveSession(data) {
     timestamp: now,
     dateStr: new Date(now).toISOString().split("T")[0],
     metrics: {
-      goAcc:   data.goAcc,
+      goAcc: data.goAcc,
       stopAcc: data.stopAcc,
-      avgRt:   data.avgRt,
-      ssd:     data.ssd,
+      avgRt: data.avgRt,
+      ssd: data.ssd,
     },
   });
 }

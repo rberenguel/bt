@@ -1,6 +1,10 @@
 import { ICONS, PARAMS_CONFIG } from "./constants.js";
 import { state } from "./state.js";
-import { initHaptic, triggerHaptic, triggerHapticError } from "../../shared/haptic.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../../shared/haptic.js";
 
 export const elements = {
   startScreen: document.getElementById("start-screen"),

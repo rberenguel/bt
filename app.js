@@ -10,15 +10,17 @@ const APPS = [
     path: "./nb/",
     icon: "./nb/icon.png",
     color: "#e9c46a",
-    storageKey: null,   // IndexedDB — loaded separately
+    storageKey: null, // IndexedDB — loaded separately
     keyMetric: (s) => "N-" + s.metrics.level,
     metricDefs: [
-      { key: "level",  label: "Level", unit: "",  invertColor: false },
-      { key: "pctPos", label: "Pos",   unit: "%", invertColor: false },
-      { key: "pctCol", label: "Col",   unit: "%", invertColor: false },
+      { key: "level", label: "Level", unit: "", invertColor: false },
+      { key: "pctPos", label: "Pos", unit: "%", invertColor: false },
+      { key: "pctCol", label: "Col", unit: "%", invertColor: false },
     ],
     sessionTitle: (s) =>
-      "N-" + s.metrics.level + (s._triple ? " (triple)" : s._quad ? " (quad)" : ""),
+      "N-" +
+      s.metrics.level +
+      (s._triple ? " (triple)" : s._quad ? " (quad)" : ""),
   },
   {
     id: "clauer",
@@ -29,10 +31,34 @@ const APPS = [
     storageKey: "clauer_history",
     keyMetric: (s) => s.metrics.cpm + " CPM",
     metricDefs: [
-      { key: "cpm",      label: "CPM",      desc: "Throughput",  unit: "",  invertColor: false },
-      { key: "accuracy", label: "Accuracy", desc: "Correctness", unit: "%", invertColor: false },
-      { key: "cv",       label: "CV",       desc: "Stability",   unit: "%", invertColor: true  },
-      { key: "ies",      label: "IES",      desc: "Efficiency",  unit: "",  invertColor: true  },
+      {
+        key: "cpm",
+        label: "CPM",
+        desc: "Throughput",
+        unit: "",
+        invertColor: false,
+      },
+      {
+        key: "accuracy",
+        label: "Accuracy",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      {
+        key: "cv",
+        label: "CV",
+        desc: "Stability",
+        unit: "%",
+        invertColor: true,
+      },
+      {
+        key: "ies",
+        label: "IES",
+        desc: "Efficiency",
+        unit: "",
+        invertColor: true,
+      },
     ],
   },
   {
@@ -44,10 +70,10 @@ const APPS = [
     storageKey: "tanmateix_history",
     keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
     metricDefs: [
-      { key: "accuracy",   label: "Accuracy", unit: "%",  invertColor: false },
-      { key: "score",      label: "Score",    unit: "/50", invertColor: false },
-      { key: "maxStreak",  label: "Streak",   unit: "",    invertColor: false },
-      { key: "finalLevel", label: "Level",    unit: "",    invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+      { key: "score", label: "Score", unit: "/50", invertColor: false },
+      { key: "maxStreak", label: "Streak", unit: "", invertColor: false },
+      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
     ],
   },
   {
@@ -59,9 +85,27 @@ const APPS = [
     storageKey: "summum_history",
     keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
     metricDefs: [
-      { key: "accuracy",  label: "Acc",   desc: "Correctness", unit: "%", invertColor: false },
-      { key: "finalPace", label: "Final", desc: "Pace",        unit: "s", invertColor: true  },
-      { key: "bestPace",  label: "Best",  desc: "Pace",        unit: "s", invertColor: true  },
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      {
+        key: "finalPace",
+        label: "Final",
+        desc: "Pace",
+        unit: "s",
+        invertColor: true,
+      },
+      {
+        key: "bestPace",
+        label: "Best",
+        desc: "Pace",
+        unit: "s",
+        invertColor: true,
+      },
     ],
   },
   {
@@ -73,9 +117,9 @@ const APPS = [
     storageKey: "stop_history",
     keyMetric: (s) => Math.round(s.metrics.goAcc) + "% go",
     metricDefs: [
-      { key: "goAcc",   label: "Go acc",   unit: "%",  invertColor: false },
-      { key: "stopAcc", label: "Stop acc", unit: "%",  invertColor: false },
-      { key: "avgRt",   label: "Avg RT",   unit: "ms", invertColor: true  },
+      { key: "goAcc", label: "Go acc", unit: "%", invertColor: false },
+      { key: "stopAcc", label: "Stop acc", unit: "%", invertColor: false },
+      { key: "avgRt", label: "Avg RT", unit: "ms", invertColor: true },
     ],
   },
 ];
@@ -101,12 +145,12 @@ async function loadNbSessions() {
         timestamp: s.date,
         dateStr: new Date(s.date).toISOString().split("T")[0],
         metrics: {
-          level:  s.level,
+          level: s.level,
           pctPos: Math.round(s.pctPos),
           pctCol: Math.round(s.pctCol),
         },
         _triple: s.triple,
-        _quad:   s.quad,
+        _quad: s.quad,
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
   } catch {
@@ -187,18 +231,20 @@ function renderCards(appData) {
     card.style.setProperty("--app-color", app.color);
 
     card.innerHTML =
-      '<a class="app-link" href="' + app.path + '">' +
-        (app.icon ? '<img class="app-icon" src="' + app.icon + '" alt="">' : '') +
-        '<div class="app-info">' +
-          '<div class="app-name">' + app.name + "</div>" +
-          (last
-            ? '<div class="app-last">Last: ' + last + "</div>"
-            : '<div class="app-last muted">No sessions yet</div>') +
-          (week > 0
-            ? '<div class="app-week">' + week + " this week</div>"
-            : "") +
-          (keyM ? '<div class="app-metric">' + keyM + "</div>" : "") +
-        "</div>" +
+      '<a class="app-link" href="' +
+      app.path +
+      '">' +
+      (app.icon ? '<img class="app-icon" src="' + app.icon + '" alt="">' : "") +
+      '<div class="app-info">' +
+      '<div class="app-name">' +
+      app.name +
+      "</div>" +
+      (last
+        ? '<div class="app-last">Last: ' + last + "</div>"
+        : '<div class="app-last muted">No sessions yet</div>') +
+      (week > 0 ? '<div class="app-week">' + week + " this week</div>" : "") +
+      (keyM ? '<div class="app-metric">' + keyM + "</div>" : "") +
+      "</div>" +
       "</a>" +
       (hasHistory
         ? '<button class="stats-btn" title="Show stats"><i class="ph-light ph-chart-bar"></i></button>'
@@ -246,9 +292,12 @@ async function init() {
 
   const appData = APPS.map((app) => ({
     app,
-    sessions: app.id === "nb" ? nbSessions
-             : app.storageKey    ? readLocalStorage(app.storageKey)
-             : [],
+    sessions:
+      app.id === "nb"
+        ? nbSessions
+        : app.storageKey
+          ? readLocalStorage(app.storageKey)
+          : [],
   }));
 
   // Cross-app streak
