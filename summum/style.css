@@ -1,0 +1,765 @@
+/* Variables */
+:root {
+  --bg-dark: #0a0a0c;
+  --bg-panel: #121216;
+  --bg-btn: #1a1a20;
+  --bg-btn-hover: #25252d;
+  --bg-btn-active: #30303a;
+
+  --text-slate-200: #e2e8f0;
+  --text-slate-400: #94a3b8;
+  --text-slate-500: #64748b;
+
+  --border-gray: #1f2937;
+
+  --color-blue: #3b82f6;
+  --color-green: #4ade80;
+  --color-red: #f87171;
+  --border-green: rgba(34, 197, 94, 0.5);
+  --border-red: rgba(239, 68, 68, 0.5);
+}
+
+/* Reset / Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-slate-200);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+::selection {
+  background: transparent;
+}
+
+button {
+  touch-action: manipulation;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.5rem;
+  padding-bottom: 1rem; /* Added padding to keep it slightly off the bottom edge */
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  height: 100dvh;
+  /* Removed margin-bottom: 10%; */
+}
+
+.header-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding: 0 0.25rem;
+}
+
+.version-text {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  font-weight: 400;
+  text-transform: lowercase;
+  margin-left: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-slate-500);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+/* Progress Bar */
+/* Brain / Battery Progress */
+.brain-container {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+  font-family: "Phosphor-Light";
+  font-size: 5rem;
+  line-height: 1;
+}
+
+.brain-base {
+  color: var(--text-slate-500);
+  opacity: 0.3;
+}
+
+.brain-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-blue);
+  clip-path: inset(var(--progress-inset, 100%) 0 0 0);
+  transition: clip-path 0.5s ease;
+}
+
+.brain-fire-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to top, #dc143c, #ff4500, #ffa500, #ffd700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  clip-path: inset(var(--fire-inset, 100%) 0 0 0);
+  transition:
+    clip-path 0.5s ease,
+    background 1s ease;
+}
+
+#fire-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: screen;
+}
+
+.progress-container {
+  width: 100%;
+  height: 0.25rem;
+  background-color: var(--border-gray);
+  border-radius: 9999px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--color-blue);
+  border-radius: 9999px;
+}
+
+.display-area {
+  flex: 1;
+  min-height: 160px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-panel);
+  border-radius: 1rem;
+  border: 2px solid var(--border-gray);
+  transition:
+    background-color 0.3s,
+    border-color 0.3s,
+    box-shadow 0.5s ease;
+}
+
+.display-area.border-correct {
+  border-color: var(--border-green);
+}
+
+.display-area.border-wrong {
+  border-color: var(--border-red);
+}
+
+.display-area.border-normal {
+  border-color: var(--border-gray);
+}
+
+.idle-text {
+  text-align: center;
+  color: var(--text-slate-400);
+  padding: 1.5rem;
+}
+
+.idle-text p {
+  margin-bottom: 0.5rem;
+}
+
+.idle-text p.sub {
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}
+
+/* Digit */
+.digit-text {
+  font-size: 6rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  transition: color 0.15s;
+}
+
+.text-correct {
+  color: var(--color-green);
+}
+
+.text-wrong {
+  color: var(--color-red);
+}
+
+.text-normal {
+  color: #fff;
+}
+
+.streak-hot {
+  color: var(--color-green);
+}
+
+/* Utilities */
+.hidden {
+  display: none !important;
+}
+
+/* Simple pop animation for new digits */
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-pop {
+  animation: pop 0.15s ease-out forwards;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.numpad-btn {
+  background-color: var(--bg-btn);
+  color: var(--text-slate-200);
+  height: 4.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Add the transition here so it animates when released */
+  transition:
+    transform 0.1s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+/* Replace :active with .pressed */
+.numpad-btn.pressed {
+  background-color: var(--color-blue);
+  color: #fff;
+  transform: scale(0.92);
+}
+
+.controls-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  height: 4.5rem; /* Increased from 3.5rem to match numpad keys */
+}
+
+.numpad-btn:not(:disabled):hover {
+  background-color: var(--bg-btn-hover);
+}
+
+.numpad-btn:not(:disabled):active {
+  background-color: var(--color-blue);
+  color: #fff;
+}
+
+.numpad-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.numpad-btn:not(:disabled):active {
+  background-color: var(--color-blue);
+  color: #fff;
+  transform: scale(0.92); /* Adds a physical push-down effect */
+  transition:
+    transform 0.05s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.control-btn:active {
+  background-color: var(--bg-btn-active);
+  transform: scale(0.92);
+  transition: transform 0.05s;
+}
+
+/* Controls */
+
+.control-btn {
+  flex: 1;
+  background-color: var(--bg-btn);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.control-btn:hover {
+  background-color: var(--bg-btn-hover);
+}
+
+.control-btn:active {
+  background-color: var(--bg-btn-active);
+}
+
+.play-btn {
+  color: #60a5fa; /* A lighter blue to match text-blue-400 */
+}
+
+.reset-btn {
+  color: var(--text-slate-400);
+}
+
+/* Status Text */
+.status-text {
+  height: 1.5rem;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-slate-500);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  display: flex !important; /* Keep flex structure but hide via opacity and pointer-events */
+}
+
+.modal-content {
+  background-color: var(--bg-panel);
+  border: 2px solid var(--border-gray);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 20rem;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  transform: translateY(0);
+  transition: transform 0.2s ease-in-out;
+  position: relative;
+}
+
+.modal-overlay.hidden .modal-content {
+  transform: translateY(1rem);
+}
+
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.modal-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.modal-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.125rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-gray);
+  color: var(--text-slate-200);
+}
+
+.modal-stat:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.modal-stat .label {
+  color: var(--text-slate-400);
+  font-weight: 500;
+}
+
+.modal-btn {
+  width: 100%;
+  background-color: var(--color-blue);
+  color: #fff;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  transition:
+    background-color 0.15s,
+    transform 0.1s;
+}
+
+.modal-btn:hover {
+  background-color: #2563eb;
+}
+
+.modal-btn:active {
+  transform: scale(0.95);
+}
+
+/* History Calendar View Ported from Clauer */
+.calendar-streak {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.75rem;
+  color: var(--text-slate-400);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-slate-200);
+  font-weight: 600;
+}
+
+.calendar-nav {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-slate-200);
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  margin: 0;
+  padding: 0;
+}
+
+.calendar-nav:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-nav:active {
+  transform: scale(0.95);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-slate-500);
+  text-transform: uppercase;
+  padding-bottom: 0.25rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  color: var(--text-slate-200);
+  transition: transform 0.1s ease;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.has-sessions {
+  background: rgba(59, 130, 246, 0.15); /* color-blue */
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+}
+
+.calendar-day.has-sessions:hover {
+  background: rgba(59, 130, 246, 0.25);
+  transform: scale(1.05);
+}
+
+.calendar-day.today {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+.calendar-day-number {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.session-indicator {
+  font-size: 0.55rem;
+  opacity: 0.8;
+  line-height: 1;
+  color: var(--color-blue);
+}
+
+/* Day Details / Sessions List */
+.day-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-panel);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem;
+  box-sizing: border-box;
+}
+
+.day-details.hidden {
+  display: none !important;
+}
+
+.day-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-details-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-slate-200);
+}
+
+.close-details {
+  background: none;
+  border: none;
+  color: var(--text-slate-200);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.close-details:hover {
+  opacity: 1;
+}
+
+.day-sessions {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.session-card {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  cursor: default;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.session-header strong {
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+.session-time {
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+
+.session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.session-stats span {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: var(--text-slate-200);
+}
+
+/* History Trend Graphs */
+.history-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px 0 10px 0;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trend-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  color: var(--text-slate-200);
+  opacity: 0.9;
+}
+
+.trend-label strong {
+  color: var(--color-blue);
+}
+
+.trend-best {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-slate-400);
+  opacity: 0.7;
+}
+.trend-best svg {
+  width: 14px;
+  height: 14px;
+}
+
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 40px;
+  gap: 2px;
+  width: 100%;
+}
+
+.trend-bar {
+  flex: 1;
+  background-color: var(--color-blue);
+  opacity: 0.7;
+  border-radius: 1px 1px 0 0;
+  min-height: 2px;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+}
+
+.trend-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-dark);
+  color: var(--text-slate-200);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  z-index: 20;
+  border: 1px solid var(--border-gray);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.trend-bar:hover .trend-tooltip,
+.trend-bar:active .trend-tooltip,
+.trend-bar:focus .trend-tooltip {
+  opacity: 1;
+}
+
+.trend-bar.high {
+  opacity: 1;
+}
+
+.trend-bar.low {
+  background-color: var(--color-red);
+}
+
+#close-history-btn {
+  margin-top: auto;
+}
+
+.history-modal-content {
+  position: relative; /* for absolute positioning of day-details */
+}

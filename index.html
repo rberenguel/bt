@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Brain Training</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="./shared/fonts/inter.css" />
+    <link rel="stylesheet" href="./shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Brain Training</h1>
+        <div id="streak"></div>
+      </header>
+      <div id="app-grid"></div>
+    </div>
+
+    <!-- Shared history modal (populated by shared/history.js) -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div id="history-modal-title"></div>
+        <div id="history-list"></div>
+        <button id="close-history-btn">Close</button>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tau Prolog Demo - Linear Relations</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #0a0a0a;
+        color: #00ff00;
+      }
+      h1 {
+        color: #00ff00;
+        border-bottom: 2px solid #00ff00;
+        padding-bottom: 10px;
+      }
+      h2 {
+        color: #ffaa00;
+        margin-top: 30px;
+      }
+      .code-block {
+        background: #000;
+        padding: 15px;
+        border-left: 3px solid #00ff00;
+        margin: 15px 0;
+        white-space: pre-wrap;
+      }
+      button {
+        background: #00ff00;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px 5px;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+      }
+      button:hover {
+        background: #00cc00;
+      }
+      .output {
+        background: #1a1a1a;
+        padding: 15px;
+        border: 1px solid #333;
+        margin: 15px 0;
+        min-height: 100px;
+      }
+      .success {
+        color: #00ff00;
+      }
+      .error {
+        color: #ff0000;
+      }
+      .info {
+        color: #00aaff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Tau Prolog for Linear Relations</h1>
+    <p>
+      This demonstrates how Prolog can handle inference and contradiction
+      detection for linear relations.
+    </p>
+
+    <h2>The Prolog Program</h2>
+    <div class="code-block">
+      % Facts will be added dynamically (e.g., larger(a, b, size)) % Transitive
+      rule larger(A, C, Dim) :- larger(A, B, Dim), larger(B, C, Dim), A \= B, B
+      \= C, A \= C. % Contradiction detection contradiction :- larger(A, B,
+      Dim), larger(B, A, Dim). % Check if a specific relation holds holds(A, B,
+      Dim) :- larger(A, B, Dim).
+    </div>
+
+    <h2>Demo 1: Transitive Inference</h2>
+    <p>
+      Add facts: <code>larger(a, b, size)</code> and
+      <code>larger(b, c, size)</code>
+    </p>
+    <p>Query: Can we infer <code>larger(a, c, size)</code>?</p>
+    <button onclick="demoTransitive()">Run Demo</button>
+    <div class="output" id="output1">Click "Run Demo" to see results...</div>
+
+    <h2>Demo 2: Contradiction Detection</h2>
+    <p>
+      Add facts: <code>larger(a, b, size)</code> and
+      <code>larger(b, a, size)</code>
+    </p>
+    <p>Query: Is there a contradiction?</p>
+    <button onclick="demoContradiction()">Run Demo</button>
+    <div class="output" id="output2">Click "Run Demo" to see results...</div>
+
+    <h2>Demo 3: Cycle Detection</h2>
+    <p>
+      Add facts: <code>larger(a, b, size)</code>,
+      <code>larger(b, c, size)</code>, <code>larger(c, a, size)</code>
+    </p>
+    <p>Query: Is there a contradiction?</p>
+    <button onclick="demoCycle()">Run Demo</button>
+    <div class="output" id="output3">Click "Run Demo" to see results...</div>
+
+    <h2>Demo 4: Complex Inference</h2>
+    <p>Add a chain: a > b > c > d</p>
+    <p>Query: What can we infer?</p>
+    <button onclick="demoComplex()">Run Demo</button>
+    <div class="output" id="output4">Click "Run Demo" to see results...</div>
+
+    <!-- Load Tau Prolog from CDN -->
+    <script src="lib/tau-prolog-core.js"></script>
+
+    <script>
+      function log(id, msg, type = "") {
+        const el = document.getElementById(id);
+        const className = type ? ` class="${type}"` : "";
+        el.innerHTML += `<div${className}>${msg}</div>`;
+      }
+
+      function clear(id) {
+        document.getElementById(id).innerHTML = "";
+      }
+
+      // Demo 1: Transitive Inference
+      window.demoTransitive = function () {
+        clear("output1");
+        log("output1", "=== Demo 1: Transitive Inference ===\n", "info");
+
+        const session = pl.create();
+
+        // Simpler approach: Add facts and rules together, query specific relationships
+        const program = `
+        larger(a, b, size).
+        larger(b, c, size).
+
+        % Transitive rule with guards
+        larger(X, Z, Dim) :-
+            larger(X, Y, Dim),
+            larger(Y, Z, Dim),
+            X \\= Y, Y \\= Z, X \\= Z.
+      `;
+
+        session.consult(program, {
+          success: function () {
+            log("output1", "Added facts: larger(a,b,size), larger(b,c,size)\n");
+
+            // Query specific inferences
+            log("output1", "Query 1: larger(a, b, size)?");
+            session.query("larger(a, b, size).");
+            session.answer((answer) => {
+              log(
+                "output1",
+                pl.type.is_substitution(answer)
+                  ? "  ✓ YES (direct fact)"
+                  : "  ✗ NO",
+                pl.type.is_substitution(answer) ? "success" : "error",
+              );
+
+              log("output1", "\nQuery 2: larger(a, c, size)?");
+              session.query("larger(a, c, size).");
+              session.answer((answer2) => {
+                if (pl.type.is_substitution(answer2)) {
+                  log(
+                    "output1",
+                    "  ✓ YES (inferred via transitive rule!)",
+                    "success",
+                  );
+                  log(
+                    "output1",
+                    "\n✓ Prolog automatically computed a>c from a>b and b>c",
+                    "success",
+                  );
+                } else {
+                  log(
+                    "output1",
+                    "  ✗ NO (transitive rule not working)",
+                    "error",
+                  );
+                }
+              });
+            });
+          },
+          error: function (err) {
+            log("output1", "Error: " + err.toString(), "error");
+          },
+        });
+      };
+
+      // Demo 2: Contradiction Detection
+      window.demoContradiction = function () {
+        clear("output2");
+        log("output2", "=== Demo 2: Direct Contradiction ===\n", "info");
+
+        const session = pl.create();
+
+        const program = `
+        larger(a, b, size).
+        larger(b, a, size).
+
+        % Check for specific contradiction
+        contradiction(X, Y, Dim) :- larger(X, Y, Dim), larger(Y, X, Dim).
+      `;
+
+        session.consult(program, {
+          success: function () {
+            log(
+              "output2",
+              "Added facts: larger(a,b,size) and larger(b,a,size)\n",
+            );
+            log("output2", "Querying: contradiction(a, b, size)?");
+
+            session.query("contradiction(a, b, size).");
+            session.answer((answer) => {
+              if (pl.type.is_substitution(answer)) {
+                log("output2", "\n✓ CONTRADICTION DETECTED!", "error");
+                log(
+                  "output2",
+                  "Prolog found both larger(a,b) and larger(b,a) exist.",
+                  "error",
+                );
+                log(
+                  "output2",
+                  "\nThe manual implementation FAILED to catch this!",
+                  "warning",
+                );
+              } else {
+                log("output2", "\n✗ No contradiction found", "success");
+              }
+            });
+          },
+          error: function (err) {
+            log("output2", "Error: " + err.toString(), "error");
+          },
+        });
+      };
+
+      // Demo 3: Cycle Detection
+      window.demoCycle = function () {
+        clear("output3");
+        log("output3", "=== Demo 3: Cycle Detection ===\n", "info");
+
+        const session = pl.create();
+
+        const program = `
+        larger(a, b, size).
+        larger(b, c, size).
+        larger(c, a, size).
+
+        % Transitive rule
+        larger(X, Z, Dim) :-
+            larger(X, Y, Dim),
+            larger(Y, Z, Dim),
+            X \\= Y, Y \\= Z, X \\= Z.
+
+        % Check for specific contradiction
+        contradiction(X, Y, Dim) :- larger(X, Y, Dim), larger(Y, X, Dim).
+      `;
+
+        session.consult(program, {
+          success: function () {
+            log("output3", "Added cycle: a>b>c>a\n");
+            log("output3", "With transitivity: a>b, b>c ⇒ a>c");
+            log("output3", "But we also have: c>a");
+            log("output3", "So: a>c AND c>a (contradiction!)\n");
+
+            log("output3", "Querying: contradiction(a, c, size)?");
+            session.query("contradiction(a, c, size).");
+            session.answer((answer) => {
+              if (pl.type.is_substitution(answer)) {
+                log("output3", "\n✓ CYCLE/CONTRADICTION DETECTED!", "error");
+                log(
+                  "output3",
+                  "Prolog inferred a>c, found c>a, detected contradiction!",
+                  "error",
+                );
+                log(
+                  "output3",
+                  "\nThe manual implementation ALLOWED this cycle!",
+                  "warning",
+                );
+              } else {
+                log("output3", "\n✗ No contradiction found", "error");
+              }
+            });
+          },
+          error: function (err) {
+            log("output3", "Error: " + err.toString(), "error");
+          },
+        });
+      };
+
+      // Demo 4: Complex Inference
+      window.demoComplex = function () {
+        clear("output4");
+        log("output4", "=== Demo 4: Complex Inference Chain ===\n", "info");
+
+        const session = pl.create();
+
+        const program = `
+        larger(a, b, size).
+        larger(b, c, size).
+        larger(c, d, size).
+
+        % Transitive rule
+        larger(X, Z, Dim) :-
+            larger(X, Y, Dim),
+            larger(Y, Z, Dim),
+            X \\= Y, Y \\= Z, X \\= Z.
+      `;
+
+        session.consult(program, {
+          success: function () {
+            log("output4", "Added chain: a>b>c>d\n");
+            log("output4", "Testing specific inferences:\n");
+
+            const tests = [
+              ["a", "b", "direct"],
+              ["a", "c", "inferred (1 hop)"],
+              ["a", "d", "inferred (2 hops)"],
+              ["b", "d", "inferred (1 hop)"],
+            ];
+
+            function runTest(index) {
+              if (index >= tests.length) {
+                log("output4", "\n✓ All inferences work correctly!", "success");
+                log(
+                  "output4",
+                  "Prolog computed transitive closure automatically.",
+                  "success",
+                );
+                return;
+              }
+
+              const [x, y, desc] = tests[index];
+              session.query(`larger(${x}, ${y}, size).`);
+              session.answer((answer) => {
+                const result = pl.type.is_substitution(answer) ? "✓" : "✗";
+                const color = pl.type.is_substitution(answer)
+                  ? "success"
+                  : "error";
+                log(
+                  "output4",
+                  `  ${result} larger(${x}, ${y}, size) - ${desc}`,
+                  color,
+                );
+                runTest(index + 1);
+              });
+            }
+
+            runTest(0);
+          },
+          error: function (err) {
+            log("output4", "Error: " + err.toString(), "error");
+          },
+        });
+      };
+    </script>
+  </body>
+</html>

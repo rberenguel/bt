@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta
+      name="description"
+      content="A fast-paced logic puzzle game with progressive difficulty"
+    />
+    <meta name="theme-color" content="#000000" />
+    <title>Tanmateix</title>
+    <link rel="stylesheet" href="render/logic.css" />
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="../shared/fonts/monoid.css" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <header>
+      <div class="header-top">
+        <div class="brain-container" id="stats-btn" title="History" style="cursor:pointer">
+          <div class="brain-base">&#xe74e;</div>
+          <div class="brain-progress-fill">&#xe74e;</div>
+          <div class="brain-fire-fill">&#xe74e;</div>
+          <canvas id="fire-canvas"></canvas>
+        </div>
+        <div class="header-info">
+          <div class="stats">
+            <span id="lbl-question">Q1/30</span>
+            <i class="ph-light ph-arrow-clockwise info-icon" id="restart-btn" title="Restart"></i>
+            <i class="ph-light ph-info info-icon" id="game-info-btn" title="Game info"></i>
+          </div>
+          <div class="meta-info">
+            Correct: <span id="lbl-score">0</span> • Streak:
+            <span id="lbl-streak" style="color: var(--gold)">0</span> • L<span
+              id="lbl-level"
+              >1</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <div id="progress" class="progress-bar" style="width: 0%"></div>
+      </div>
+    </header>
+
+    <div id="game-container"></div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="pause-overlay visible">
+      <div class="pause-content">
+        <img
+          src="icon.png"
+          alt="Tanmateix"
+          style="
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+          "
+        />
+        <h1 style="font-size: 3rem; margin-bottom: 10px; color: var(--accent)">
+          Tanmateix
+        </h1>
+        <span
+          class="version-tag"
+          id="start-version-display"
+          style="margin-bottom: 10px; display: inline-block"
+          >v...</span
+        >
+        <p style="opacity: 0.8; margin-bottom: 20px">
+          Fast-paced logic reasoning
+        </p>
+        <ul
+          style="
+            max-width: 450px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            text-align: left;
+            list-style: none;
+            padding: 0;
+          "
+        >
+          <li style="margin-bottom: 8px">
+            • Read premises about entities and their relationships
+          </li>
+          <li style="margin-bottom: 8px">
+            • Evaluate if the conclusion logically follows
+          </li>
+          <li style="margin-bottom: 8px">
+            • Answer <strong>True</strong> or <strong>False</strong>
+          </li>
+        </ul>
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+          "
+        >
+          <button id="start-btn-practice" class="resume-btn">
+            <i class="ph-light ph-play"></i>
+          </button>
+          <button id="start-btn-timed" class="resume-btn">
+            <i class="ph-light ph-clock"></i>
+          </button>
+        </div>
+        <p style="margin-top: 20px; opacity: 0.6; font-size: 0.9rem">
+          30 questions • Progressive difficulty
+        </p>
+      </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="pause-overlay">
+      <div class="pause-content">
+        <h1 style="font-size: 3rem; margin-bottom: 20px; color: var(--accent)">
+          PAUSED
+        </h1>
+        <button id="resume-btn" class="resume-btn">Resume</button>
+        <p style="margin-top: 20px; opacity: 0.7">
+          Press Space or click Resume to continue
+        </p>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal-overlay">
+      <div class="modal-content" style="padding:1rem 0;height:90vh;display:flex;flex-direction:column;overflow:hidden;width:95%;max-width:24rem;">
+        <h2 style="margin:0 1rem 0.5rem 1rem;color:var(--fg)">History</h2>
+        <div id="history-list" style="flex:1 1 auto;overflow-y:auto;padding:0 1rem;position:relative;"></div>
+        <div style="padding:0 1rem;margin-top:1rem;">
+          <button id="close-history-btn" class="resume-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="debug-info" style="display: none"></div>
+
+    <div id="update-banner" hidden>
+      Update available — <a href="#" id="update-link">reload</a>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" id="info-modal-close">&times;</button>
+        <div class="modal-header">
+          <img src="icon.png" alt="Tanmateix" class="modal-icon" />
+          <div class="modal-title-container">
+            <h2>About Tanmateix</h2>
+            <span class="version-tag" id="version-display">v...</span>
+          </div>
+        </div>
+        <div class="modal-text">
+          <p>
+            <strong>Tanmateix</strong> is a fast-paced logic puzzle game where
+            you evaluate whether conclusions logically follow from given
+            premises.
+          </p>
+
+          <h3>How to Play</h3>
+          <p>
+            You'll be presented with statements (premises) about entities and
+            their relationships. Your task is to determine if the conclusion
+            logically follows from the premises by selecting
+            <strong>True</strong> or <strong>False</strong> before time runs
+            out.
+          </p>
+
+          <h3>Progressive Difficulty</h3>
+          <p>
+            Every 2 correct answers increases the difficulty by adding more
+            paths, more entities, or reducing the time limit. Can you reach the
+            maximum difficulty?
+          </p>
+
+          <h3>Relationship Types</h3>
+          <p>Questions feature various logical relationships:</p>
+          <ul>
+            <li>
+              <strong>Linear</strong> (28 dimensions): size, speed, temperature,
+              latency, throughput, availability, and more
+            </li>
+            <li>
+              <strong>Spatial</strong>: directional positioning (north, south,
+              east, west, etc.)
+            </li>
+            <li>
+              <strong>Syllogistic</strong>: subset and disjoint category
+              reasoning
+            </li>
+          </ul>
+
+          <h3>Example</h3>
+          <p>
+            <em>Premise 1:</em> A is larger than B<br />
+            <em>Premise 2:</em> B is larger than C<br />
+            <em>Conclusion:</em> A is larger than C? <strong>True</strong>
+          </p>
+
+          <p>
+            Challenge yourself through 30 questions with increasing complexity!
+          </p>
+
+          <p class="source-link">
+            Uses
+            <a href="https://tau-prolog.org/" target="_blank">Tau Prolog</a>
+            for logical inference (BSD 3-Clause License,
+            <a href="lib/TAU-PROLOG-LICENSE" target="_blank">view license</a>)
+          </p>
+
+          <div style="margin-top: 30px; text-align: center">
+            <button
+              id="export-questions-btn"
+              class="resume-btn"
+              style="font-size: 1.2rem; padding: 12px 24px"
+            >
+              <i class="ph-light ph-floppy-disk"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load Tau Prolog for relation type inference -->
+    <script src="lib/tau-prolog-core.js"></script>
+    <script src="main.js" type="module"></script>
+
+    <script>
+      if ("serviceWorker" in navigator && !chrome?.runtime?.id) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((registration) => {
+              // Listen for new service worker installing
+              registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+                if (!newWorker) return;
+
+                newWorker.addEventListener("statechange", () => {
+                  // New SW is active and there was a previous controller
+                  if (
+                    newWorker.state === "activated" &&
+                    navigator.serviceWorker.controller
+                  ) {
+                    document.getElementById("update-banner").hidden = false;
+                  }
+                });
+              });
+            })
+            .catch((err) => console.error("SW registration failed:", err));
+        });
+
+        // Reload when user clicks the update link
+        document
+          .getElementById("update-link")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.reload();
+          });
+      }
+    </script>
+  </body>
+</html>

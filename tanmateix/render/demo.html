@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="description" content="Logic puzzle game" />
+    <meta name="theme-color" content="#000000" />
+    <title>Logic Game - Syllogimous v2</title>
+    <link rel="stylesheet" href="logic.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-top">
+        <div
+          class="app-icon"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+          "
+        >
+          🧠
+        </div>
+        <div class="header-info">
+          <div class="stats">
+            <svg
+              class="icon-search"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="width: 22px; height: 22px; color: var(--accent)"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 16v-4"></path>
+              <path d="M12 8h.01"></path>
+            </svg>
+            <span id="lbl-score">0</span> /
+            <span id="lbl-total" style="color: var(--accent)">10</span>
+          </div>
+          <div class="meta-info">Question <span id="lbl-question">1</span></div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <div id="progress" class="progress-bar" style="width: 0%"></div>
+      </div>
+    </header>
+
+    <div id="game-container"></div>
+
+    <div id="debug-info" style="display: none"></div>
+
+    <button
+      id="btn-new-question"
+      style="
+        margin-top: 20px;
+        padding: 12px 24px;
+        border: none;
+        background: var(--accent);
+        color: #000;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: inherit;
+      "
+    >
+      New Question
+    </button>
+
+    <script type="module">
+      import { QuestionGenerator } from "../generators/QuestionGenerator.js";
+      import { LinearRelationType } from "../relations/LinearRelationType.js";
+      import { SpatialRelationType } from "../relations/SpatialRelationType.js";
+      import { CategoricalRelationType } from "../relations/CategoricalRelationType.js";
+      import { RandomUtils } from "../utils/RandomUtils.js";
+      import { EntityFactory } from "../utils/EntityFactory.js";
+      import { Renderer } from "./Renderer.js";
+
+      // Game state
+      const gameState = {
+        score: 0,
+        total: 10,
+        questionNumber: 1,
+        currentQuestion: null,
+        answered: false,
+      };
+
+      // Setup
+      const random = new RandomUtils();
+      const entityFactory = new EntityFactory(
+        {
+          useNonsenseWords: true,
+          nonsenseWordLength: 5,
+        },
+        random,
+      );
+
+      const linearType = new LinearRelationType();
+      const spatialType = new SpatialRelationType(2);
+      const categoricalType = new CategoricalRelationType();
+
+      const generator = new QuestionGenerator({
+        entityFactory,
+        linearDimensions: [
+          "size",
+          "speed",
+          "brightness",
+          "temperature",
+          "weight",
+          "height",
+        ],
+        random,
+      });
+
+      const renderer = new Renderer();
+
+      // Generate and display question
+      function newQuestion() {
+        // Vary the question type
+        const types = [
+          // Single type questions
+          {
+            relationTypes: [{ type: linearType, weight: 1 }],
+            mixedTypes: false,
+            premiseCount: 5,
+          },
+          {
+            relationTypes: [{ type: spatialType, weight: 1 }],
+            mixedTypes: false,
+            premiseCount: 5,
+          },
+          {
+            relationTypes: [{ type: categoricalType, weight: 1 }],
+            mixedTypes: false,
+            premiseCount: 5,
+          },
+          // Mixed questions
+          {
+            relationTypes: [
+              { type: linearType, weight: 0.5 },
+              { type: spatialType, weight: 0.5 },
+            ],
+            mixedTypes: true,
+            premiseCount: 6,
+          },
+          {
+            relationTypes: [
+              { type: linearType, weight: 0.4 },
+              { type: spatialType, weight: 0.3 },
+              { type: categoricalType, weight: 0.3 },
+            ],
+            mixedTypes: true,
+            premiseCount: 7,
+          },
+        ];
+
+        const spec = types[Math.floor(Math.random() * types.length)];
+        spec.branchingFactor = 0.4;
+
+        gameState.currentQuestion = generator.generateQuestion(spec);
+        gameState.answered = false;
+
+        // Render
+        const container = document.getElementById("game-container");
+        container.innerHTML = renderer.renderGameUI(gameState.currentQuestion);
+
+        // Add event listeners to buttons
+        container.querySelectorAll(".btn").forEach((btn) => {
+          btn.addEventListener("click", handleAnswer);
+        });
+
+        // Update debug info
+        const debugInfo = document.getElementById("debug-info");
+        debugInfo.innerHTML = renderer.renderNetworkInfo(
+          gameState.currentQuestion,
+        );
+      }
+
+      // Handle answer
+      function handleAnswer(e) {
+        if (gameState.answered) return;
+
+        const userAnswer = e.currentTarget.dataset.answer === "true";
+        const correct = userAnswer === gameState.currentQuestion.isValid;
+
+        gameState.answered = true;
+
+        // Visual feedback
+        showFeedback(correct);
+
+        if (correct) {
+          gameState.score++;
+          updateScore();
+        }
+
+        // Disable buttons
+        document.querySelectorAll(".btn").forEach((btn) => {
+          btn.disabled = true;
+          btn.style.opacity = "0.5";
+          btn.style.cursor = "not-allowed";
+        });
+
+        // Auto-advance after delay
+        setTimeout(() => {
+          if (gameState.questionNumber < gameState.total) {
+            gameState.questionNumber++;
+            updateProgress();
+            newQuestion();
+          } else {
+            showGameOver();
+          }
+        }, 1000);
+      }
+
+      // Show feedback
+      function showFeedback(correct) {
+        const container = document.getElementById("game-container");
+        const className = correct ? "flash-correct" : "flash-incorrect";
+
+        container.classList.add(className);
+        setTimeout(() => {
+          container.classList.remove(className);
+        }, 600);
+      }
+
+      // Update score
+      function updateScore() {
+        document.getElementById("lbl-score").textContent = gameState.score;
+      }
+
+      // Update progress
+      function updateProgress() {
+        document.getElementById("lbl-question").textContent =
+          gameState.questionNumber;
+        const percent =
+          ((gameState.questionNumber - 1) / gameState.total) * 100;
+        document.getElementById("progress").style.width = `${percent}%`;
+      }
+
+      // Show game over
+      function showGameOver() {
+        const container = document.getElementById("game-container");
+        const percentage = Math.round(
+          (gameState.score / gameState.total) * 100,
+        );
+
+        container.innerHTML = `
+        <div class="premises-container" style="text-align: center; padding: 40px;">
+            <h2 style="color: var(--accent); font-size: 2rem; margin-bottom: 20px;">Game Over!</h2>
+            <div style="font-size: 3rem; margin: 30px 0;">
+                ${percentage >= 80 ? "🏆" : percentage >= 60 ? "🎯" : "💪"}
+            </div>
+            <div style="font-size: 1.5rem; margin-bottom: 30px;">
+                Score: <span style="color: var(--success); font-weight: bold;">${gameState.score}</span> / ${gameState.total}
+            </div>
+            <div style="font-size: 1.2rem; opacity: 0.8;">
+                ${percentage >= 80 ? "Excellent!" : percentage >= 60 ? "Good job!" : "Keep practicing!"}
+            </div>
+        </div>
+    `;
+
+        document.getElementById("btn-new-question").textContent = "Play Again";
+        document.getElementById("btn-new-question").onclick = () => {
+          gameState.score = 0;
+          gameState.questionNumber = 1;
+          updateScore();
+          updateProgress();
+          newQuestion();
+          document.getElementById("btn-new-question").textContent =
+            "New Question";
+          document.getElementById("btn-new-question").onclick = () => {
+            if (!gameState.answered) return;
+            if (gameState.questionNumber < gameState.total) {
+              gameState.questionNumber++;
+              updateProgress();
+              newQuestion();
+            }
+          };
+        };
+      }
+
+      // Manual new question button
+      document
+        .getElementById("btn-new-question")
+        .addEventListener("click", () => {
+          if (!gameState.answered) return;
+          if (gameState.questionNumber < gameState.total) {
+            gameState.questionNumber++;
+            updateProgress();
+            newQuestion();
+          }
+        });
+
+      // Start game
+      newQuestion();
+      updateScore();
+      updateProgress();
+    </script>
+  </body>
+</html>

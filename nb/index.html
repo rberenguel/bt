@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <title>Dual N-Back v2</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" href="../shared/fonts/inter.css" />
+    <link rel="stylesheet" href="../shared/fonts/monoid.css" />
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+  </head>
+  <body>
+    <!-- Game container -->
+    <div id="game-container">
+      <!-- Top info bar -->
+      <div id="top-bar">
+        <div id="round-display"></div>
+        <div id="level-display">1<sub>2</sub></div>
+        <div id="brain-progress">
+          <div class="brain-progress-content">
+            <div class="brain-container">
+              <div class="brain-base">&#xe74e;</div>
+              <div class="brain-progress-fill">&#xe74e;</div>
+              <div class="brain-fire-fill">&#xe74e;</div>
+              <canvas id="fire-canvas"></canvas>
+            </div>
+            <div class="progress-text">0/100</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main grid area -->
+      <div id="grid-container">
+        <div class="grid">
+          <div class="square" data-pos="0" id="s0">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="1" id="s1">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="2" id="s2">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="3" id="s3">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="4" id="s4">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="5" id="s5">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="6" id="s6">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="7" id="s7">
+            <div class="square-inner"></div>
+          </div>
+          <div class="square" data-pos="8" id="s8">
+            <div class="square-inner"></div>
+          </div>
+        </div>
+      </div>
+      <div id="fillup">
+        <div id="session-stars"></div>
+      </div>
+      <!-- Game buttons (hidden until game starts) -->
+      <div id="button-left" class="side-button hidden">
+        <span>Position</span>
+      </div>
+      <div id="button-right" class="side-button hidden">
+        <span>Color</span>
+      </div>
+      <div id="button-bottom" class="bottom-button hidden">
+        <span>Letter</span>
+      </div>
+      <div id="button-bottom-left" class="bottom-split-button hidden">
+        <span>Letter</span>
+      </div>
+      <div id="button-bottom-right" class="bottom-split-button hidden">
+        <span>Shape</span>
+      </div>
+      <div id="button-pause" class="pause-button hidden"></div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="hidden">
+      <!-- Instructions modal -->
+      <div id="modal-instructions" class="modal-content hidden">
+        <h2>(nb) by Ruben Berenguel, 2024-2026</h2>
+        <p>
+          <strong
+            ><a href="https://en.wikipedia.org/wiki/N-back">N-Back</a></strong
+          >
+          is a memory and attention training game. You must remember if the
+          current position and color match what you saw
+          <strong>N steps ago</strong>.
+        </p>
+        <hr />
+        <h3>Setup</h3>
+        <p>
+          <strong>Select level:</strong> Click any square (1-9) to set N-back
+          level
+        </p>
+        <p>
+          <strong>Toggle mode:</strong> Click the same square again to switch
+          between Dual (2) and Triple (3) modes
+        </p>
+        <p style="margin-left: 1rem; font-size: 0.9em; opacity: 0.9">
+          → Dual mode: Track 2 dimensions (position + color)<br />
+          → Triple mode: Track 3 dimensions (position + color + letter)
+        </p>
+        <p>
+          <strong>Start:</strong> Click the level number at top or anywhere in
+          the bottom
+        </p>
+        <hr />
+        <h3>Playing</h3>
+        <p>
+          <strong>Position:</strong> Press left edge if position matches N steps
+          ago
+        </p>
+        <p>
+          <strong>Color:</strong> Press right edge if color matches N steps ago
+        </p>
+        <p>
+          <strong>Letter (Triple):</strong> Press bottom if letter matches N
+          steps ago
+        </p>
+        <p>
+          Press again to toggle off. You can answer multiple dimensions per
+          round.
+        </p>
+        <hr />
+        <h3>Feedback</h3>
+        <p><strong>Green flash:</strong> Correct answer</p>
+        <p><strong>Red flash:</strong> Wrong answer</p>
+        <p>
+          <strong>Grey fill:</strong> Overall session progress (0-100 rounds)
+        </p>
+        <p>
+          <strong>Colorful fire fill:</strong> Perfect round streak (only
+          increases when all dimensions correct)
+        </p>
+        <p>
+          <strong>Click progress icon:</strong> View training calendar (when not
+          playing)
+        </p>
+        <hr />
+        <h3>Daily Sessions</h3>
+        <p>
+          <strong>Achievement icons:</strong> Each completed session (100
+          rounds) earns a random achievement icon displayed in the play area
+        </p>
+        <p>
+          <strong>Daily goal:</strong> Aim for 3+ sessions per day. Icons reset
+          daily to track today's progress
+        </p>
+        <hr />
+        <h3>Controls</h3>
+        <p><strong>Touch/mouse:</strong> Edges</p>
+        <p><strong>Keyboard:</strong> Z (position) / X (letter) / C (color)</p>
+        <p><strong>Space:</strong> Start game / Pause / Resume</p>
+        <p><strong>? key:</strong> Show this help</p>
+        <p><strong>Escape:</strong> Close any modal</p>
+        <p><strong>Restart:</strong> Click restart icon (↺) when paused</p>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+      </div>
+
+      <!-- Pause stats modal -->
+      <div id="modal-pause" class="modal-content hidden">
+        <h2>Current Session</h2>
+        <p style="margin-top: 1rem" id="pause-level">Level: 3-back (Dual)</p>
+        <p id="pause-rounds">Rounds: 42 / 100</p>
+        <p id="pause-overall">Overall: 0%</p>
+        <hr />
+        <p id="pause-position">Position: 40/42 (95%)</p>
+        <p id="pause-color">Color: 38/42 (90%)</p>
+        <p id="pause-letter" class="hidden">Letter: 35/42 (83%)</p>
+        <p id="pause-shape" class="hidden">Shape: 0/0 (0%)</p>
+        <hr />
+        <div id="pause-grid"></div>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+      </div>
+
+      <!-- Results modal -->
+      <div id="modal-results" class="modal-content hidden">
+        <h2>Game Over</h2>
+        <p id="results-level">Level: 3-back (Dual)</p>
+        <p id="results-rounds">Rounds: 100</p>
+        <p id="results-overall">Overall: 87%</p>
+        <hr />
+        <p id="results-position">Position: 90/100 (90%)</p>
+        <p id="results-color">Color: 85/100 (85%)</p>
+        <p id="results-letter" class="hidden">Letter: 86/100 (86%)</p>
+        <p id="results-shape" class="hidden">Shape: 0/0 (0%)</p>
+        <hr />
+        <div id="results-grid"></div>
+        <p id="results-suggestion">Consider advancing to a higher level</p>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+      </div>
+
+      <!-- History modal -->
+      <div id="modal-history" class="modal-content hidden">
+        <h2>Training Calendar</h2>
+        <div id="history-list">
+          <!-- Will be populated dynamically -->
+        </div>
+        <div class="modal-buttons">
+          <button
+            class="modal-icon-button"
+            id="export-sessions"
+            title="Export session data"
+          >
+            &#xe248;
+          </button>
+          <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+        </div>
+      </div>
+
+      <!-- Session detail modal -->
+      <div id="modal-session-detail" class="modal-content hidden">
+        <h2>Session Details</h2>
+        <p id="session-detail-date"></p>
+        <p id="session-detail-level"></p>
+        <p id="session-detail-overall"></p>
+        <hr />
+        <p id="session-detail-position"></p>
+        <p id="session-detail-color"></p>
+        <p id="session-detail-letter" class="hidden"></p>
+        <p id="session-detail-shape" class="hidden"></p>
+        <hr />
+        <div id="session-detail-grid"></div>
+        <div class="modal-buttons">
+          <button class="modal-icon-button" id="back-to-calendar">
+            &#xe5a4;
+          </button>
+          <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="nb.js"></script>
+
+    <!-- SVG Clip Paths for Rounded Shapes -->
+    <svg width="0" height="0" style="position: absolute">
+      <defs>
+        <!-- Shape 2: Triangle Up (Rounded) -->
+        <clipPath id="shape-triangle-up" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.5 0.05 Q0.5 0 0.55 0.1 L0.9 0.8 Q0.95 0.9 0.85 0.9 H0.15 Q0.05 0.9 0.1 0.8 L0.45 0.1 Q0.5 0 0.5 0.05 Z"
+          />
+        </clipPath>
+        <!-- Shape 3: Triangle Down (Rounded) -->
+        <clipPath id="shape-triangle-down" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.5 0.95 Q0.5 1 0.55 0.9 L0.9 0.2 Q0.95 0.1 0.85 0.1 H0.15 Q0.05 0.1 0.1 0.2 L0.45 0.9 Q0.5 1 0.5 0.95 Z"
+          />
+        </clipPath>
+        <!-- Shape 4: Diamond (Rounded) -->
+        <clipPath id="shape-diamond" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.5 0.05 L0.95 0.5 L0.5 0.95 L0.05 0.5 Z"
+            stroke-width="0.1"
+            stroke-linejoin="round"
+          />
+          <!-- Basic path, but we can't use stroke-linejoin on clipPath. Using curves. -->
+          <path
+            d="M0.5 0.02 L0.98 0.5 L0.5 0.98 L0.02 0.5 Z"
+            style="display: none"
+          />
+          <!-- Better path approximation -->
+          <path
+            d="M0.5 0.05 Q0.5 0 0.55 0.05 L0.95 0.45 Q1 0.5 0.95 0.55 L0.55 0.95 Q0.5 1 0.45 0.95 L0.05 0.55 Q0 0.5 0.05 0.45 L0.45 0.05 Q0.5 0 0.5 0.05 Z"
+          />
+        </clipPath>
+        <!-- Shape 5: Star (Rounded) -->
+        <clipPath id="shape-star" clipPathUnits="objectBoundingBox">
+          <!-- Adjusted to round outer points -->
+          <path
+            d="M0.5 0.05 Q0.5 0 0.55 0.15 L0.62 0.35 L0.85 0.38 Q0.95 0.4 0.88 0.5 L0.7 0.65 L0.75 0.9 Q0.78 1 0.65 0.9 L0.5 0.8 L0.35 0.9 Q0.22 1 0.25 0.9 L0.3 0.65 L0.12 0.5 Q0.05 0.4 0.15 0.38 L0.38 0.35 L0.45 0.15 Q0.5 0 0.5 0.05 Z"
+          />
+        </clipPath>
+        <!-- Shape 6: Trapezoid -->
+        <clipPath id="shape-trapezoid" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.25 0.05 L0.75 0.05 A0.05 0.05 0 0 1 0.8 0.1 L0.95 0.9 A0.05 0.05 0 0 1 0.9 0.95 H0.1 A0.05 0.05 0 0 1 0.05 0.9 L0.2 0.1 A0.05 0.05 0 0 1 0.25 0.05 Z"
+          />
+        </clipPath>
+        <!-- Shape 7: Pentagon (Rounded) -->
+        <clipPath id="shape-pentagon" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.5 0.05 Q0.5 0 0.6 0.1 L0.95 0.35 Q1 0.4 0.95 0.5 L0.8 0.9 Q0.75 1 0.65 0.95 H0.35 Q0.25 1 0.2 0.9 L0.05 0.5 Q0 0.4 0.05 0.35 L0.4 0.1 Q0.5 0 0.5 0.05 Z"
+          />
+        </clipPath>
+        <!-- Shape 8: Octagon -->
+        <clipPath id="shape-octagon" clipPathUnits="objectBoundingBox">
+          <path
+            d="M0.3 0.02 H0.7 L0.98 0.3 V0.7 L0.7 0.98 H0.3 L0.02 0.7 V0.3 Z"
+          />
+        </clipPath>
+      </defs>
+    </svg>
+    <script>
+      // Register service worker for PWA offline support
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((reg) => console.log("Service Worker registered"))
+            .catch((err) =>
+              console.log("Service Worker registration failed:", err),
+            );
+        });
+      }
+    </script>
+  </body>
+</html>

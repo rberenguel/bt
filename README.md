@@ -1,0 +1,46 @@
+# <img src="icon.png" alt="bt icon" width="32" height="32"> bt — Brain Training
+
+A monorepo of cognitive training PWAs, installable and fully offline. A hub at the root links all apps and aggregates session history.
+
+## Apps
+
+### [nb](./nb/)
+Visual-only [n-back task](https://en.wikipedia.org/wiki/N-back) with dual, triple, and quad modes (position, color, letter, shape). Most implementations use audio cues — this one is purely visual. Tracks position and color matches independently, with fire-particle progress feedback and milestone celebrations every 20 rounds.
+
+### [clauer](./clauer/)
+A stylish implementation of the [Symbol Digit Modalities Test](https://en.wikipedia.org/wiki/Symbol_Digit_Modalities_Test) (SDMT). A symbol-to-digit key is shown at the top; symbols appear one by one and you type the matching digit as fast as possible. Measures throughput (CPM), accuracy, stability (CV), and efficiency (IES).
+
+### [tanmateix](./tanmateix/)
+Fast-paced logic reasoning. Premises about entities and their relationships are shown; you judge whether the conclusion logically follows — True or False — before time runs out. Features linear, spatial, and syllogistic relation types. Difficulty adapts dynamically. Inspired by [Syllogimous-v3](https://github.com/soamsy/Syllogimous-v3). Uses [Tau Prolog](https://tau-prolog.org/) for logical inference.
+
+### [summum](./summum/)
+Arithmetic under pressure. A running sum is shown — tap True or False to confirm whether the latest total is correct. Pace tightens as you go. Measures accuracy and reaction pace across a fixed round set.
+
+### [stop](./stop/)
+[Stop Signal Task](https://en.wikipedia.org/wiki/Stop-signal_task). Arrows appear — tap the matching direction. When a triangle (▲) appears above the arrow, inhibit your response. Measures go accuracy, stop accuracy, average reaction time, and stop-signal delay (SSD), which adapts to keep inhibition at ~50%.
+
+## Structure
+
+```
+bt/
+├── index.html        # Hub — links all apps, cross-app streak, per-app history
+├── app.js            # Hub logic
+├── style.css         # Hub styles
+├── sw.js             # Root service worker (caches everything)
+├── get_cache.go      # Crawl tool to regenerate sw.js cache list
+├── shared/
+│   ├── fire.js       # Canvas fire particle system
+│   ├── haptic.js     # Haptic feedback
+│   ├── storage.js    # localStorage factory (makeStorage)
+│   ├── history.js    # Calendar + trend chart history UI (makeHistoryUI)
+│   └── fonts/        # Shared fonts (Inter, Phosphor, Monoid, …)
+├── nb/
+├── clauer/
+├── tanmateix/
+├── summum/
+└── stop/
+```
+
+## Offline
+
+Visiting the hub once caches all assets for all apps. Sub-apps (clauer, nb, tanmateix) also register their own service workers for independent offline use. After `go run get_cache.go`, paste the output into `sw.js` to update the cache manifest.

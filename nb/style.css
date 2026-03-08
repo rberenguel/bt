@@ -1,0 +1,1134 @@
+:root {
+  /* Colors */
+  --color1: #ffe119;
+  --color2: #4363f8;
+  --color3: #f58231;
+  --color4: #fcbeff;
+  --color5: #800000;
+  --color6: #009055;
+  --color7: #604530;
+  --color8: #696969;
+  --color9: #ffffff;
+
+  --sd-red: #dc322f;
+  --sd-green: #859900;
+  --dark: #2b3b4b;
+  --light: #ada693;
+  --light-2: #8d8673;
+  --background: var(--light-2);
+  --alternate-background: var(--light);
+  --text-color: black;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--background);
+  font-family: "Inter", sans-serif;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Main game container */
+#game-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Top bar with level and stats */
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 1rem;
+  font-size: 2rem;
+  color: var(--text-color);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+#level-display {
+  font-size: 3rem;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#level-display sub {
+  font-size: 50%;
+  vertical-align: sub;
+  line-height: 0;
+}
+
+#round-display {
+  font-size: 1.5rem;
+  min-width: 15%;
+  max-width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Brain progress indicator */
+#brain-progress {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 15%;
+  max-width: 15%;
+  margin-left: auto;
+}
+
+.brain-progress-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.brain-container {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+  font-family: "Phosphor-Light";
+  font-size: 5rem;
+  line-height: 1;
+}
+
+#fire-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  /* Optional: makes particles glow against the dark background */
+  mix-blend-mode: screen;
+}
+
+.brain-container.pop {
+  animation: brain-pop 0.6s ease-out;
+}
+
+@keyframes brain-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  80% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.brain-base {
+  color: var(--light);
+  opacity: 0.3;
+}
+
+/* Overall progress fill - solid grey */
+.brain-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #555;
+  clip-path: inset(var(--progress-inset, 100%) 0 0 0);
+  transition: clip-path 0.5s ease;
+}
+
+/* Fire/momentum fill - colorful gradient, only increases on perfect rounds */
+.brain-fire-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to top, #dc143c, #ff4500, #ffa500, #ffd700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  clip-path: inset(var(--fire-inset, 100%) 0 0 0);
+  transition:
+    clip-path 0.5s ease,
+    background 1s ease;
+  animation-play-state: running;
+}
+
+/* Progress text below brain */
+.progress-text {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* Grid container - centers the grid */
+#grid-container {
+  /*flex: 1;*/
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-top: 5rem;
+  position: relative;
+}
+
+#fillup {
+  width: 100%;
+  flex: 1;
+  position: relative;
+}
+
+/* Session stars container */
+#session-stars {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  pointer-events: none;
+}
+
+@keyframes starGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.session-star {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-family: "Phosphor-Light";
+  font-size: 2rem;
+  background-image: linear-gradient(
+    90deg,
+    #ff8c00,
+    #ffa500,
+    #ffb733,
+    #ffd700,
+    #ffb733,
+    #ffa500,
+    #ff8c00
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  animation: starGradientShift 3s linear infinite alternate;
+}
+
+.session-star:hover {
+  opacity: 1;
+}
+
+/* 3x3 grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.5rem;
+  max-width: min(82vw, 70vh);
+  max-height: min(82vw, 70vh);
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+/* Individual squares */
+.square {
+  background-color: var(--alternate-background);
+  border-radius: 1rem;
+  cursor: pointer;
+  position: relative;
+  padding: 3rem;
+}
+
+.square:active {
+  transform: scale(0.95);
+}
+
+.square.was-active {
+  animation: shake 0.15s ease-in-out;
+}
+
+/* Timer border using pseudo-element */
+.square.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background-color: var(--active-color);
+  animation: timer-countdown var(--timer-duration) linear forwards;
+  z-index: 0;
+  clip-path: inherit;
+}
+
+@keyframes timer-countdown {
+  from {
+    inset: 43%;
+  }
+  to {
+    inset: 0;
+  }
+}
+
+/* Shapes for Quad Mode */
+/* Shapes for Quad Mode */
+.shape-0 {
+  clip-path: inset(0% 0% 0% 0% round 1rem);
+} /* Square (Rounded) */
+.shape-1 {
+  clip-path: circle(50% at 50% 50%);
+} /* Circle */
+.shape-2 {
+  clip-path: url(#shape-triangle-up);
+} /* Triangle Up */
+.shape-3 {
+  clip-path: url(#shape-triangle-down);
+} /* Triangle Down */
+.shape-4 {
+  clip-path: url(#shape-diamond);
+} /* Diamond */
+.shape-5 {
+  clip-path: url(#shape-star);
+} /* Star */
+.shape-6 {
+  clip-path: url(#shape-trapezoid);
+} /* Trapezoid */
+.shape-7 {
+  clip-path: url(#shape-pentagon);
+} /* Pentagon */
+.shape-8 {
+  clip-path: url(#shape-octagon);
+} /* Octagon */
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-3px, -2px);
+  }
+  20% {
+    transform: translate(3px, 2px);
+  }
+  30% {
+    transform: translate(-3px, 2px);
+  }
+  40% {
+    transform: translate(3px, -2px);
+  }
+  50% {
+    transform: translate(-3px, -2px);
+  }
+  60% {
+    transform: translate(3px, 2px);
+  }
+  70% {
+    transform: translate(-3px, 1px);
+  }
+  80% {
+    transform: translate(2px, -1px);
+  }
+  90% {
+    transform: translate(-1px, 1px);
+  }
+}
+
+.square-inner {
+  width: 100%;
+  height: 100%;
+  background-color: var(--alternate-background);
+  border-radius: 0.75rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--text-color);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.square.active .square-inner {
+  background-color: transparent;
+}
+
+/* Letter circle container */
+.letter-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: rgba(141, 134, 115, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--active-color);
+  z-index: 10;
+  /*box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);*/
+}
+
+/* Active square styling */
+.square.active .square-inner {
+  background-color: var(--active-color);
+  transition: background-color 0.3s ease;
+}
+
+/* Side buttons */
+.side-button {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 50;
+  transition: background-color 0.2s ease;
+}
+
+.side-button:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Feedback bar - full height vertical slice at screen edge */
+.side-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+#button-left::before {
+  left: 0;
+}
+
+#button-right::before {
+  right: 0;
+}
+
+.side-button.pressed::before {
+  background-color: var(--dark);
+}
+
+.side-button.correct::before {
+  background-color: var(--sd-green);
+}
+
+.side-button.incorrect::before {
+  background-color: var(--sd-red);
+}
+
+.side-button.pressed span {
+  color: var(--light);
+  opacity: 1;
+}
+
+.side-button.correct span,
+.side-button.incorrect span {
+  color: white;
+  opacity: 1;
+}
+
+#button-left {
+  left: 0;
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+}
+
+#button-left span {
+  position: absolute;
+  left: 0.1rem;
+}
+
+#button-right {
+  right: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+#button-right span {
+  position: absolute;
+  right: 0.1rem;
+}
+
+.side-button span {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  letter-spacing: 0.15rem;
+  opacity: 0;
+  font-weight: 300;
+  /*padding: 0.5rem 0.25rem;*/
+  transition: opacity 0.3s ease;
+}
+
+/* Bottom button */
+.bottom-button {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%; /* Increased from 15% to 30% */
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 60; /* Increased to cover side buttons */
+  transition: background-color 0.2s ease;
+}
+
+.bottom-button:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Feedback bar - horizontal slice at bottom */
+.bottom-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+.bottom-button.pressed::before {
+  background-color: var(--dark);
+}
+
+.bottom-button.correct::before {
+  background-color: var(--sd-green);
+}
+
+.bottom-button.incorrect::before {
+  background-color: var(--sd-red);
+}
+
+.bottom-button.pressed span {
+  color: var(--light);
+  opacity: 1;
+}
+
+.bottom-button.correct span,
+.bottom-button.incorrect span {
+  color: white;
+  opacity: 1;
+}
+
+.bottom-button span {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  letter-spacing: 0.2rem;
+  opacity: 0;
+  font-weight: 300;
+  padding: 0.5rem 1rem;
+  transition: opacity 0.3s ease;
+}
+
+/* Bottom Split Buttons (Quad Mode) */
+.bottom-split-button {
+  position: fixed;
+  bottom: 0;
+  height: 25%; /* Reduced from 35% to 25% */
+  width: 50%; /* Increased from 25% */
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 60; /* Higher than side buttons (50) */
+  transition: background-color 0.2s ease;
+}
+
+/* ... keep other styles ... */
+
+.bottom-split-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+/* ... keep intervening styles ... */
+
+#button-bottom-left {
+  left: 0; /* Align to left edge */
+  padding-right: 2rem; /* Visual separation from center */
+}
+
+#button-bottom-right {
+  right: 0; /* Align to right edge */
+  left: auto; /* Override previous left positioning */
+  padding-left: 2rem; /* Visual separation from center */
+}
+
+/* Pause button (middle area) */
+.pause-button {
+  position: fixed;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  bottom: 15%;
+  cursor: pointer;
+  z-index: 40;
+}
+
+/* Modal */
+#modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+#modal a {
+  color: darkgreen;
+}
+
+#modal .modal-content {
+  pointer-events: auto;
+}
+
+.modal-content {
+  background-color: var(--background);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--dark);
+  max-width: 95%;
+  max-height: 95%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 1rem;
+  color: var(--text-color);
+  font-family: "Monoid", monospace;
+}
+
+.modal-content p {
+  margin-top: 1rem;
+}
+
+.modal-content h2 {
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 1rem;
+}
+
+.modal-content hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid var(--text-color);
+}
+
+.modal-icon-button {
+  margin-top: 1.5rem;
+  background: none;
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
+  font-family: "Phosphor-Light";
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background 0.2s ease;
+  opacity: 0.8;
+}
+
+.modal-icon-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+.modal-icon-button:active {
+  transform: scale(0.95);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.modal-buttons .modal-icon-button {
+  margin-top: 0;
+}
+
+#results-suggestion {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+#history-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Fixed-height modals so layout doesn't shift with content */
+#modal-history,
+#modal-pause {
+  height: 90%;
+}
+
+#modal-history {
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+}
+
+#modal-history #history-list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+/* Calendar view styles */
+.calendar-streak {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.03rem;
+}
+
+.streak-icon {
+  font-family: "Phosphor-Light";
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--text-color);
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.calendar-nav {
+  background: none;
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  font-family: "Monoid", monospace;
+}
+
+.calendar-nav:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.calendar-nav:active {
+  transform: scale(0.95);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  font-size: 0.85rem;
+  padding: 0.25rem;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.has-sessions {
+  background: rgba(34, 197, 94, 0.2);
+  cursor: pointer;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.calendar-day.has-sessions:hover {
+  background: rgba(34, 197, 94, 0.3);
+  transform: scale(1.05);
+}
+
+.calendar-day.today {
+  border: 2px solid var(--text-color);
+  font-weight: 600;
+}
+
+.calendar-day.today.has-sessions {
+  border: 2px solid rgba(34, 197, 94, 0.8);
+}
+
+.calendar-day-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.session-indicator {
+  font-size: 0.6rem;
+  opacity: 0.8;
+  font-weight: 600;
+  color: #333;
+  line-height: 1;
+}
+
+/* Day details panel */
+.day-details {
+  border-top: 1px solid var(--text-color);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.day-details.hidden {
+  display: none;
+}
+
+.day-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.day-details-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.close-details {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.close-details:hover {
+  opacity: 1;
+}
+
+.day-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.session-card {
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.session-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.session-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-info {
+  flex: 1;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.session-time {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.session-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+/* Mini progress grid (20x20 pixels) */
+.mini-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 0;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.mini-cell {
+  width: 2px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.mini-cell.empty {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mini-cell.all-correct {
+  background: #22c55e;
+}
+
+.mini-cell.partial {
+  background: #eab308;
+}
+
+.mini-cell.incorrect {
+  background: #ef4444;
+}
+
+.mini-grid-placeholder {
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+/* Custom scrollbar for modal */
+.modal-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--alternate-background);
+  border-radius: 0.5rem;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--dark);
+  border-radius: 0.5rem;
+  border: 2px solid var(--alternate-background);
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
+}
+
+/* Firefox scrollbar styling */
+.modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dark) var(--alternate-background);
+}
+
+/* Progress grid (10x10 matrix showing per-round results) */
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.grid-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.grid-cell.empty {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cell-bar {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .modal-content {
+    max-width: 600px;
+  }
+
+  .side-button span,
+  .bottom-button span {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop: narrower side buttons */
+  .side-button {
+    width: 20%;
+  }
+
+  .bottom-button {
+    left: 20%;
+    right: 20%;
+  }
+
+  .pause-button {
+    left: 20%;
+    right: 20%;
+  }
+
+  .grid {
+    max-width: min(70vw, 65vh);
+    max-height: min(70vw, 65vh);
+  }
+
+  .square {
+    padding: 6rem;
+  }
+
+  /* Hover states for desktop */
+  .side-button:hover,
+  .bottom-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .square:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Mobile: tighter modal and smaller calendar typography */
+@media (max-width: 767px) {
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .calendar-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .calendar-grid {
+    gap: 0.15rem;
+  }
+
+  .calendar-day {
+    padding: 0.15rem;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 600px) {
+  #top-bar {
+    padding: 0.5rem 1rem;
+    font-size: 1.5rem;
+  }
+
+  #level-display {
+    font-size: 2rem;
+  }
+
+  .grid {
+    max-width: min(60vw, 70vh);
+    max-height: min(60vw, 70vh);
+  }
+}

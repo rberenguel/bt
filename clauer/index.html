@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Clauer</title>
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="../shared/fonts/iconoir/iconoir.css" />
+    <link rel="stylesheet" href="../shared/fonts/iconoir/iconoir-font.css" />
+    <link rel="stylesheet" href="../shared/fonts/inter.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#23272e" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="start-screen">
+        <div id="icon-preview-grid" class="preview-grid-gradient"></div>
+        <div class="start-buttons-container">
+          <button id="start-btn">Start</button>
+          <button id="stats-btn" aria-label="Stats" class="icon-btn"><span class="iconoir iconoir-calendar"></span></button>
+          <button id="help-btn" aria-label="Help">?</button>
+        </div>
+        <div id="update-banner" class="hidden">
+           Update available — <a href="#" id="update-link">reload</a>
+        </div>
+        <div class="game-parameters">
+          <div class="param-control">
+            <label>Total Items</label>
+            <div class="param-input-group">
+              <button
+                class="param-btn"
+                data-param="totalItems"
+                data-step="-1"
+                aria-label="Decrease Total Items"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                inputmode="numeric"
+                id="total-items-value"
+                class="param-value"
+                data-param="totalItems"
+              />
+              <button
+                class="param-btn"
+                data-param="totalItems"
+                data-step="1"
+                aria-label="Increase Total Items"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div class="param-control">
+            <label>Key Size</label>
+            <div class="param-input-group">
+              <button
+                class="param-btn"
+                data-param="keySize"
+                data-step="-1"
+                aria-label="Decrease Key Size"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                inputmode="numeric"
+                id="key-size-value"
+                class="param-value"
+                data-param="keySize"
+              />
+              <button
+                class="param-btn"
+                data-param="keySize"
+                data-step="1"
+                aria-label="Increase Key Size"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div class="param-control">
+            <label>Batch Size</label>
+            <div class="param-input-group">
+              <button
+                class="param-btn"
+                data-param="batchSize"
+                data-step="-1"
+                aria-label="Decrease Batch Size"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                inputmode="numeric"
+                id="batch-size-value"
+                class="param-value"
+                data-param="batchSize"
+              />
+              <button
+                class="param-btn"
+                data-param="batchSize"
+                data-step="1"
+                aria-label="Increase Batch Size"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-toggles">
+          <div class="toggle-container">
+            <label class="toggle-switch">
+              <input type="checkbox" switch id="hard-mode-toggle" />
+              <span class="slider round"></span>
+            </label>
+            <label for="hard-mode-toggle" class="toggle-text-label"
+              >Hard Mode</label
+            >
+          </div>
+          <div class="toggle-container">
+            <label class="toggle-switch">
+              <input type="checkbox" switch id="shuffle-mode-toggle" checked />
+              <span class="slider round"></span>
+            </label>
+            <label for="shuffle-mode-toggle" class="toggle-text-label"
+              >Shuffle Key</label
+            >
+          </div>
+          <div class="toggle-container">
+            <label class="toggle-switch">
+              <input type="checkbox" switch id="memorize-mode-toggle" />
+              <span class="slider round"></span>
+            </label>
+            <label for="memorize-mode-toggle" class="toggle-text-label"
+              >Memorize Key</label
+            >
+          </div>
+        </div>
+      </div>
+
+      <div id="game-screen" class="hidden">
+        <div id="batch-progress"></div>
+        <div id="sequence-display" class="grid"></div>
+        <div id="number-pad" class="grid"></div>
+        <div id="pause-button-container">
+          <button id="pause-btn">
+            <span class="iconoir iconoir-pause"></span>
+          </button>
+        </div>
+        <div id="key-display-wrapper">
+          <svg id="key-timer" class="hidden">
+            <rect width="100%" height="100%"></rect>
+          </svg>
+          <div id="key-display" class="grid"></div>
+        </div>
+      </div>
+
+      <div id="results-screen" class="hidden">
+        <div class="results-header">
+          <h2>Results</h2>
+          <button
+            id="results-help-btn"
+            class="help-btn-small"
+            aria-label="Help"
+          >
+            ?
+          </button>
+        </div>
+        <p id="time-result"></p>
+        <p id="accuracy-result"></p>
+
+        <div id="results-table-container"></div>
+        <div id="recovery-graph-container"></div>
+
+        <div id="play-again-controls">
+          <div class="results-buttons">
+            <button id="copy-btn">Copy as Markdown</button>
+            <button id="restart-btn">Play Again</button>
+          </div>
+          <div class="game-parameters">
+            <div class="param-control">
+              <label>Total Items</label>
+              <div class="param-input-group">
+                <button
+                  class="param-btn"
+                  data-param="totalItems"
+                  data-step="-1"
+                  aria-label="Decrease Total Items"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  id="total-items-value-results"
+                  class="param-value"
+                  data-param="totalItems"
+                />
+                <button
+                  class="param-btn"
+                  data-param="totalItems"
+                  data-step="1"
+                  aria-label="Increase Total Items"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div class="param-control">
+              <label>Key Size</label>
+              <div class="param-input-group">
+                <button
+                  class="param-btn"
+                  data-param="keySize"
+                  data-step="-1"
+                  aria-label="Decrease Key Size"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  id="key-size-value-results"
+                  class="param-value"
+                  data-param="keySize"
+                />
+                <button
+                  class="param-btn"
+                  data-param="keySize"
+                  data-step="1"
+                  aria-label="Increase Key Size"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div class="param-control">
+              <label>Batch Size</label>
+              <div class="param-input-group">
+                <button
+                  class="param-btn"
+                  data-param="batchSize"
+                  data-step="-1"
+                  aria-label="Decrease Batch Size"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  id="batch-size-value-results"
+                  class="param-value"
+                  data-param="batchSize"
+                />
+                <button
+                  class="param-btn"
+                  data-param="batchSize"
+                  data-step="1"
+                  aria-label="Increase Batch Size"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="settings-toggles">
+            <div class="toggle-container">
+              <label class="toggle-switch">
+                <input type="checkbox" switch id="hard-mode-toggle-results" />
+                <span class="slider round"></span>
+              </label>
+              <label for="hard-mode-toggle-results" class="toggle-text-label"
+                >Hard Mode</label
+              >
+            </div>
+            <div class="toggle-container">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  switch
+                  id="shuffle-mode-toggle-results"
+                  checked
+                />
+                <span class="slider round"></span>
+              </label>
+              <label for="shuffle-mode-toggle-results" class="toggle-text-label"
+                >Shuffle Key</label
+              >
+            </div>
+            <div class="toggle-container">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  switch
+                  id="memorize-mode-toggle-results"
+                />
+                <span class="slider round"></span>
+              </label>
+              <label
+                for="memorize-mode-toggle-results"
+                class="toggle-text-label"
+                >Memorize Key</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pause-modal" class="modal-overlay">
+        <div class="modal-content">
+          <h2 class="with-version">Clauer {{version}}</h2>
+          <h3>Paused</h3>
+          <div id="pause-game-details"></div>
+          <button id="resume-btn">Resume</button>
+        </div>
+      </div>
+
+      <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+          <h2 class="with-version">Clauer {{version}}</h2>
+          <p>
+            These are variations on the Symbol Digit Modalities Test (SDMT), a
+            neuropsychological test of processing speed, attention, and visual
+            scanning. With a hidden key it also stresses working memory.
+          </p>
+          <p>Match the symbols as quickly and accurately as you can.</p>
+          <hr />
+          <dl class="help-modes">
+            <dt>Hard Mode</dt>
+            <dd>
+              The key changes completely every batch (e.g., every 10 items).
+            </dd>
+            <dt>Shuffle Key</dt>
+            <dd>The key's values are shuffled every batch.</dd>
+            <dt>Memorize Key</dt>
+            <dd>
+              The key is hidden during play. You have 9 seconds to memorize it
+              at the start of each batch.
+            </dd>
+          </dl>
+          <hr />
+          <dl class="help-modes">
+            <dt>CPM (Correct/Min)</dt>
+            <dd>Throughput. <strong>Higher is better.</strong></dd>
+            <dt>CV (Stability)</dt>
+            <dd>
+              Consistency. <strong>Lower is better</strong> (0% is perfect
+              stability).
+            </dd>
+            <dt>Switch Cost</dt>
+            <dd>
+              Time lost when rule changes. <strong>Lower is better.</strong>
+            </dd>
+            <dt>IES (Efficiency)</dt>
+            <dd>
+              Speed adjusted for errors. <strong>Lower is better.</strong>
+            </dd>
+          </dl>
+          <button id="close-help-btn">Close</button>
+        </div>
+      </div>
+
+      <!-- History Modal (Calendar View) -->
+      <div id="history-modal" class="modal-overlay">
+        <div class="modal-content">
+          <h2>History</h2>
+          <div id="history-list">
+            <!-- Calendar grid will be generated here -->
+          </div>
+          <button id="close-history-btn">Close</button>
+        </div>
+      </div>
+    <script type="module" src="js/main.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("./sw.js").then(
+            function (registration) {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope,
+              );
+
+              function showUpdateBanner() {
+                document.getElementById("update-banner").classList.remove("hidden");
+              }
+
+              function promptUpdate(worker) {
+                showUpdateBanner();
+                document.getElementById("update-link").addEventListener("click", function (e) {
+                  e.preventDefault();
+                  worker.postMessage({ type: "SKIP_WAITING" });
+                });
+              }
+
+              // A new SW is already waiting (e.g. page was open during last update)
+              if (registration.waiting) {
+                promptUpdate(registration.waiting);
+              }
+
+              registration.addEventListener("updatefound", function () {
+                var newWorker = registration.installing;
+                newWorker.addEventListener("statechange", function () {
+                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    promptUpdate(newWorker);
+                  }
+                });
+              });
+
+              // Reload once the new SW takes control
+              navigator.serviceWorker.addEventListener("controllerchange", function () {
+                window.location.reload();
+              });
+            },
+            function (err) {
+              console.log("ServiceWorker registration failed: ", err);
+            },
+          );
+        });
+      } else {
+        console.info("Service workers not available on this device");
+      }
+    </script>
+  </body>
+</html>

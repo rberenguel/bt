@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spatial Verification Test</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #0a0a0a;
+        color: #00ff00;
+      }
+      h1 {
+        color: #00ff00;
+        border-bottom: 2px solid #00ff00;
+        padding-bottom: 10px;
+      }
+      button {
+        background: #00ff00;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px 5px;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+      }
+      button:hover {
+        background: #00cc00;
+      }
+      pre {
+        background: #000;
+        padding: 15px;
+        border-left: 3px solid #00ff00;
+        overflow-x: auto;
+      }
+      .success {
+        color: #00ff00;
+      }
+      .error {
+        color: #ff0000;
+      }
+      .warning {
+        color: #ffaa00;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔬 Spatial Verification System Test</h1>
+    <p>Testing Prolog-based verification of spatial questions</p>
+
+    <button onclick="testVerification()">Run Verification Test</button>
+    <button onclick="generateAndVerify()">Generate & Verify Question</button>
+
+    <pre id="output">Click a button to start...</pre>
+
+    <!-- Load Tau Prolog -->
+    <script src="../lib/tau-prolog-core.js"></script>
+
+    <script type="module">
+      import { PathBasedQuestionGenerator } from "../generators/PathBasedQuestionGenerator.js";
+      import { RandomUtils } from "../utils/RandomUtils.js";
+      import { EntityFactory } from "../utils/EntityFactory.js";
+
+      const out = document.getElementById("output");
+      function log(msg, type = "") {
+        const className = type ? ` class="${type}"` : "";
+        out.innerHTML += `<div${className}>${msg}</div>`;
+      }
+      function clear() {
+        out.innerHTML = "";
+      }
+
+      // Setup generator
+      const random = new RandomUtils();
+      const entityFactory = new EntityFactory(
+        { useNonsenseWords: true },
+        random,
+      );
+      const generator = new PathBasedQuestionGenerator({
+        entityFactory,
+        random,
+      });
+
+      // Wait for verifier to initialize
+      setTimeout(() => {
+        log("✓ Ready to test", "success");
+      }, 1000);
+
+      window.testVerification = async function () {
+        clear();
+        log("=== Testing Spatial Verification System ===\n");
+        log("Generating spatial question...\n");
+
+        try {
+          const question = await generator.generateSpatialGraphQuestion(3);
+          log("✓ Question generated successfully", "success");
+          console.log(question);
+          log(`\n  Premises: ${question.premises.length}`);
+          log(
+            `  Question Type: ${question.isValid ? "TRUE (conclusion follows from premises)" : "FALSE (conclusion contradicts premises)"}`,
+          );
+          log(
+            `  Correct Answer: ${question.isValid ? "TRUE" : "FALSE"}`,
+            question.isValid ? "success" : "warning",
+          );
+          log(
+            "\n✓ Prolog verified the question is logically consistent",
+            "success",
+          );
+          log("\nCheck console for detailed verification logs", "warning");
+        } catch (error) {
+          log(`✗ Error: ${error.message}`, "error");
+          console.error(error);
+        }
+      };
+
+      window.generateAndVerify = async function () {
+        clear();
+        log("=== Generate & Verify Multiple Questions ===\n");
+        log("Generating 10 questions and verifying each with Prolog...\n");
+
+        let passed = 0;
+        let failed = 0;
+        let trueQuestions = 0;
+        let falseQuestions = 0;
+
+        for (let i = 0; i < 10; i++) {
+          try {
+            const question = await generator.generateSpatialGraphQuestion(3);
+            passed++;
+            if (question.isValid) {
+              trueQuestions++;
+            } else {
+              falseQuestions++;
+            }
+            log(
+              `  ${i + 1}. ✓ Generated ${question.isValid ? "TRUE" : "FALSE"} question - verified OK`,
+              "success",
+            );
+          } catch (error) {
+            failed++;
+            log(`  ${i + 1}. ✗ FAILED verification - BUG DETECTED!`, "error");
+            console.error(error);
+          }
+        }
+
+        log(`\n=== Results ===`);
+        log(`✓ Verified: ${passed}/10 questions`, "success");
+        log(`  - TRUE questions (conclusion valid): ${trueQuestions}`);
+        log(`  - FALSE questions (conclusion invalid): ${falseQuestions}`);
+        if (failed > 0) {
+          log(`\n✗ Failed: ${failed}`, "error");
+          log(
+            "Verification caught bugs in the generator! Check console for details.",
+            "error",
+          );
+        } else {
+          log("\n✓ All questions are logically consistent!", "success");
+          log("The generator is working correctly.", "success");
+        }
+      };
+    </script>
+  </body>
+</html>

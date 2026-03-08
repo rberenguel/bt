@@ -1,0 +1,349 @@
+/* ── Reset & base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #000000;
+  --surface: #252525;
+  --border: #333;
+  --text: #f0f0f0;
+  --muted: #888;
+  --radius: 12px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ───────────────────────────────────────────────────── */
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+#streak {
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* ── App grid ─────────────────────────────────────────────────── */
+#app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.app-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+.app-link:hover { background: rgba(255,255,255,0.03); }
+
+.app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.app-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--text);
+}
+
+.app-last {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.app-last.muted { opacity: 0.5; }
+
+.app-week {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.app-metric {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 0.4rem;
+  color: var(--text);
+}
+
+.stats-btn {
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 0 0.85rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.stats-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.stats-btn:active { background: rgba(255,255,255,0.1); }
+
+/* ── History modal ────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.2s;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-content {
+  background: var(--surface);
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.25rem 1rem 2rem;
+}
+
+#history-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+#close-history-btn {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem;
+  background: #333;
+  border: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+#close-history-btn:hover { background: #444; }
+
+/* ── Calendar (shared/history.js output) ─────────────────────── */
+.calendar-streak {
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.calendar-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.calendar-nav {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.calendar-nav:hover { background: rgba(255,255,255,0.07); }
+.calendar-nav:active { background: rgba(255,255,255,0.14); }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 1rem;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--muted);
+  padding: 2px 0;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  position: relative;
+  cursor: default;
+}
+.calendar-day.empty { background: transparent; }
+.calendar-day.has-sessions {
+  background: rgba(255,255,255,0.08);
+  cursor: pointer;
+}
+.calendar-day.has-sessions:hover { background: rgba(255,255,255,0.14); }
+.calendar-day.today { outline: 1px solid var(--muted); }
+
+.calendar-day-number { font-size: 0.7rem; }
+
+.session-indicator {
+  font-size: 0.55rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* ── Day details ─────────────────────────────────────────────── */
+.day-details { margin-top: 0.75rem; }
+.day-details.hidden { display: none; }
+
+.day-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.day-details-header h3 { font-size: 0.85rem; font-weight: 600; }
+
+.close-details {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.close-details:hover { background: rgba(255,255,255,0.07); }
+
+.day-sessions { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.session-card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 7px;
+  padding: 0.5rem 0.65rem;
+}
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+.session-time { color: var(--muted); font-size: 0.75rem; }
+.session-stats {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ── Trend charts ─────────────────────────────────────────────── */
+.history-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.trend-chart { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.trend-label { font-size: 0.75rem; color: var(--muted); }
+.trend-label strong { color: var(--text); }
+
+.trend-best {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.trend-best svg { width: 12px; height: 12px; }
+
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+}
+
+.trend-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: #444;
+  position: relative;
+  cursor: pointer;
+  min-height: 4px;
+}
+.trend-bar:focus { outline: none; }
+.trend-bar.high { background: #2a9d8f; }
+.trend-bar.low  { background: #e63946; }
+
+.trend-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: var(--text);
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+.trend-bar:hover .trend-tooltip,
+.trend-bar:focus .trend-tooltip { display: block; }
