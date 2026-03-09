@@ -64,55 +64,40 @@ export class PathBasedQuestionGenerator {
     const network = new PremiseNetwork();
     entities.forEach((e) => network.addEntity(e));
 
-    // Available relation types (optionally forced to a single type)
-    let availableRelationTypes;
+    // Pool of once-only types: consumed when picked, Linear always available.
+    let oncePool;
     if (forceRelationType === "Syllogistic" && entitiesPerPath >= 3) {
-      availableRelationTypes = [new SyllogisticRelationType()];
+      oncePool = null; // forced — handled per-path below
     } else if (forceRelationType === "Linear") {
-      availableRelationTypes = [new LinearRelationType()];
+      oncePool = null;
     } else if (forceRelationType === "Spatial") {
-      availableRelationTypes = [new SpatialRelationType(2)];
+      oncePool = null;
     } else {
-      availableRelationTypes = [
-        new LinearRelationType(),
-        new SpatialRelationType(2),
-        // Syllogistic requires at least 3 entities (2 premises) to produce transitive conclusions
-        ...(entitiesPerPath >= 3 ? [new SyllogisticRelationType()] : []),
-      ];
+      oncePool = [new SpatialRelationType(2)];
+      if (entitiesPerPath >= 3) oncePool.push(new SyllogisticRelationType());
     }
-
-    // Track used relation types to avoid duplicates
-    const usedTypes = new Set();
 
     for (let i = 0; i < numPaths; i++) {
       // All paths use the same entities: [A, B, C]
       const pathEntities = entities;
 
-      // Pick a unique relationship type for this path if possible
       let relationType;
-      if (usedTypes.size < availableRelationTypes.length) {
-        // Pick from unused types
-        const unusedTypes = availableRelationTypes.filter(
-          (rt) => !usedTypes.has(rt.name),
-        );
-        relationType = this.random.pickRandom(unusedTypes);
+      if (forceRelationType === "Syllogistic" && entitiesPerPath >= 3) {
+        relationType = new SyllogisticRelationType();
+      } else if (forceRelationType === "Linear") {
+        relationType = new LinearRelationType();
+      } else if (forceRelationType === "Spatial") {
+        relationType = new SpatialRelationType(2);
       } else {
-        // All types used, create new instances
-        relationType = this.random.pickRandom(
-          availableRelationTypes.map((rt) => {
-            if (rt instanceof LinearRelationType)
-              return new LinearRelationType();
-            if (rt instanceof SpatialRelationType)
-              return new SpatialRelationType(2);
-            if (rt instanceof CategoricalRelationType)
-              return new CategoricalRelationType();
-            if (rt instanceof SyllogisticRelationType)
-              return new SyllogisticRelationType();
-          }),
+        // Pick from Linear + whatever once-types remain
+        const candidates = [new LinearRelationType(), ...oncePool];
+        relationType = this.random.pickRandom(candidates);
+        // If a once-type was picked, remove it from the pool
+        const onceIdx = oncePool.findIndex(
+          (rt) => rt.name === relationType.name,
         );
+        if (onceIdx !== -1) oncePool.splice(onceIdx, 1);
       }
-
-      usedTypes.add(relationType.name);
 
       // Generate path
       const path = this.createPath(pathEntities, relationType);

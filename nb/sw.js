@@ -1,4 +1,4 @@
-const CACHE_NAME = "nb-cache-v0.7.2";
+const CACHE_NAME = "nb-cache-v0.7.3";
 const CACHE_FILES = [
   "../shared/fire.js",
   "./fireworks.js",

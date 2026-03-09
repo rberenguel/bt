@@ -1,4 +1,4 @@
-const CACHE_NAME = "tanmateix-cache-v0.9.2";
+const CACHE_NAME = "tanmateix-cache-v0.9.3";
 const CACHE_FILES = [
   "./favicon.ico",
   "../shared/fonts/phosphor/phosphor.css",

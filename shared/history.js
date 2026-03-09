@@ -39,19 +39,21 @@ export function makeHistoryUI({
   const getTitle = sessionTitle || ((_, i) => "Session " + (i + 1));
 
   function open() {
-    currentSessions = getHistory();
     currentViewDate = new Date();
     const listEl = document.getElementById(listElId);
     const modalEl = document.getElementById(modalElId);
 
-    if (currentSessions.length === 0) {
-      listEl.innerHTML =
-        "<p style='text-align:center; opacity:0.7; margin-top:2rem;'>No history yet. Play a game!</p>";
+    Promise.resolve(getHistory()).then((sessions) => {
+      currentSessions = sessions;
+      if (currentSessions.length === 0) {
+        listEl.innerHTML =
+          "<p style='text-align:center; opacity:0.7; margin-top:2rem;'>No history yet. Play a game!</p>";
+        doOpenModal(modalEl);
+        return;
+      }
+      renderCalendar(currentSessions);
       doOpenModal(modalEl);
-      return;
-    }
-    renderCalendar(currentSessions);
-    doOpenModal(modalEl);
+    });
   }
 
   function computeStreak(sessions) {

@@ -1,5 +1,6 @@
 import { makeHistoryUI } from "./shared/history.js";
-import { get } from "./nb/lib/idb-keyval.js";
+import { makeStorage } from "./shared/storage.js";
+import { get } from "./shared/idb-keyval.js";
 
 // ── App registry ──────────────────────────────────────────────────────────────
 
@@ -133,16 +134,6 @@ const APPS = [
 ];
 
 // ── Data loading ──────────────────────────────────────────────────────────────
-
-function readLocalStorage(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    const arr = raw ? JSON.parse(raw) : [];
-    return arr.sort((a, b) => a.timestamp - b.timestamp);
-  } catch {
-    return [];
-  }
-}
 
 async function loadNbSessions() {
   try {
@@ -308,15 +299,17 @@ async function init() {
   // Load all session data
   const nbSessions = await loadNbSessions();
 
-  const appData = APPS.map((app) => ({
-    app,
-    sessions:
-      app.id === "nb"
-        ? nbSessions
-        : app.storageKey
-          ? readLocalStorage(app.storageKey)
-          : [],
-  }));
+  const appData = await Promise.all(
+    APPS.map(async (app) => ({
+      app,
+      sessions:
+        app.id === "nb"
+          ? nbSessions
+          : app.storageKey
+            ? await makeStorage(app.storageKey).getHistory()
+            : [],
+    })),
+  );
 
   // Cross-app streak
   const daySets = appData.map(({ sessions }) => daysWithSessions(sessions));

@@ -12,6 +12,7 @@ export function saveSession(data) {
       accuracy: data.accuracy,
       maxStreak: data.maxStreak,
       finalLevel: data.finalLevel,
+      total: data.total,
     },
   });
 }
