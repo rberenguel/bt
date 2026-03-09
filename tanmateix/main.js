@@ -308,6 +308,9 @@ window.tanmateix = {
 
 // Generate and display question
 async function newQuestion() {
+  // Reset entity factory so icon pool doesn't exhaust across questions
+  entityFactory.reset();
+
   // Use difficulty settings
   const { numPaths, entitiesPerPath, level } = gameState.difficulty;
 

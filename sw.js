@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Sub-app sw.js files are added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.1.2";
+const CACHE_NAME = "bt-hub-v0.1.3";
 const CACHE_FILES = [
   "./app.js",
   "./clauer/icon.png",
