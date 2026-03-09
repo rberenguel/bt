@@ -69,9 +69,17 @@ const APPS = [
     color: "#9b5de5",
     storageKey: "tanmateix_history",
     keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    filterDisplay: (s) => s.metrics.total !== undefined,
     metricDefs: [
       { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
-      { key: "score", label: "Score", unit: "/50", invertColor: false },
+      {
+        key: "score",
+        label: "Score",
+        unit: "",
+        invertColor: false,
+        format: (v, s) =>
+          s.metrics.total ? `${v}/${s.metrics.total}` : `${v}/30`,
+      },
       { key: "maxStreak", label: "Streak", unit: "", invertColor: false },
       { key: "finalLevel", label: "Level", unit: "", invertColor: false },
     ],
@@ -219,12 +227,21 @@ function renderCards(appData) {
   grid.innerHTML = "";
 
   appData.forEach(({ app, sessions }) => {
+    const displaySessions = app.filterDisplay
+      ? sessions.filter(app.filterDisplay)
+      : sessions;
+
+    // Use full sessions array for activity tracking (streak, last played, total this week)
     const last = lastSessionDate(sessions);
     const week = sessionsThisWeek(sessions);
-    const latest = sessions.length ? sessions[sessions.length - 1] : null;
+
+    // Use filtered sessions array ONLY for specific stat values (score, accuracy, etc)
+    const latest = displaySessions.length
+      ? displaySessions[displaySessions.length - 1]
+      : null;
     const keyM = latest && app.keyMetric ? app.keyMetric(latest) : null;
 
-    const hasHistory = app.metricDefs && sessions.length > 0;
+    const hasHistory = app.metricDefs && displaySessions.length > 0;
 
     const card = document.createElement("div");
     card.className = "app-card" + (hasHistory ? " has-history" : "");
@@ -257,6 +274,7 @@ function renderCards(appData) {
         listElId: "history-list",
         modalElId: "history-modal",
         sessionTitle: app.sessionTitle || null,
+        filterDisplay: app.filterDisplay || null,
       });
 
       card.querySelector(".stats-btn").addEventListener("click", (e) => {

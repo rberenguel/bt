@@ -19,25 +19,41 @@ export function injectFakeHistory(days = 30) {
     baseFinalLevel = Math.min(7, baseFinalLevel + Math.random() * 0.15);
 
     const dailySessions = Math.floor(Math.random() * 2) + 1;
+    const isLegacyDay = i === days - 3; // 2 days ago: always a legacy-only session
     for (let j = 0; j < dailySessions; j++) {
-      const accuracy = Math.round(
-        Math.min(100, Math.max(30, baseAccuracy + (Math.random() * 16 - 8))),
+      const isLegacy = isLegacyDay || Math.random() < 0.25;
+      const total = isLegacy
+        ? undefined
+        : Math.random() > 0.9
+          ? Math.floor(Math.random() * 10) + 15
+          : 30;
+
+      const effectiveTotal = total ?? 30;
+      let rawScore = Math.min(
+        effectiveTotal,
+        Math.max(10, baseScore + (Math.random() * 6 - 3)),
       );
+      if (rawScore > effectiveTotal) rawScore = effectiveTotal;
+      const score = Math.round(rawScore);
+
+      const accuracy = Math.round((score / effectiveTotal) * 100);
+
+      const metrics = {
+        accuracy,
+        score,
+        maxStreak: Math.round(
+          Math.min(20, Math.max(1, baseMaxStreak + (Math.random() * 4 - 2))),
+        ),
+        finalLevel: Math.round(
+          Math.min(7, Math.max(1, baseFinalLevel + (Math.random() * 2 - 1))),
+        ),
+      };
+      if (total !== undefined) metrics.total = total;
+
       records.push({
         timestamp: ts + j * 3_600_000,
         dateStr: new Date(ts).toISOString().split("T")[0],
-        metrics: {
-          accuracy,
-          score: Math.round(
-            Math.min(30, Math.max(10, baseScore + (Math.random() * 6 - 3))),
-          ),
-          maxStreak: Math.round(
-            Math.min(20, Math.max(1, baseMaxStreak + (Math.random() * 4 - 2))),
-          ),
-          finalLevel: Math.round(
-            Math.min(7, Math.max(1, baseFinalLevel + (Math.random() * 2 - 1))),
-          ),
-        },
+        metrics,
       });
     }
     ts += 24 * 60 * 60 * 1000;

@@ -30,6 +30,7 @@ export function makeHistoryUI({
   modalElId = "history-modal",
   openModal = null,
   sessionTitle = null,
+  filterDisplay = null,
 }) {
   let currentViewDate = new Date();
   let currentSessions = [];
@@ -74,6 +75,13 @@ export function makeHistoryUI({
 
   function renderCalendar(sessions) {
     const listEl = document.getElementById(listElId);
+    const displaySessions = filterDisplay
+      ? sessions.filter(filterDisplay)
+      : sessions;
+    const legacySessions = filterDisplay
+      ? sessions.filter((s) => !filterDisplay(s))
+      : [];
+
     if (!sessions || sessions.length === 0) {
       listEl.innerHTML =
         '<p style="opacity: 0.7; text-align: center;">No completed sessions yet.</p>';
@@ -81,7 +89,7 @@ export function makeHistoryUI({
     }
 
     const sessionsByDate = {};
-    sessions.forEach((s) => {
+    displaySessions.forEach((s) => {
       const d = new Date(s.timestamp);
       const key =
         d.getFullYear() +
@@ -91,6 +99,19 @@ export function makeHistoryUI({
         String(d.getDate()).padStart(2, "0");
       if (!sessionsByDate[key]) sessionsByDate[key] = [];
       sessionsByDate[key].push(s);
+    });
+
+    const legacyByDate = {};
+    legacySessions.forEach((s) => {
+      const d = new Date(s.timestamp);
+      const key =
+        d.getFullYear() +
+        "-" +
+        String(d.getMonth()).padStart(2, "0") +
+        "-" +
+        String(d.getDate()).padStart(2, "0");
+      if (!legacyByDate[key]) legacyByDate[key] = 0;
+      legacyByDate[key]++;
     });
 
     const year = currentViewDate.getFullYear();
@@ -136,11 +157,16 @@ export function makeHistoryUI({
         "-" +
         String(day).padStart(2, "0");
       const daySessions = sessionsByDate[dateKey] || [];
+      const legacyCount = legacyByDate[dateKey] || 0;
       const isToday = isCurrentMonth && today.getDate() === day;
       const cls =
         "calendar-day" +
         (isToday ? " today" : "") +
-        (daySessions.length ? " has-sessions" : "");
+        (daySessions.length
+          ? " has-sessions"
+          : legacyCount
+            ? " has-legacy"
+            : "");
       html +=
         '<div class="' +
         cls +
@@ -152,12 +178,14 @@ export function makeHistoryUI({
         "</div>" +
         (daySessions.length
           ? '<div class="session-indicator">' + daySessions.length + "</div>"
-          : "") +
+          : legacyCount
+            ? '<div class="session-indicator legacy-indicator">·</div>'
+            : "") +
         "</div>";
     }
 
     html += "</div>";
-    html += renderTrends(sessions);
+    html += renderTrends(displaySessions);
     html += '<div id="day-details" class="day-details hidden"></div>';
     listEl.innerHTML = html;
 
@@ -179,8 +207,8 @@ export function makeHistoryUI({
     });
   }
 
-  function renderTrends(sessions) {
-    const recent = [...sessions]
+  function renderTrends(displaySessions) {
+    const recent = [...displaySessions]
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 15)
       .reverse();
@@ -268,15 +296,12 @@ export function makeHistoryUI({
         ":" +
         String(t.getMinutes()).padStart(2, "0");
       const stats = metricDefs
-        .map(
-          (m) =>
-            "<span>" +
-            m.label +
-            ": " +
-            (s.metrics[m.key] ?? "-") +
-            (m.unit || "") +
-            "</span>",
-        )
+        .map((m) => {
+          const val = s.metrics[m.key] ?? "-";
+          const displayValue =
+            m.format && val !== "-" ? m.format(val, s) : val + (m.unit || "");
+          return "<span>" + m.label + ": " + displayValue + "</span>";
+        })
         .join("");
       html +=
         '<div class="session-card">' +

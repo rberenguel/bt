@@ -308,25 +308,37 @@ window.tanmateix = {
 
 // Generate and display question
 async function newQuestion() {
-  // Reset entity factory so icon pool doesn't exhaust across questions
-  entityFactory.reset();
+  let success = false;
+  let attempts = 0;
 
-  // Use difficulty settings
+  // Use difficulty settings (moved out of try-catch to keep 'level' in scope)
   const { numPaths, entitiesPerPath, level } = gameState.difficulty;
 
-  // Determine distractor count based on level
-  let numDistractors = 0;
-  if (level >= 6) {
-    numDistractors = random.random() < 0.5 ? 2 : 1;
-  } else if (level >= 3) {
-    numDistractors = random.random() < 0.5 ? 1 : 0;
-  }
+  while (!success && attempts < 50) {
+    attempts++;
+    try {
+      // Reset entity factory so icon pool doesn't exhaust across questions
+      entityFactory.reset();
 
-  gameState.currentQuestion = await generator.generateMultiPathQuestion(
-    numPaths,
-    entitiesPerPath,
-    { numDistractors },
-  );
+      // Determine distractor count based on level
+      let numDistractors = 0;
+      if (level >= 6) {
+        numDistractors = random.random() < 0.5 ? 2 : 1;
+      } else if (level >= 3) {
+        numDistractors = random.random() < 0.5 ? 1 : 0;
+      }
+
+      gameState.currentQuestion = await generator.generateMultiPathQuestion(
+        numPaths,
+        entitiesPerPath,
+        { numDistractors },
+      );
+      success = true;
+    } catch (err) {
+      console.error(`❌ Q gen fallback (attempt ${attempts}):`, err);
+      if (attempts >= 50) throw err;
+    }
+  }
   gameState.answered = false;
 
   // Calculate time limit dynamically based on question and level
@@ -703,15 +715,21 @@ function updateProgress() {
 function showGameOver() {
   clearInterval(gameState.timer);
   setBrainFill(1);
-  const accuracy = Math.round((gameState.score / gameState.total) * 100);
+  const questionsAnswered =
+    gameState.questionNumber >= gameState.total
+      ? gameState.total
+      : gameState.questionNumber - 1;
+  const denominator = questionsAnswered > 0 ? questionsAnswered : 1;
+  const accuracy = Math.round((gameState.score / denominator) * 100);
   saveSession({
     score: gameState.score,
     accuracy,
     maxStreak: gameState.maxStreak,
     finalLevel: gameState.difficulty.level,
+    total: denominator,
   });
   const container = document.getElementById("game-container");
-  const percentage = Math.round((gameState.score / gameState.total) * 100);
+  const percentage = accuracy;
   const finalLevel = gameState.difficulty.level;
 
   container.innerHTML = `
@@ -721,7 +739,7 @@ function showGameOver() {
             ${percentage >= 80 ? "🏆" : percentage >= 60 ? "🎯" : "💪"}
         </div>
         <div style="font-size: 1.5rem; margin-bottom: 20px;">
-            Score: <span style="color: var(--success); font-weight: bold;">${gameState.score}</span> / ${gameState.total}
+            Score: <span style="color: var(--success); font-weight: bold;">${gameState.score}</span> / ${denominator}
         </div>
         <div style="font-size: 1.2rem; margin-bottom: 20px;">
             Accuracy: <span style="color: var(--accent); font-weight: bold;">${percentage}%</span>

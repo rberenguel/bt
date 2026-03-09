@@ -258,6 +258,14 @@ header h1 {
 .calendar-day.has-sessions:hover {
   background: rgba(255, 255, 255, 0.14);
 }
+.calendar-day.has-legacy {
+  background: rgba(255, 255, 255, 0.08);
+}
+.legacy-indicator {
+  opacity: 0.35;
+  font-size: 1rem !important;
+  line-height: 0.5;
+}
 .calendar-day.today {
   outline: 1px solid var(--muted);
 }

@@ -275,6 +275,7 @@ export class PathBasedQuestionGenerator {
       );
       console.error("This indicates a bug in question generation!");
       console.error("Details:", verification.details);
+      throw new Error(`Verification failed: ${verification.error}`);
     } else if (verification.warning) {
       console.warn(`⚠️  ${relationType} verification:`, verification.warning);
     } else {
@@ -371,6 +372,9 @@ export class PathBasedQuestionGenerator {
       console.error(
         "❌ INDETERMINATE VERIFICATION FAILED:",
         verification.error,
+      );
+      throw new Error(
+        `Indeterminate verification failed: ${verification.error}`,
       );
     } else {
       console.log("✓ Indeterminate question verified");
@@ -663,21 +667,8 @@ export class PathBasedQuestionGenerator {
       console.error("Question details:", verification.details);
       console.error("This indicates a bug in spatial question generation!");
 
-      if (typeof window === "undefined") {
-        // Node.js: throw error
-        throw new Error("Spatial verification failed: " + verification.error);
-      }
-
-      // Regenerate a new question (with retry limit to prevent infinite loop)
-      if (_retryCount < 10) {
-        return this.generateSpatialGraphQuestion(numEntities, _retryCount + 1);
-      } else {
-        // After 10 retries, just return the invalid question with a warning
-        console.error(
-          "⚠️  Could not generate valid spatial question after 10 retries",
-        );
-        return question;
-      }
+      // Always throw so that newQuestion() logic catches and retries it properly.
+      throw new Error("Spatial verification failed: " + verification.error);
     } else if (verification.warning) {
       console.warn("⚠️  Spatial verification:", verification.warning);
     } else {
