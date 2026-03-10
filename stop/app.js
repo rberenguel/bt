@@ -185,7 +185,7 @@ function finishCalib() {
     const variance =
       state.calibRts.reduce((a, b) => a + (b - mean) ** 2, 0) /
       state.calibRts.length;
-    state.deadline = Math.max(300, Math.round(mean + 2 * Math.sqrt(variance)));
+    state.deadline = 2*Math.max(300, Math.round(mean + 2 * Math.sqrt(variance)));
   } else {
     state.deadline = CONFIG.deadlineFallback;
   }
