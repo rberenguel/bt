@@ -89,6 +89,20 @@ initHaptic();
 FireSystem.init();
 setBrainFill(0);
 
+btnLeft.addEventListener("click", (e) => {
+  //if (!btnLeft.disabled) {
+		console.log("L")
+		//e.preventDefault();
+    triggerHaptic();
+  //}
+});
+btnRight.addEventListener("click", (e) => {
+  //if (!btnRight.disabled) {
+		//e.preventDefault();
+    triggerHaptic();
+  //}
+});
+
 // ── Brain / Fire ─────────────────────────────────────────
 function setBrainFill(progress) {
   const inset = Math.round(88 - progress * (88 - 8));
@@ -168,7 +182,7 @@ function respondCalib(direction) {
   if (state.responded) return;
   state.responded = true;
   clearTimers();
-  enable(false);
+  schedule(() => enable(false), 200);
 
   const rt = direction !== null ? performance.now() - state.stimStart : null;
   if (rt !== null && direction === state.currentTrial.direction) {
@@ -239,7 +253,7 @@ function respond(direction) {
   if (state.responded) return;
   state.responded = true;
   clearTimers();
-  enable(false);
+  schedule(() => enable(false), 200);
 
   const rt = direction !== null ? performance.now() - state.stimStart : null;
   const { isStop, direction: correct } = state.currentTrial;
@@ -362,15 +376,18 @@ $("close-history-btn").addEventListener("click", () =>
 btnLeft.addEventListener("pointerdown", () => {
   if (!btnLeft.disabled) {
     btnLeft.classList.add("pressed");
+		triggerHaptic();
     dispatch("left");
   }
 });
 btnRight.addEventListener("pointerdown", () => {
   if (!btnRight.disabled) {
     btnRight.classList.add("pressed");
+		triggerHaptic();
     dispatch("right");
   }
 });
+
 document.addEventListener("pointerup", () => {
   btnLeft.classList.remove("pressed");
   btnRight.classList.remove("pressed");
