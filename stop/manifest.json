@@ -1,6 +1,6 @@
 {
   "name": "Stop",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "short_name": "Stop",
   "description": "Stop signal task",
   "start_url": "./index.html",

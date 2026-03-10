@@ -16,7 +16,7 @@ const CONFIG = {
   ssdMin: 50,
   ssdMax: 800,
   deadlineFallback: 1000,
-  fixation: 500,
+  fixation: 650,
   feedback: 400,
 };
 

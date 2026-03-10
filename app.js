@@ -259,7 +259,7 @@ function renderCards(appData) {
         ? '<button class="stats-btn" title="Show stats"><i class="ph-light ph-chart-bar"></i></button>'
         : "");
 
-    card.querySelector(".app-link").addEventListener("pointerdown", () => {
+    card.querySelector(".app-link").addEventListener("click", () => {
       triggerHaptic();
     });
 
@@ -291,7 +291,7 @@ function renderCards(appData) {
 function initModal() {
   const modal = document.getElementById("history-modal");
   const closeBtn = document.getElementById("close-history-btn");
-  closeBtn.addEventListener("pointerdown", (e) => {
+  closeBtn.addEventListener("click", (e) => {
     e.preventDefault();
     triggerHaptic();
     modal.classList.add("hidden");
