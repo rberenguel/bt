@@ -1,6 +1,7 @@
 import { makeHistoryUI } from "./shared/history.js";
 import { makeStorage } from "./shared/storage.js";
 import { get } from "./shared/idb-keyval.js";
+import { initHaptic, triggerHaptic } from "./shared/haptic.js";
 
 // ── App registry ──────────────────────────────────────────────────────────────
 
@@ -258,6 +259,10 @@ function renderCards(appData) {
         ? '<button class="stats-btn" title="Show stats"><i class="ph-light ph-chart-bar"></i></button>'
         : "");
 
+    card.querySelector(".app-link").addEventListener("pointerdown", () => {
+      triggerHaptic();
+    });
+
     if (hasHistory) {
       const histUI = makeHistoryUI({
         getHistory: () => sessions,
@@ -268,8 +273,9 @@ function renderCards(appData) {
         filterDisplay: app.filterDisplay || null,
       });
 
-      card.querySelector(".stats-btn").addEventListener("click", (e) => {
+      card.querySelector(".stats-btn").addEventListener("pointerdown", (e) => {
         e.preventDefault();
+        triggerHaptic();
         document.getElementById("history-modal-title").textContent =
           app.name + " — History";
         histUI.open();
@@ -285,15 +291,24 @@ function renderCards(appData) {
 function initModal() {
   const modal = document.getElementById("history-modal");
   const closeBtn = document.getElementById("close-history-btn");
-  closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.classList.add("hidden");
+  closeBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    triggerHaptic();
+    modal.classList.add("hidden");
+  });
+  modal.addEventListener("pointerdown", (e) => {
+    if (e.target === modal) {
+      e.preventDefault();
+      triggerHaptic();
+      modal.classList.add("hidden");
+    }
   });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function init() {
+  initHaptic();
   initModal();
 
   // Load all session data

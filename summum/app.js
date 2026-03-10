@@ -96,13 +96,15 @@ function initNumpad() {
       btnPlay.className = "numpad-btn play-btn";
       btnPlay.innerHTML = playIcon;
 
-      btnPlay.onpointerdown = () => btnPlay.classList.add("pressed");
+      btnPlay.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        btnPlay.classList.add("pressed");
+        togglePlayState();
+      });
       const clearPlay = () => btnPlay.classList.remove("pressed");
-      btnPlay.onpointerup = clearPlay;
-      btnPlay.onpointercancel = clearPlay;
-      btnPlay.onpointerout = clearPlay;
-
-      btnPlay.onclick = togglePlayState;
+      btnPlay.addEventListener("pointerup", clearPlay);
+      btnPlay.addEventListener("pointercancel", clearPlay);
+      btnPlay.addEventListener("pointerout", clearPlay);
 
       elNumpad.appendChild(btnPlay);
     } else if (key === "reset") {
@@ -110,13 +112,15 @@ function initNumpad() {
       btnReset.className = "numpad-btn reset-btn";
       btnReset.innerHTML = resetIcon;
 
-      btnReset.onpointerdown = () => btnReset.classList.add("pressed");
+      btnReset.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        btnReset.classList.add("pressed");
+        resetGame();
+      });
       const clearReset = () => btnReset.classList.remove("pressed");
-      btnReset.onpointerup = clearReset;
-      btnReset.onpointercancel = clearReset;
-      btnReset.onpointerout = clearReset;
-
-      btnReset.onclick = resetGame;
+      btnReset.addEventListener("pointerup", clearReset);
+      btnReset.addEventListener("pointercancel", clearReset);
+      btnReset.addEventListener("pointerout", clearReset);
 
       elNumpad.appendChild(btnReset);
     } else {
@@ -124,19 +128,17 @@ function initNumpad() {
       btn.className = "numpad-btn";
       btn.innerText = key;
 
-      btn.onpointerdown = () => {
-        if (!btn.disabled) btn.classList.add("pressed");
-      };
-      const clearBtn = () => btn.classList.remove("pressed");
-      btn.onpointerup = clearBtn;
-      btn.onpointercancel = clearBtn;
-      btn.onpointerout = clearBtn;
-
-      btn.onclick = () => {
+      btn.addEventListener("pointerdown", (e) => {
         if (btn.disabled) return;
+        e.preventDefault();
+        btn.classList.add("pressed");
         triggerHaptic();
         processDigitInput(key);
-      };
+      });
+      const clearBtn = () => btn.classList.remove("pressed");
+      btn.addEventListener("pointerup", clearBtn);
+      btn.addEventListener("pointercancel", clearBtn);
+      btn.addEventListener("pointerout", clearBtn);
 
       btn.disabled = true;
       numpadButtons.push(btn);
@@ -144,7 +146,10 @@ function initNumpad() {
     }
   });
 
-  elModalCloseBtn.onclick = closeModal;
+  elModalCloseBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    closeModal();
+  });
 }
 
 function handleTick() {

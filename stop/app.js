@@ -7,8 +7,6 @@ import { saveSession, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
 import "./faker.js";
 
-const VERSION = "0.0.3"; // TODO: fetch
-
 const CONFIG = {
   calibTrials: 5, // go-only warmup to measure baseline RT
   totalTrials: 30,
@@ -77,7 +75,15 @@ const brainProgress = document.querySelector(".brain-progress-fill");
 const brainFire = document.querySelector(".brain-fire-fill");
 
 // ── Init ─────────────────────────────────────────────────
-$("app-version").textContent = VERSION;
+async function initVersion() {
+  try {
+    const manifest = await (await fetch("manifest.json")).json();
+    if (manifest.version) $("app-version").textContent = "v" + manifest.version;
+  } catch (e) {
+    console.error("Failed to load manifest version:", e);
+  }
+}
+initVersion();
 FireSystem.init();
 setBrainFill(0);
 
@@ -185,7 +191,8 @@ function finishCalib() {
     const variance =
       state.calibRts.reduce((a, b) => a + (b - mean) ** 2, 0) /
       state.calibRts.length;
-    state.deadline = 2*Math.max(300, Math.round(mean + 2 * Math.sqrt(variance)));
+    state.deadline =
+      2 * Math.max(300, Math.round(mean + 2 * Math.sqrt(variance)));
   } else {
     state.deadline = CONFIG.deadlineFallback;
   }

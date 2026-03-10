@@ -5,6 +5,11 @@ import { Renderer } from "./render/Renderer.js";
 import { saveSession } from "./storage.js";
 import { openHistoryModal } from "./history.js";
 import { FireSystem } from "../shared/fire.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../shared/haptic.js";
 import "./faker.js";
 
 // Timing milestones for linear interpolation
@@ -367,7 +372,10 @@ async function newQuestion() {
 
   // Add event listeners to buttons
   container.querySelectorAll(".btn").forEach((btn) => {
-    btn.addEventListener("click", handleAnswer);
+    btn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      handleAnswer(e);
+    });
   });
 
   // Update debug info
@@ -560,7 +568,9 @@ function handleAnswer(e) {
     decreaseDifficulty();
   }
 
-  // Visual feedback
+  // Haptic + visual feedback
+  if (correct) triggerHaptic();
+  else triggerHapticError();
   showFeedback(correct);
 
   // Disable buttons
@@ -767,19 +777,25 @@ function showGameOver() {
   // Add event listeners to Play Again buttons
   document
     .getElementById("play-again-practice")
-    .addEventListener("click", () => {
+    .addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      triggerHaptic();
       gameState.timerEnabled = false;
       // Hide timer before restarting
       document.querySelector(".progress-container").style.display = "none";
       restartGame();
     });
 
-  document.getElementById("play-again-timed").addEventListener("click", () => {
-    gameState.timerEnabled = true;
-    // Show timer before restarting
-    document.querySelector(".progress-container").style.display = "block";
-    restartGame();
-  });
+  document
+    .getElementById("play-again-timed")
+    .addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      triggerHaptic();
+      gameState.timerEnabled = true;
+      // Show timer before restarting
+      document.querySelector(".progress-container").style.display = "block";
+      restartGame();
+    });
 }
 
 // Restart game function
@@ -913,6 +929,7 @@ function setBrainFill(progress) {
 
 // Don't start game automatically - wait for start button
 FireSystem.init();
+initHaptic();
 setBrainFill(0);
 updateScore();
 updateProgress();
@@ -980,7 +997,9 @@ modal.addEventListener("click", (e) => {
 });
 
 // Restart button
-document.getElementById("restart-btn").addEventListener("click", () => {
+document.getElementById("restart-btn").addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  triggerHaptic();
   restartGame();
 });
 
@@ -1003,7 +1022,9 @@ const startBtnPractice = document.getElementById("start-btn-practice");
 const startBtnTimed = document.getElementById("start-btn-timed");
 const startScreen = document.getElementById("start-screen");
 
-startBtnPractice.addEventListener("click", () => {
+startBtnPractice.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  triggerHaptic();
   gameState.timerEnabled = false;
   startScreen.classList.remove("visible");
   // Hide timer in practice mode
@@ -1011,7 +1032,9 @@ startBtnPractice.addEventListener("click", () => {
   newQuestion();
 });
 
-startBtnTimed.addEventListener("click", () => {
+startBtnTimed.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  triggerHaptic();
   gameState.timerEnabled = true;
   startScreen.classList.remove("visible");
   // Show timer in timed mode
@@ -1023,8 +1046,16 @@ startBtnTimed.addEventListener("click", () => {
 const resumeBtn = document.getElementById("resume-btn");
 const progressContainer = document.querySelector(".progress-container");
 
-progressContainer.addEventListener("click", togglePause);
-resumeBtn.addEventListener("click", togglePause);
+progressContainer.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  triggerHaptic();
+  togglePause();
+});
+resumeBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  triggerHaptic();
+  togglePause();
+});
 
 // Keyboard shortcut (Space to toggle pause)
 document.addEventListener("keydown", (e) => {
