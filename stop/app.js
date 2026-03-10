@@ -7,7 +7,7 @@ import { saveSession, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
 import "./faker.js";
 
-const VERSION = "0.0.1";
+const VERSION = "0.0.3"; // TODO: fetch
 
 const CONFIG = {
   calibTrials: 5, // go-only warmup to measure baseline RT
