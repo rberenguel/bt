@@ -49,5 +49,3 @@ bt/
 ## Offline
 
 Visiting the hub once caches all assets for all apps. Sub-apps (clauer, nb, tanmateix) also register their own service workers for independent offline use. After `go run get_cache.go`, paste the output into `sw.js` to update the cache manifest.
-
-

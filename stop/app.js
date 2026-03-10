@@ -5,6 +5,7 @@
 import { FireSystem } from "../shared/fire.js";
 import { saveSession, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
+import { initHaptic, triggerHaptic } from "../shared/haptic.js";
 import "./faker.js";
 
 const CONFIG = {
@@ -84,6 +85,7 @@ async function initVersion() {
   }
 }
 initVersion();
+initHaptic();
 FireSystem.init();
 setBrainFill(0);
 
@@ -337,10 +339,22 @@ function endSession() {
 }
 
 // ── Events ───────────────────────────────────────────────
-playBtn.addEventListener("click", startSession);
-resetBtn.addEventListener("click", resetSession);
-$("modal-close-btn").addEventListener("click", resetSession);
-$("stats-btn").addEventListener("click", openHistoryModal);
+playBtn.addEventListener("click", () => {
+  triggerHaptic();
+  startSession();
+});
+resetBtn.addEventListener("click", () => {
+  triggerHaptic();
+  resetSession();
+});
+$("modal-close-btn").addEventListener("click", () => {
+  triggerHaptic();
+  resetSession();
+});
+$("stats-btn").addEventListener("click", () => {
+  triggerHaptic();
+  openHistoryModal();
+});
 $("close-history-btn").addEventListener("click", () =>
   $("history-modal").classList.add("hidden"),
 );

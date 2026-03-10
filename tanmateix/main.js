@@ -372,10 +372,7 @@ async function newQuestion() {
 
   // Add event listeners to buttons
   container.querySelectorAll(".btn").forEach((btn) => {
-    btn.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      handleAnswer(e);
-    });
+    btn.addEventListener("click", handleAnswer);
   });
 
   // Update debug info
@@ -777,25 +774,19 @@ function showGameOver() {
   // Add event listeners to Play Again buttons
   document
     .getElementById("play-again-practice")
-    .addEventListener("pointerdown", (e) => {
-      e.preventDefault();
+    .addEventListener("click", () => {
       triggerHaptic();
       gameState.timerEnabled = false;
-      // Hide timer before restarting
       document.querySelector(".progress-container").style.display = "none";
       restartGame();
     });
 
-  document
-    .getElementById("play-again-timed")
-    .addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      triggerHaptic();
-      gameState.timerEnabled = true;
-      // Show timer before restarting
-      document.querySelector(".progress-container").style.display = "block";
-      restartGame();
-    });
+  document.getElementById("play-again-timed").addEventListener("click", () => {
+    triggerHaptic();
+    gameState.timerEnabled = true;
+    document.querySelector(".progress-container").style.display = "block";
+    restartGame();
+  });
 }
 
 // Restart game function
@@ -997,8 +988,7 @@ modal.addEventListener("click", (e) => {
 });
 
 // Restart button
-document.getElementById("restart-btn").addEventListener("pointerdown", (e) => {
-  e.preventDefault();
+document.getElementById("restart-btn").addEventListener("click", () => {
   triggerHaptic();
   restartGame();
 });
@@ -1022,22 +1012,18 @@ const startBtnPractice = document.getElementById("start-btn-practice");
 const startBtnTimed = document.getElementById("start-btn-timed");
 const startScreen = document.getElementById("start-screen");
 
-startBtnPractice.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
+startBtnPractice.addEventListener("click", () => {
   triggerHaptic();
   gameState.timerEnabled = false;
   startScreen.classList.remove("visible");
-  // Hide timer in practice mode
   document.querySelector(".progress-container").style.display = "none";
   newQuestion();
 });
 
-startBtnTimed.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
+startBtnTimed.addEventListener("click", () => {
   triggerHaptic();
   gameState.timerEnabled = true;
   startScreen.classList.remove("visible");
-  // Show timer in timed mode
   document.querySelector(".progress-container").style.display = "block";
   newQuestion();
 });
@@ -1046,13 +1032,11 @@ startBtnTimed.addEventListener("pointerdown", (e) => {
 const resumeBtn = document.getElementById("resume-btn");
 const progressContainer = document.querySelector(".progress-container");
 
-progressContainer.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
+progressContainer.addEventListener("click", () => {
   triggerHaptic();
   togglePause();
 });
-resumeBtn.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
+resumeBtn.addEventListener("click", () => {
   triggerHaptic();
   togglePause();
 });
