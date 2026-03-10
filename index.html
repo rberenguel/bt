@@ -30,10 +30,39 @@
       </div>
     </div>
 
+    <div id="update-banner" hidden>
+      Update available — <a href="#" id="update-link">reload</a>
+    </div>
+
     <script type="module" src="app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js");
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((registration) => {
+              registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener("statechange", () => {
+                  if (
+                    newWorker.state === "activated" &&
+                    navigator.serviceWorker.controller
+                  ) {
+                    document.getElementById("update-banner").hidden = false;
+                  }
+                });
+              });
+            })
+            .catch((err) => console.error("SW registration failed:", err));
+        });
+
+        document
+          .getElementById("update-link")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.reload();
+          });
       }
     </script>
   </body>

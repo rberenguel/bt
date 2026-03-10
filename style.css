@@ -425,3 +425,20 @@ header h1 {
 .trend-bar:focus .trend-tooltip {
   display: block;
 }
+
+#update-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--surface);
+  color: var(--text);
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 0.9em;
+  z-index: 1000;
+}
+#update-banner a {
+  color: var(--text);
+  text-decoration: underline;
+}
