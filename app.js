@@ -132,6 +132,20 @@ const APPS = [
       { key: "avgRt", label: "Avg RT", unit: "ms", invertColor: true },
     ],
   },
+  {
+    id: "attn",
+    name: "Attn",
+    path: "./attn/",
+    icon: "./attn/icon.png",
+    color: "#38bdf8",
+    storageKey: "attn_history",
+    keyMetric: (s) => s.metrics.eb + " EB",
+    metricDefs: [
+      { key: "eb", label: "Eff. balls", unit: "", invertColor: false },
+      { key: "balls", label: "Balls", unit: "", invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+    ],
+  },
 ];
 
 // ── Data loading ──────────────────────────────────────────────────────────────

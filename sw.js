@@ -1,8 +1,15 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Sub-app sw.js files are added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.2.4";
+const CACHE_NAME = "bt-hub-v0.2.5";
 const CACHE_FILES = [
   "./app.js",
+  "./attn/app.js",
+  "./attn/history.js",
+  "./attn/icon.png",
+  "./attn/index.html",
+  "./attn/manifest.json",
+  "./attn/storage.js",
+  "./attn/style.css",
   "./clauer/icon.png",
   "./clauer/icon192.png",
   "./clauer/index.html",
@@ -18,6 +25,7 @@ const CACHE_FILES = [
   "./clauer/manifest.json",
   "./clauer/style.css",
   "./clauer/sw.js",
+  "./icon.png",
   "./index.html",
   "./manifest.json",
   "./nb/fireworks.js",
@@ -46,6 +54,7 @@ const CACHE_FILES = [
   "./shared/fonts/phosphor/phosphor.css",
   "./shared/haptic.js",
   "./shared/history.js",
+  "./shared/idb-keyval.js",
   "./shared/storage.js",
   "./stop/app.js",
   "./stop/faker.js",
@@ -69,8 +78,10 @@ const CACHE_FILES = [
   "./tanmateix/core/PremiseNetwork.js",
   "./tanmateix/core/Relation.js",
   "./tanmateix/core/RelationType.js",
+  "./tanmateix/faker.js",
   "./tanmateix/favicon.ico",
   "./tanmateix/generators/PathBasedQuestionGenerator.js",
+  "./tanmateix/history.js",
   "./tanmateix/icon.png",
   "./tanmateix/index.html",
   "./tanmateix/lib/tau-prolog-core.js",
@@ -84,6 +95,7 @@ const CACHE_FILES = [
   "./tanmateix/render/Renderer.js",
   "./tanmateix/render/Vocabulary.js",
   "./tanmateix/render/logic.css",
+  "./tanmateix/storage.js",
   "./tanmateix/sw.js",
   "./tanmateix/utils/EntityFactory.js",
   "./tanmateix/utils/RandomUtils.js",
