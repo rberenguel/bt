@@ -24,6 +24,10 @@ Arithmetic under pressure. A running sum is shown — tap True or False to confi
 
 [Stop Signal Task](https://en.wikipedia.org/wiki/Stop-signal_task). Arrows appear — tap the matching direction. When a triangle (▲) appears above the arrow, inhibit your response. Measures go accuracy, stop accuracy, average reaction time, and stop-signal delay (SSD), which adapts to keep inhibition at ~50%.
 
+### [attn](./attn/)
+
+Visual adaptation of the [Attention Training Technique](https://en.wikipedia.org/wiki/Attention_training_technique) (ATT) from Adrian Wells' Metacognitive Therapy. Trains voluntary attentional control — the ability to deliberately direct focus away from self-focused rumination. Three phases per session: selective attention (track one highlighted ball among identical moving distractors), attention switching (follow a sequence of flashes, identify the last), and divided attention (track three simultaneously highlighted balls). Ball count is configurable (3–15); the key metric is *effective balls* (ball count × accuracy), which rewards both difficulty and performance.
+
 ## Structure
 
 ```
@@ -43,7 +47,8 @@ bt/
 ├── clauer/
 ├── tanmateix/
 ├── summum/
-└── stop/
+├── stop/
+└── attn/
 ```
 
 ## Offline
