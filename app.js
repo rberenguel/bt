@@ -166,6 +166,19 @@ const APPS = [
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
   },
+  {
+    id: "dotmatrix",
+    name: "Dot Matrix",
+    path: "./dotmatrix/",
+    color: "#d97706",
+    storageKey: "dotmatrix_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    metricDefs: [
+      { key: "accuracy", label: "Acc", desc: "Correctness", unit: "%", invertColor: false },
+      { key: "correct", label: "Correct", unit: "", invertColor: false },
+      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
+    ],
+  },
 ];
 
 // ── Data loading ──────────────────────────────────────────────────────────────

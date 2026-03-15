@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Dot Matrix</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #000;
+        --surface: #111;
+        --border: #222;
+        --text: #e8e8e8;
+        --muted: #555;
+        --amber: #d97706;
+        --green: #22c55e;
+        --red: #ef4444;
+      }
+
+      html, body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      .app-container {
+        max-width: 600px;
+        height: 100dvh;
+        margin: 0 auto;
+        padding: 0 12px 8px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 52px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 10px;
+      }
+
+      .q-counter {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .app-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .version-text {
+        font-size: 0.72rem;
+        color: var(--muted);
+        font-weight: 400;
+        margin-left: 4px;
+      }
+
+      .section-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+        flex-shrink: 0;
+      }
+
+      .frames-grid,
+      .options-grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .frame-card {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-height: 0;
+        border: 2px solid transparent;
+        border-radius: 6px;
+      }
+
+      .card-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--amber);
+        text-align: center;
+      }
+
+      .option-card {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-height: 0;
+        background: none;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        padding: 0;
+        cursor: pointer;
+        transition: border-color 0.12s;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .option-card:active { opacity: 0.75; }
+      .option-card.correct { border-color: var(--green); }
+      .option-card.wrong   { border-color: var(--red); }
+      .option-card[disabled] { cursor: default; }
+      .option-card[disabled]:active { opacity: 1; }
+
+      .dot-grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(var(--gs, 7), 1fr);
+        grid-template-rows: repeat(var(--gs, 7), 1fr);
+        gap: 2px;
+        padding: 4px;
+        background: var(--surface);
+        border: 1px solid #333;
+        border-radius: 4px;
+      }
+
+      .dot {
+        border-radius: 50%;
+      }
+
+      .dot.on  { background: var(--amber); }
+      .dot.off { background: #1c1c1c; }
+
+      .divider {
+        height: 1px;
+        background: var(--amber);
+        opacity: 0.35;
+        flex-shrink: 0;
+      }
+
+      /* Timer bar */
+      .progress-container {
+        height: 3px;
+        background: var(--border);
+        margin-bottom: 8px;
+        border-radius: 2px;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 100%;
+        background: var(--amber);
+        border-radius: 2px;
+      }
+
+      /* Game layout */
+      #game {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 1fr auto 1fr;
+        gap: 4px;
+        transition: opacity 0.25s ease-in-out;
+      }
+
+      #game.fading { opacity: 0; }
+
+      /* Intro overlay */
+      .intro-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+
+      .intro-overlay.hidden { display: none; }
+
+      .intro-content {
+        max-width: 340px;
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .intro-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--amber);
+      }
+
+      .intro-tagline {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: -0.5rem;
+      }
+
+      .intro-rules {
+        list-style: none;
+        text-align: left;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .intro-rules li {
+        font-size: 0.85rem;
+        color: var(--text);
+        padding-left: 1.2rem;
+        position: relative;
+      }
+
+      .intro-rules li::before {
+        content: '·';
+        position: absolute;
+        left: 0;
+        color: var(--amber);
+        font-weight: 700;
+      }
+
+      .intro-play-btn {
+        width: 100%;
+        padding: 14px;
+        background: var(--amber);
+        color: #000;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 0.5rem;
+      }
+
+      .intro-play-btn:active { opacity: 0.85; }
+
+      .intro-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .modal-overlay.hidden { display: none; }
+
+      .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: min(90vw, 320px);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .modal-content h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .modal-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .modal-stat {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+      }
+
+      .modal-stat .label { color: var(--muted); }
+
+      .modal-btn {
+        width: 100%;
+        padding: 12px;
+        background: var(--amber);
+        color: #000;
+        font-size: 1rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .modal-btn:active { opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="header">
+        <a href="../" class="app-name">Dot Matrix <span class="version-text">v0.1.0</span></a>
+        <span id="q-counter" class="q-counter"></span>
+      </div>
+
+      <div class="progress-container">
+        <div id="timer-bar" class="progress-bar"></div>
+      </div>
+
+      <div id="game">
+        <div class="frames-grid" id="frames-grid"></div>
+        <div class="divider"></div>
+        <div class="options-grid" id="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="intro-overlay" class="intro-overlay">
+      <div class="intro-content">
+        <img src="icon.png" alt="" class="intro-icon" />
+        <h1 class="intro-title">Dot Matrix</h1>
+        <p class="intro-tagline">Visual sequence puzzles</p>
+        <ul class="intro-rules">
+          <li>Four frames show a dot pattern changing by a hidden rule</li>
+          <li>Pick which of the four options comes next</li>
+          <li>20 seconds per question — 10 questions per session</li>
+        </ul>
+        <button id="play-btn" class="intro-play-btn">Play</button>
+      </div>
+    </div>
+
+    <div id="results-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Session complete</h2>
+        <div class="modal-stats">
+          <div class="modal-stat"><span class="label">Correct</span><span id="modal-correct">—</span></div>
+          <div class="modal-stat"><span class="label">Incorrect</span><span id="modal-incorrect">—</span></div>
+          <div class="modal-stat"><span class="label">Accuracy</span><span id="modal-acc">—</span></div>
+        </div>
+        <button id="modal-close-btn" class="modal-btn">Play again</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { saveSessionRecord, getHistory } from "./storage.js";
+      import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+
+      // ── DotMatrix ─────────────────────────────────────────────────────────────
+
+      class DotMatrix {
+        constructor(size = 7) {
+          this.size = size;
+          this.grid = Array.from({length: size}, () => new Array(size).fill(false));
+        }
+
+        randomize(density = 0.15) {
+          for (let y = 0; y < this.size; y++)
+            for (let x = 0; x < this.size; x++)
+              this.grid[y][x] = Math.random() < density;
+        }
+
+        clone() {
+          const c = new DotMatrix(this.size);
+          for (let y = 0; y < this.size; y++) c.grid[y] = [...this.grid[y]];
+          return c;
+        }
+
+        shift(dx, dy) {
+          const n = this.size;
+          const ng = Array.from({length: n}, () => new Array(n).fill(false));
+          for (let y = 0; y < n; y++)
+            for (let x = 0; x < n; x++)
+              if (this.grid[y][x]) {
+                const nx = ((x + dx) % n + n) % n;
+                const ny = ((y + dy) % n + n) % n;
+                ng[ny][nx] = true;
+              }
+          this.grid = ng;
+        }
+
+        // 90° clockwise
+        rotate() {
+          const n = this.size;
+          const c = (n - 1) / 2;
+          const ng = Array.from({length: n}, () => new Array(n).fill(false));
+          for (let y = 0; y < n; y++)
+            for (let x = 0; x < n; x++)
+              if (this.grid[y][x]) {
+                const nx = Math.round(-(y - c) + c);
+                const ny = Math.round((x - c) + c);
+                if (nx >= 0 && nx < n && ny >= 0 && ny < n) ng[ny][nx] = true;
+              }
+          this.grid = ng;
+        }
+
+        xor(other) {
+          for (let y = 0; y < this.size; y++)
+            for (let x = 0; x < this.size; x++)
+              if (other.grid[y][x]) this.grid[y][x] = !this.grid[y][x];
+        }
+
+        // OR merge
+        merge(other) {
+          for (let y = 0; y < this.size; y++)
+            for (let x = 0; x < this.size; x++)
+              if (other.grid[y][x]) this.grid[y][x] = true;
+        }
+      }
+
+      // ── Shape-based initialization ────────────────────────────────────────────
+
+      // Canonical polyomino templates (1–4 dots, coords relative to top-left)
+      const SHAPES = [
+        [[0,0]],                                   // 1-dot
+        [[0,0],[1,0]],                             // 2-dot
+        [[0,0],[1,0],[2,0]],                       // 3-line
+        [[0,0],[1,0],[1,1]],                       // 3-L
+        [[0,0],[1,0],[0,1]],                       // 3-corner
+        [[0,0],[1,0],[2,0],[3,0]],                 // 4-line
+        [[0,0],[1,0],[2,0],[1,1]],                 // 4-T
+        [[0,0],[1,0],[1,1],[2,1]],                 // 4-S
+        [[0,0],[0,1],[0,2],[1,2]],                 // 4-L
+        [[0,0],[1,0],[2,0],[2,1]],                 // 4-J
+      ];
+
+      function rotateTemplate(tmpl) {
+        // 90° CW in screen coords: (x,y) → (-y, x), then normalize to non-negative
+        const r = tmpl.map(([x, y]) => [-y, x]);
+        const minX = Math.min(...r.map(([x]) => x));
+        const minY = Math.min(...r.map(([, y]) => y));
+        return r.map(([x, y]) => [x - minX, y - minY]);
+      }
+
+      function addShape(matrix) {
+        let tmpl = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+        const rots = Math.floor(Math.random() * 4);
+        for (let r = 0; r < rots; r++) tmpl = rotateTemplate(tmpl);
+
+        const maxX = Math.max(...tmpl.map(([x]) => x));
+        const maxY = Math.max(...tmpl.map(([, y]) => y));
+        const n = matrix.size;
+        const ox = Math.floor(Math.random() * (n - maxX));
+        const oy = Math.floor(Math.random() * (n - maxY));
+        for (const [x, y] of tmpl) matrix.grid[oy + y][ox + x] = true;
+      }
+
+      function initWithShapes(matrix, count = 2) {
+        for (let i = 0; i < count; i++) addShape(matrix);
+      }
+
+      // Place one shape with its centroid at the grid center — used for rotate
+      // so the rotation pivot coincides with the shape rather than orbiting it.
+      function addCenteredShape(matrix) {
+        let tmpl = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+        const rots = Math.floor(Math.random() * 4);
+        for (let r = 0; r < rots; r++) tmpl = rotateTemplate(tmpl);
+
+        const n = matrix.size;
+        const maxX = Math.max(...tmpl.map(([x]) => x));
+        const maxY = Math.max(...tmpl.map(([, y]) => y));
+        const c = Math.floor(n / 2);
+        const shapeCx = tmpl.reduce((s, [x]) => s + x, 0) / tmpl.length;
+        const shapeCy = tmpl.reduce((s, [, y]) => s + y, 0) / tmpl.length;
+        // Small jitter so multiple shapes don't all collapse to the same position
+        const jitter = () => Math.floor(Math.random() * 3) - 1;
+        const ox = Math.max(0, Math.min(n - 1 - maxX, Math.round(c - shapeCx + jitter())));
+        const oy = Math.max(0, Math.min(n - 1 - maxY, Math.round(c - shapeCy + jitter())));
+        for (const [x, y] of tmpl) matrix.grid[oy + y][ox + x] = true;
+      }
+
+      // ── Puzzle generation ──────────────────────────────────────────────────────
+
+      function generatePuzzle(size = 7) {
+        // Four equally-likely modes: translate, rotate, compound, dual
+        const modes = ['translate', 'rotate', 'compound', 'dual'];
+        const mode = modes[Math.floor(Math.random() * modes.length)];
+        const frames = [];
+        let rd = {mode};
+
+        if (mode === 'dual') {
+          const m1 = new DotMatrix(size); initWithShapes(m1, 2);
+          const m2 = new DotMatrix(size); initWithShapes(m2, 2);
+          let dx1 = 1, dy1 = 0, dx2 = 0, dy2 = 1;
+          if (Math.random() > 0.5) { dx1 = 0; dy1 = 1; dx2 = -1; dy2 = 0; }
+          const m1s = [], m2s = [];
+          for (let i = 0; i < 5; i++) {
+            m1s.push(m1.clone()); m2s.push(m2.clone());
+            const f = m1.clone(); f.merge(m2); frames.push(f);
+            m1.shift(dx1, dy1); m2.shift(dx2, dy2);
+          }
+          rd = {...rd, dx1, dy1, dx2, dy2, m1s, m2s};
+
+        } else {
+          // Single-pattern: translate, rotate, or both
+          const rotates = mode === 'rotate' || mode === 'compound';
+          let dx = 0, dy = 0;
+          if (mode === 'translate' || mode === 'compound') {
+            while (dx === 0 && dy === 0) {
+              dx = Math.floor(Math.random() * 3) - 1;
+              dy = Math.floor(Math.random() * 3) - 1;
+            }
+          }
+          rd = {...rd, dx, dy, rotates};
+
+          const m = new DotMatrix(size);
+          initWithShapes(m, 4);
+          for (let i = 0; i < 5; i++) {
+            frames.push(m.clone());
+            if (rotates) m.rotate();
+            if (dx !== 0 || dy !== 0) m.shift(dx, dy);
+          }
+        }
+
+        const correct = frames[4];
+        const wrongs = getWrongOptions(rd, frames, size);
+
+        // Fisher-Yates shuffle of [correct, ...wrongs], tracking correctIndex
+        const all = [correct, ...wrongs];
+        let ci = 0;
+        for (let i = all.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          if (i === ci) ci = j; else if (j === ci) ci = i;
+          [all[i], all[j]] = [all[j], all[i]];
+        }
+
+        return {shownFrames: frames.slice(0, 4), options: all, correctIndex: ci};
+      }
+
+      function getWrongOptions(rd, frames, size) {
+        const f3 = frames[3];
+
+        if (rd.mode === 'dual') {
+          const {dx1, dy1, dx2, dy2, m1s, m2s} = rd;
+          const w1 = m1s[4].clone(); w1.merge(m2s[3]); // only p1 advances
+          const w2 = m1s[3].clone(); w2.merge(m2s[4]); // only p2 advances
+          const w3m1 = m1s[3].clone(); w3m1.shift(dx2, dy2);
+          const w3m2 = m2s[3].clone(); w3m2.shift(dx1, dy1);
+          const w3 = w3m1.clone(); w3.merge(w3m2);     // directions swapped
+          return [w1, w2, w3];
+        }
+
+        const {dx, dy, rotates, mode} = rd;
+
+        if (mode === 'translate') {
+          const w1 = f3.clone();                        // no advance
+          const w2 = f3.clone(); w2.shift(-dx, -dy);   // opposite direction
+          const w3 = f3.clone(); w3.shift(dy, -dx);    // perpendicular
+          return [w1, w2, w3];
+        }
+
+        if (mode === 'rotate') {
+          const w1 = f3.clone();                                         // no rotation
+          const w2 = f3.clone(); w2.rotate(); w2.rotate(); w2.rotate();  // CCW
+          const w3 = f3.clone(); w3.rotate(); w3.rotate();               // 180°
+          return [w1, w2, w3];
+        }
+
+        // compound: rotate + translate
+        const w1 = f3.clone(); w1.rotate();                  // rotate only, no shift
+        const w2 = f3.clone(); w2.shift(dx, dy);             // shift only, no rotate
+        const w3 = f3.clone(); w3.rotate(); w3.shift(-dx, -dy); // rotate + opposite shift
+        return [w1, w2, w3];
+      }
+
+      // ── Rendering ─────────────────────────────────────────────────────────────
+
+      function renderDotGrid(container, matrix) {
+        container.innerHTML = '';
+        container.style.setProperty('--gs', matrix.size);
+        for (let y = 0; y < matrix.size; y++)
+          for (let x = 0; x < matrix.size; x++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot ' + (matrix.grid[y][x] ? 'on' : 'off');
+            container.appendChild(dot);
+          }
+      }
+
+      // ── Session state ──────────────────────────────────────────────────────────
+
+      const SESSION_LENGTH   = 10;
+      const QUESTION_TIME_MS = 20000;
+      const POST_CORRECT_MS  = 600;
+      const POST_WRONG_MS    = 1500;
+      const FADE_MS          = 250;
+
+      let puzzle           = null;
+      let answered         = false;
+      let autoTimer        = null;
+      let timerTimeout     = null;
+      let questionNum      = 0;
+      let sessionCorrect   = 0;
+      let sessionIncorrect = 0;
+
+      const gameEl      = document.getElementById('game');
+      const framesGrid  = document.getElementById('frames-grid');
+      const optionsGrid = document.getElementById('options-grid');
+      const qCounter    = document.getElementById('q-counter');
+      const timerBar    = document.getElementById('timer-bar');
+
+      // ── Timer ──────────────────────────────────────────────────────────────────
+
+      function startTimer() {
+        clearTimer();
+        timerBar.style.transition = 'none';
+        timerBar.style.width = '100%';
+        timerBar.style.backgroundColor = 'var(--amber)';
+        void timerBar.offsetWidth;
+        timerBar.style.transition = `width ${QUESTION_TIME_MS}ms linear, background-color ${QUESTION_TIME_MS}ms ease-in`;
+        timerBar.style.width = '0%';
+        timerBar.style.backgroundColor = 'var(--red)';
+        timerTimeout = setTimeout(handleTimeout, QUESTION_TIME_MS);
+      }
+
+      function clearTimer() {
+        if (timerTimeout) { clearTimeout(timerTimeout); timerTimeout = null; }
+        timerBar.style.transition = 'none';
+        timerBar.style.width = '0%';
+      }
+
+      function handleTimeout() {
+        if (answered) return;
+        answered = true;
+        sessionIncorrect++;
+        const cards = optionsGrid.querySelectorAll('.option-card');
+        cards.forEach(c => (c.disabled = true));
+        cards[puzzle.correctIndex].classList.add('correct');
+        triggerHapticError();
+        advanceQuestion(POST_WRONG_MS);
+      }
+
+      // ── Fade + advance ─────────────────────────────────────────────────────────
+
+      function advanceQuestion(delay) {
+        const total     = Math.max(delay, FADE_MS);
+        const fadeStart = total - FADE_MS;
+        autoTimer = setTimeout(() => gameEl.classList.add('fading'), fadeStart);
+        autoTimer = setTimeout(() => {
+          if (questionNum >= SESSION_LENGTH) {
+            gameEl.classList.remove('fading');
+            endSession();
+            return;
+          }
+          newPuzzle();
+          gameEl.classList.remove('fading');
+        }, total);
+      }
+
+      // ── Puzzle render ──────────────────────────────────────────────────────────
+
+      function newPuzzle() {
+        answered = false;
+        questionNum++;
+        qCounter.textContent = questionNum + ' / ' + SESSION_LENGTH;
+
+        puzzle = generatePuzzle(7);
+
+        framesGrid.innerHTML = '';
+        puzzle.shownFrames.forEach((matrix, i) => {
+          const card  = document.createElement('div');
+          card.className = 'frame-card';
+          const label = document.createElement('div');
+          label.className = 'card-label';
+          label.textContent = i + 1;
+          const grid  = document.createElement('div');
+          grid.className = 'dot-grid';
+          renderDotGrid(grid, matrix);
+          card.appendChild(label);
+          card.appendChild(grid);
+          framesGrid.appendChild(card);
+        });
+
+        optionsGrid.innerHTML = '';
+        puzzle.options.forEach((matrix, i) => {
+          const btn   = document.createElement('button');
+          btn.className = 'option-card';
+          const label = document.createElement('div');
+          label.className = 'card-label';
+          label.textContent = String.fromCharCode(65 + i);
+          const grid  = document.createElement('div');
+          grid.className = 'dot-grid';
+          renderDotGrid(grid, matrix);
+          btn.appendChild(label);
+          btn.appendChild(grid);
+          btn.addEventListener('click', () => handleAnswer(i));
+          optionsGrid.appendChild(btn);
+        });
+
+        startTimer();
+      }
+
+      function handleAnswer(idx) {
+        if (answered) return;
+        answered = true;
+        clearTimer();
+
+        const cards = optionsGrid.querySelectorAll('.option-card');
+        cards.forEach(c => (c.disabled = true));
+
+        const isCorrect = idx === puzzle.correctIndex;
+        cards[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+        if (!isCorrect) cards[puzzle.correctIndex].classList.add('correct');
+
+        if (isCorrect) { sessionCorrect++; triggerHaptic(); }
+        else           { sessionIncorrect++; triggerHapticError(); }
+
+        advanceQuestion(isCorrect ? POST_CORRECT_MS : POST_WRONG_MS);
+      }
+
+      // ── Session end ────────────────────────────────────────────────────────────
+
+      function endSession() {
+        const total    = sessionCorrect + sessionIncorrect;
+        const accuracy = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
+        document.getElementById('modal-correct').textContent   = sessionCorrect;
+        document.getElementById('modal-incorrect').textContent = sessionIncorrect;
+        document.getElementById('modal-acc').textContent       = accuracy + '%';
+        saveSessionRecord({ correct: sessionCorrect, incorrect: sessionIncorrect, accuracy });
+        setTimeout(() => document.getElementById('results-modal').classList.remove('hidden'), 200);
+      }
+
+      function startNewSession() {
+        sessionCorrect   = 0;
+        sessionIncorrect = 0;
+        questionNum      = 0;
+        document.getElementById('results-modal').classList.add('hidden');
+        newPuzzle();
+      }
+
+      // ── Init ───────────────────────────────────────────────────────────────────
+
+      document.getElementById('modal-close-btn').addEventListener('click', () => {
+        triggerHaptic();
+        startNewSession();
+      });
+
+      document.getElementById('play-btn').addEventListener('click', () => {
+        triggerHaptic();
+        document.getElementById('intro-overlay').classList.add('hidden');
+        newPuzzle();
+      });
+
+      initHaptic();
+      getHistory();
+    </script>
+  </body>
+</html>
