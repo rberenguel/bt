@@ -45,6 +45,7 @@
 ## Files Touched
 
 ### mussol/ (new or rewritten)
+
 - **mussol/app.js**: New ES module — session logic, timer, brain fill, haptics, history
 - **mussol/storage.js**: New — shared storage adapter, `mussol_history`
 - **mussol/history.js**: New — shared history UI wiring
@@ -53,6 +54,7 @@
 - **mussol/style.css**: Rewritten — bt structural styles + mussol hexagon aesthetic + intro overlay
 
 ### bt Hub
+
 - **app.js**: Mussol added to APPS; export/import functions + button wiring; `set` added to idb-keyval import
 - **sw.js**: Regenerated cache list + `mussol/data/questions.md`; bumped to `bt-hub-v0.2.6`
 - **manifest.json**: Bumped to `0.2.6`
@@ -60,4 +62,5 @@
 - **style.css**: Scroll fix; `#data-actions` button styles
 
 ### Shared
+
 - **shared/history.js**: Trend chart floor formula fixed (`min - range` instead of `min - range*0.1`)

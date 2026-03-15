@@ -91,15 +91,15 @@ setBrainFill(0);
 
 btnLeft.addEventListener("click", (e) => {
   //if (!btnLeft.disabled) {
-		console.log("L")
-		//e.preventDefault();
-    triggerHaptic();
+  console.log("L");
+  //e.preventDefault();
+  triggerHaptic();
   //}
 });
 btnRight.addEventListener("click", (e) => {
   //if (!btnRight.disabled) {
-		//e.preventDefault();
-    triggerHaptic();
+  //e.preventDefault();
+  triggerHaptic();
   //}
 });
 
@@ -376,14 +376,14 @@ $("close-history-btn").addEventListener("click", () =>
 btnLeft.addEventListener("pointerdown", () => {
   if (!btnLeft.disabled) {
     btnLeft.classList.add("pressed");
-		triggerHaptic();
+    triggerHaptic();
     dispatch("left");
   }
 });
 btnRight.addEventListener("pointerdown", () => {
   if (!btnRight.disabled) {
     btnRight.classList.add("pressed");
-		triggerHaptic();
+    triggerHaptic();
     dispatch("right");
   }
 });

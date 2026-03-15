@@ -10,7 +10,13 @@
     <link rel="icon" href="favicon.ico" />
     <link rel="manifest" href="manifest.json" />
     <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
       :root {
         --bg: #000;
@@ -23,12 +29,16 @@
         --red: #ef4444;
       }
 
-      html, body {
+      html,
+      body {
         height: 100%;
         overflow: hidden;
         background: var(--bg);
         color: var(--text);
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
       }
 
       .app-container {
@@ -119,11 +129,21 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      .option-card:active { opacity: 0.75; }
-      .option-card.correct { border-color: var(--green); }
-      .option-card.wrong   { border-color: var(--red); }
-      .option-card[disabled] { cursor: default; }
-      .option-card[disabled]:active { opacity: 1; }
+      .option-card:active {
+        opacity: 0.75;
+      }
+      .option-card.correct {
+        border-color: var(--green);
+      }
+      .option-card.wrong {
+        border-color: var(--red);
+      }
+      .option-card[disabled] {
+        cursor: default;
+      }
+      .option-card[disabled]:active {
+        opacity: 1;
+      }
 
       .dot-grid {
         flex: 1;
@@ -142,8 +162,12 @@
         border-radius: 50%;
       }
 
-      .dot.on  { background: var(--amber); }
-      .dot.off { background: #1c1c1c; }
+      .dot.on {
+        background: var(--amber);
+      }
+      .dot.off {
+        background: #1c1c1c;
+      }
 
       .divider {
         height: 1px;
@@ -179,7 +203,9 @@
         transition: opacity 0.25s ease-in-out;
       }
 
-      #game.fading { opacity: 0; }
+      #game.fading {
+        opacity: 0;
+      }
 
       /* Intro overlay */
       .intro-overlay {
@@ -192,7 +218,9 @@
         z-index: 50;
       }
 
-      .intro-overlay.hidden { display: none; }
+      .intro-overlay.hidden {
+        display: none;
+      }
 
       .intro-content {
         max-width: 340px;
@@ -233,7 +261,7 @@
       }
 
       .intro-rules li::before {
-        content: '·';
+        content: "·";
         position: absolute;
         left: 0;
         color: var(--amber);
@@ -253,7 +281,9 @@
         margin-top: 0.5rem;
       }
 
-      .intro-play-btn:active { opacity: 0.85; }
+      .intro-play-btn:active {
+        opacity: 0.85;
+      }
 
       .intro-icon {
         width: 72px;
@@ -264,14 +294,16 @@
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.85);
+        background: rgba(0, 0, 0, 0.85);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 100;
       }
 
-      .modal-overlay.hidden { display: none; }
+      .modal-overlay.hidden {
+        display: none;
+      }
 
       .modal-content {
         background: var(--surface);
@@ -302,7 +334,9 @@
         font-size: 0.9rem;
       }
 
-      .modal-stat .label { color: var(--muted); }
+      .modal-stat .label {
+        color: var(--muted);
+      }
 
       .modal-btn {
         width: 100%;
@@ -316,13 +350,17 @@
         cursor: pointer;
       }
 
-      .modal-btn:active { opacity: 0.85; }
+      .modal-btn:active {
+        opacity: 0.85;
+      }
     </style>
   </head>
   <body>
     <div class="app-container">
       <div class="header">
-        <a href="../" class="app-name">Dot Matrix <span class="version-text">v0.1.0</span></a>
+        <a href="../" class="app-name"
+          >Dot Matrix <span class="version-text">v0.1.0</span></a
+        >
         <span id="q-counter" class="q-counter"></span>
       </div>
 
@@ -355,9 +393,16 @@
       <div class="modal-content">
         <h2>Session complete</h2>
         <div class="modal-stats">
-          <div class="modal-stat"><span class="label">Correct</span><span id="modal-correct">—</span></div>
-          <div class="modal-stat"><span class="label">Incorrect</span><span id="modal-incorrect">—</span></div>
-          <div class="modal-stat"><span class="label">Accuracy</span><span id="modal-acc">—</span></div>
+          <div class="modal-stat">
+            <span class="label">Correct</span><span id="modal-correct">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Incorrect</span
+            ><span id="modal-incorrect">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Accuracy</span><span id="modal-acc">—</span>
+          </div>
         </div>
         <button id="modal-close-btn" class="modal-btn">Play again</button>
       </div>
@@ -365,14 +410,20 @@
 
     <script type="module">
       import { saveSessionRecord, getHistory } from "./storage.js";
-      import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+      import {
+        initHaptic,
+        triggerHaptic,
+        triggerHapticError,
+      } from "../shared/haptic.js";
 
       // ── DotMatrix ─────────────────────────────────────────────────────────────
 
       class DotMatrix {
         constructor(size = 7) {
           this.size = size;
-          this.grid = Array.from({length: size}, () => new Array(size).fill(false));
+          this.grid = Array.from({ length: size }, () =>
+            new Array(size).fill(false),
+          );
         }
 
         randomize(density = 0.15) {
@@ -389,12 +440,12 @@
 
         shift(dx, dy) {
           const n = this.size;
-          const ng = Array.from({length: n}, () => new Array(n).fill(false));
+          const ng = Array.from({ length: n }, () => new Array(n).fill(false));
           for (let y = 0; y < n; y++)
             for (let x = 0; x < n; x++)
               if (this.grid[y][x]) {
-                const nx = ((x + dx) % n + n) % n;
-                const ny = ((y + dy) % n + n) % n;
+                const nx = (((x + dx) % n) + n) % n;
+                const ny = (((y + dy) % n) + n) % n;
                 ng[ny][nx] = true;
               }
           this.grid = ng;
@@ -404,12 +455,12 @@
         rotate() {
           const n = this.size;
           const c = (n - 1) / 2;
-          const ng = Array.from({length: n}, () => new Array(n).fill(false));
+          const ng = Array.from({ length: n }, () => new Array(n).fill(false));
           for (let y = 0; y < n; y++)
             for (let x = 0; x < n; x++)
               if (this.grid[y][x]) {
                 const nx = Math.round(-(y - c) + c);
-                const ny = Math.round((x - c) + c);
+                const ny = Math.round(x - c + c);
                 if (nx >= 0 && nx < n && ny >= 0 && ny < n) ng[ny][nx] = true;
               }
           this.grid = ng;
@@ -433,16 +484,56 @@
 
       // Canonical polyomino templates (1–4 dots, coords relative to top-left)
       const SHAPES = [
-        [[0,0]],                                   // 1-dot
-        [[0,0],[1,0]],                             // 2-dot
-        [[0,0],[1,0],[2,0]],                       // 3-line
-        [[0,0],[1,0],[1,1]],                       // 3-L
-        [[0,0],[1,0],[0,1]],                       // 3-corner
-        [[0,0],[1,0],[2,0],[3,0]],                 // 4-line
-        [[0,0],[1,0],[2,0],[1,1]],                 // 4-T
-        [[0,0],[1,0],[1,1],[2,1]],                 // 4-S
-        [[0,0],[0,1],[0,2],[1,2]],                 // 4-L
-        [[0,0],[1,0],[2,0],[2,1]],                 // 4-J
+        [[0, 0]], // 1-dot
+        [
+          [0, 0],
+          [1, 0],
+        ], // 2-dot
+        [
+          [0, 0],
+          [1, 0],
+          [2, 0],
+        ], // 3-line
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+        ], // 3-L
+        [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+        ], // 3-corner
+        [
+          [0, 0],
+          [1, 0],
+          [2, 0],
+          [3, 0],
+        ], // 4-line
+        [
+          [0, 0],
+          [1, 0],
+          [2, 0],
+          [1, 1],
+        ], // 4-T
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [2, 1],
+        ], // 4-S
+        [
+          [0, 0],
+          [0, 1],
+          [0, 2],
+          [1, 2],
+        ], // 4-L
+        [
+          [0, 0],
+          [1, 0],
+          [2, 0],
+          [2, 1],
+        ], // 4-J
       ];
 
       function rotateTemplate(tmpl) {
@@ -485,8 +576,14 @@
         const shapeCy = tmpl.reduce((s, [, y]) => s + y, 0) / tmpl.length;
         // Small jitter so multiple shapes don't all collapse to the same position
         const jitter = () => Math.floor(Math.random() * 3) - 1;
-        const ox = Math.max(0, Math.min(n - 1 - maxX, Math.round(c - shapeCx + jitter())));
-        const oy = Math.max(0, Math.min(n - 1 - maxY, Math.round(c - shapeCy + jitter())));
+        const ox = Math.max(
+          0,
+          Math.min(n - 1 - maxX, Math.round(c - shapeCx + jitter())),
+        );
+        const oy = Math.max(
+          0,
+          Math.min(n - 1 - maxY, Math.round(c - shapeCy + jitter())),
+        );
         for (const [x, y] of tmpl) matrix.grid[oy + y][ox + x] = true;
       }
 
@@ -494,35 +591,50 @@
 
       function generatePuzzle(size = 7) {
         // Four equally-likely modes: translate, rotate, compound, dual
-        const modes = ['translate', 'rotate', 'compound', 'dual'];
+        const modes = ["translate", "rotate", "compound", "dual"];
         const mode = modes[Math.floor(Math.random() * modes.length)];
         const frames = [];
-        let rd = {mode};
+        let rd = { mode };
 
-        if (mode === 'dual') {
-          const m1 = new DotMatrix(size); initWithShapes(m1, 2);
-          const m2 = new DotMatrix(size); initWithShapes(m2, 2);
-          let dx1 = 1, dy1 = 0, dx2 = 0, dy2 = 1;
-          if (Math.random() > 0.5) { dx1 = 0; dy1 = 1; dx2 = -1; dy2 = 0; }
-          const m1s = [], m2s = [];
-          for (let i = 0; i < 5; i++) {
-            m1s.push(m1.clone()); m2s.push(m2.clone());
-            const f = m1.clone(); f.merge(m2); frames.push(f);
-            m1.shift(dx1, dy1); m2.shift(dx2, dy2);
+        if (mode === "dual") {
+          const m1 = new DotMatrix(size);
+          initWithShapes(m1, 2);
+          const m2 = new DotMatrix(size);
+          initWithShapes(m2, 2);
+          let dx1 = 1,
+            dy1 = 0,
+            dx2 = 0,
+            dy2 = 1;
+          if (Math.random() > 0.5) {
+            dx1 = 0;
+            dy1 = 1;
+            dx2 = -1;
+            dy2 = 0;
           }
-          rd = {...rd, dx1, dy1, dx2, dy2, m1s, m2s};
-
+          const m1s = [],
+            m2s = [];
+          for (let i = 0; i < 5; i++) {
+            m1s.push(m1.clone());
+            m2s.push(m2.clone());
+            const f = m1.clone();
+            f.merge(m2);
+            frames.push(f);
+            m1.shift(dx1, dy1);
+            m2.shift(dx2, dy2);
+          }
+          rd = { ...rd, dx1, dy1, dx2, dy2, m1s, m2s };
         } else {
           // Single-pattern: translate, rotate, or both
-          const rotates = mode === 'rotate' || mode === 'compound';
-          let dx = 0, dy = 0;
-          if (mode === 'translate' || mode === 'compound') {
+          const rotates = mode === "rotate" || mode === "compound";
+          let dx = 0,
+            dy = 0;
+          if (mode === "translate" || mode === "compound") {
             while (dx === 0 && dy === 0) {
               dx = Math.floor(Math.random() * 3) - 1;
               dy = Math.floor(Math.random() * 3) - 1;
             }
           }
-          rd = {...rd, dx, dy, rotates};
+          rd = { ...rd, dx, dy, rotates };
 
           const m = new DotMatrix(size);
           initWithShapes(m, 4);
@@ -541,111 +653,135 @@
         let ci = 0;
         for (let i = all.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          if (i === ci) ci = j; else if (j === ci) ci = i;
+          if (i === ci) ci = j;
+          else if (j === ci) ci = i;
           [all[i], all[j]] = [all[j], all[i]];
         }
 
-        return {shownFrames: frames.slice(0, 4), options: all, correctIndex: ci};
+        return {
+          shownFrames: frames.slice(0, 4),
+          options: all,
+          correctIndex: ci,
+        };
       }
 
       function getWrongOptions(rd, frames, size) {
         const f3 = frames[3];
 
-        if (rd.mode === 'dual') {
-          const {dx1, dy1, dx2, dy2, m1s, m2s} = rd;
-          const w1 = m1s[4].clone(); w1.merge(m2s[3]); // only p1 advances
-          const w2 = m1s[3].clone(); w2.merge(m2s[4]); // only p2 advances
-          const w3m1 = m1s[3].clone(); w3m1.shift(dx2, dy2);
-          const w3m2 = m2s[3].clone(); w3m2.shift(dx1, dy1);
-          const w3 = w3m1.clone(); w3.merge(w3m2);     // directions swapped
+        if (rd.mode === "dual") {
+          const { dx1, dy1, dx2, dy2, m1s, m2s } = rd;
+          const w1 = m1s[4].clone();
+          w1.merge(m2s[3]); // only p1 advances
+          const w2 = m1s[3].clone();
+          w2.merge(m2s[4]); // only p2 advances
+          const w3m1 = m1s[3].clone();
+          w3m1.shift(dx2, dy2);
+          const w3m2 = m2s[3].clone();
+          w3m2.shift(dx1, dy1);
+          const w3 = w3m1.clone();
+          w3.merge(w3m2); // directions swapped
           return [w1, w2, w3];
         }
 
-        const {dx, dy, rotates, mode} = rd;
+        const { dx, dy, rotates, mode } = rd;
 
-        if (mode === 'translate') {
-          const w1 = f3.clone();                        // no advance
-          const w2 = f3.clone(); w2.shift(-dx, -dy);   // opposite direction
-          const w3 = f3.clone(); w3.shift(dy, -dx);    // perpendicular
+        if (mode === "translate") {
+          const w1 = f3.clone(); // no advance
+          const w2 = f3.clone();
+          w2.shift(-dx, -dy); // opposite direction
+          const w3 = f3.clone();
+          w3.shift(dy, -dx); // perpendicular
           return [w1, w2, w3];
         }
 
-        if (mode === 'rotate') {
-          const w1 = f3.clone();                                         // no rotation
-          const w2 = f3.clone(); w2.rotate(); w2.rotate(); w2.rotate();  // CCW
-          const w3 = f3.clone(); w3.rotate(); w3.rotate();               // 180°
+        if (mode === "rotate") {
+          const w1 = f3.clone(); // no rotation
+          const w2 = f3.clone();
+          w2.rotate();
+          w2.rotate();
+          w2.rotate(); // CCW
+          const w3 = f3.clone();
+          w3.rotate();
+          w3.rotate(); // 180°
           return [w1, w2, w3];
         }
 
         // compound: rotate + translate
-        const w1 = f3.clone(); w1.rotate();                  // rotate only, no shift
-        const w2 = f3.clone(); w2.shift(dx, dy);             // shift only, no rotate
-        const w3 = f3.clone(); w3.rotate(); w3.shift(-dx, -dy); // rotate + opposite shift
+        const w1 = f3.clone();
+        w1.rotate(); // rotate only, no shift
+        const w2 = f3.clone();
+        w2.shift(dx, dy); // shift only, no rotate
+        const w3 = f3.clone();
+        w3.rotate();
+        w3.shift(-dx, -dy); // rotate + opposite shift
         return [w1, w2, w3];
       }
 
       // ── Rendering ─────────────────────────────────────────────────────────────
 
       function renderDotGrid(container, matrix) {
-        container.innerHTML = '';
-        container.style.setProperty('--gs', matrix.size);
+        container.innerHTML = "";
+        container.style.setProperty("--gs", matrix.size);
         for (let y = 0; y < matrix.size; y++)
           for (let x = 0; x < matrix.size; x++) {
-            const dot = document.createElement('div');
-            dot.className = 'dot ' + (matrix.grid[y][x] ? 'on' : 'off');
+            const dot = document.createElement("div");
+            dot.className = "dot " + (matrix.grid[y][x] ? "on" : "off");
             container.appendChild(dot);
           }
       }
 
       // ── Session state ──────────────────────────────────────────────────────────
 
-      const SESSION_LENGTH   = 10;
+      const SESSION_LENGTH = 10;
       const QUESTION_TIME_MS = 20000;
-      const POST_CORRECT_MS  = 600;
-      const POST_WRONG_MS    = 1500;
-      const FADE_MS          = 250;
+      const POST_CORRECT_MS = 600;
+      const POST_WRONG_MS = 1500;
+      const FADE_MS = 250;
 
-      let puzzle           = null;
-      let answered         = false;
-      let autoTimer        = null;
-      let timerTimeout     = null;
-      let questionNum      = 0;
-      let sessionCorrect   = 0;
+      let puzzle = null;
+      let answered = false;
+      let autoTimer = null;
+      let timerTimeout = null;
+      let questionNum = 0;
+      let sessionCorrect = 0;
       let sessionIncorrect = 0;
 
-      const gameEl      = document.getElementById('game');
-      const framesGrid  = document.getElementById('frames-grid');
-      const optionsGrid = document.getElementById('options-grid');
-      const qCounter    = document.getElementById('q-counter');
-      const timerBar    = document.getElementById('timer-bar');
+      const gameEl = document.getElementById("game");
+      const framesGrid = document.getElementById("frames-grid");
+      const optionsGrid = document.getElementById("options-grid");
+      const qCounter = document.getElementById("q-counter");
+      const timerBar = document.getElementById("timer-bar");
 
       // ── Timer ──────────────────────────────────────────────────────────────────
 
       function startTimer() {
         clearTimer();
-        timerBar.style.transition = 'none';
-        timerBar.style.width = '100%';
-        timerBar.style.backgroundColor = 'var(--amber)';
+        timerBar.style.transition = "none";
+        timerBar.style.width = "100%";
+        timerBar.style.backgroundColor = "var(--amber)";
         void timerBar.offsetWidth;
         timerBar.style.transition = `width ${QUESTION_TIME_MS}ms linear, background-color ${QUESTION_TIME_MS}ms ease-in`;
-        timerBar.style.width = '0%';
-        timerBar.style.backgroundColor = 'var(--red)';
+        timerBar.style.width = "0%";
+        timerBar.style.backgroundColor = "var(--red)";
         timerTimeout = setTimeout(handleTimeout, QUESTION_TIME_MS);
       }
 
       function clearTimer() {
-        if (timerTimeout) { clearTimeout(timerTimeout); timerTimeout = null; }
-        timerBar.style.transition = 'none';
-        timerBar.style.width = '0%';
+        if (timerTimeout) {
+          clearTimeout(timerTimeout);
+          timerTimeout = null;
+        }
+        timerBar.style.transition = "none";
+        timerBar.style.width = "0%";
       }
 
       function handleTimeout() {
         if (answered) return;
         answered = true;
         sessionIncorrect++;
-        const cards = optionsGrid.querySelectorAll('.option-card');
-        cards.forEach(c => (c.disabled = true));
-        cards[puzzle.correctIndex].classList.add('correct');
+        const cards = optionsGrid.querySelectorAll(".option-card");
+        cards.forEach((c) => (c.disabled = true));
+        cards[puzzle.correctIndex].classList.add("correct");
         triggerHapticError();
         advanceQuestion(POST_WRONG_MS);
       }
@@ -653,17 +789,17 @@
       // ── Fade + advance ─────────────────────────────────────────────────────────
 
       function advanceQuestion(delay) {
-        const total     = Math.max(delay, FADE_MS);
+        const total = Math.max(delay, FADE_MS);
         const fadeStart = total - FADE_MS;
-        autoTimer = setTimeout(() => gameEl.classList.add('fading'), fadeStart);
+        autoTimer = setTimeout(() => gameEl.classList.add("fading"), fadeStart);
         autoTimer = setTimeout(() => {
           if (questionNum >= SESSION_LENGTH) {
-            gameEl.classList.remove('fading');
+            gameEl.classList.remove("fading");
             endSession();
             return;
           }
           newPuzzle();
-          gameEl.classList.remove('fading');
+          gameEl.classList.remove("fading");
         }, total);
       }
 
@@ -672,38 +808,38 @@
       function newPuzzle() {
         answered = false;
         questionNum++;
-        qCounter.textContent = questionNum + ' / ' + SESSION_LENGTH;
+        qCounter.textContent = questionNum + " / " + SESSION_LENGTH;
 
         puzzle = generatePuzzle(7);
 
-        framesGrid.innerHTML = '';
+        framesGrid.innerHTML = "";
         puzzle.shownFrames.forEach((matrix, i) => {
-          const card  = document.createElement('div');
-          card.className = 'frame-card';
-          const label = document.createElement('div');
-          label.className = 'card-label';
+          const card = document.createElement("div");
+          card.className = "frame-card";
+          const label = document.createElement("div");
+          label.className = "card-label";
           label.textContent = i + 1;
-          const grid  = document.createElement('div');
-          grid.className = 'dot-grid';
+          const grid = document.createElement("div");
+          grid.className = "dot-grid";
           renderDotGrid(grid, matrix);
           card.appendChild(label);
           card.appendChild(grid);
           framesGrid.appendChild(card);
         });
 
-        optionsGrid.innerHTML = '';
+        optionsGrid.innerHTML = "";
         puzzle.options.forEach((matrix, i) => {
-          const btn   = document.createElement('button');
-          btn.className = 'option-card';
-          const label = document.createElement('div');
-          label.className = 'card-label';
+          const btn = document.createElement("button");
+          btn.className = "option-card";
+          const label = document.createElement("div");
+          label.className = "card-label";
           label.textContent = String.fromCharCode(65 + i);
-          const grid  = document.createElement('div');
-          grid.className = 'dot-grid';
+          const grid = document.createElement("div");
+          grid.className = "dot-grid";
           renderDotGrid(grid, matrix);
           btn.appendChild(label);
           btn.appendChild(grid);
-          btn.addEventListener('click', () => handleAnswer(i));
+          btn.addEventListener("click", () => handleAnswer(i));
           optionsGrid.appendChild(btn);
         });
 
@@ -715,15 +851,20 @@
         answered = true;
         clearTimer();
 
-        const cards = optionsGrid.querySelectorAll('.option-card');
-        cards.forEach(c => (c.disabled = true));
+        const cards = optionsGrid.querySelectorAll(".option-card");
+        cards.forEach((c) => (c.disabled = true));
 
         const isCorrect = idx === puzzle.correctIndex;
-        cards[idx].classList.add(isCorrect ? 'correct' : 'wrong');
-        if (!isCorrect) cards[puzzle.correctIndex].classList.add('correct');
+        cards[idx].classList.add(isCorrect ? "correct" : "wrong");
+        if (!isCorrect) cards[puzzle.correctIndex].classList.add("correct");
 
-        if (isCorrect) { sessionCorrect++; triggerHaptic(); }
-        else           { sessionIncorrect++; triggerHapticError(); }
+        if (isCorrect) {
+          sessionCorrect++;
+          triggerHaptic();
+        } else {
+          sessionIncorrect++;
+          triggerHapticError();
+        }
 
         advanceQuestion(isCorrect ? POST_CORRECT_MS : POST_WRONG_MS);
       }
@@ -731,33 +872,45 @@
       // ── Session end ────────────────────────────────────────────────────────────
 
       function endSession() {
-        const total    = sessionCorrect + sessionIncorrect;
-        const accuracy = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
-        document.getElementById('modal-correct').textContent   = sessionCorrect;
-        document.getElementById('modal-incorrect').textContent = sessionIncorrect;
-        document.getElementById('modal-acc').textContent       = accuracy + '%';
-        saveSessionRecord({ correct: sessionCorrect, incorrect: sessionIncorrect, accuracy });
-        setTimeout(() => document.getElementById('results-modal').classList.remove('hidden'), 200);
+        const total = sessionCorrect + sessionIncorrect;
+        const accuracy =
+          total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
+        document.getElementById("modal-correct").textContent = sessionCorrect;
+        document.getElementById("modal-incorrect").textContent =
+          sessionIncorrect;
+        document.getElementById("modal-acc").textContent = accuracy + "%";
+        saveSessionRecord({
+          correct: sessionCorrect,
+          incorrect: sessionIncorrect,
+          accuracy,
+        });
+        setTimeout(
+          () =>
+            document.getElementById("results-modal").classList.remove("hidden"),
+          200,
+        );
       }
 
       function startNewSession() {
-        sessionCorrect   = 0;
+        sessionCorrect = 0;
         sessionIncorrect = 0;
-        questionNum      = 0;
-        document.getElementById('results-modal').classList.add('hidden');
+        questionNum = 0;
+        document.getElementById("results-modal").classList.add("hidden");
         newPuzzle();
       }
 
       // ── Init ───────────────────────────────────────────────────────────────────
 
-      document.getElementById('modal-close-btn').addEventListener('click', () => {
-        triggerHaptic();
-        startNewSession();
-      });
+      document
+        .getElementById("modal-close-btn")
+        .addEventListener("click", () => {
+          triggerHaptic();
+          startNewSession();
+        });
 
-      document.getElementById('play-btn').addEventListener('click', () => {
+      document.getElementById("play-btn").addEventListener("click", () => {
         triggerHaptic();
-        document.getElementById('intro-overlay').classList.add('hidden');
+        document.getElementById("intro-overlay").classList.add("hidden");
         newPuzzle();
       });
 

@@ -1,7 +1,11 @@
 import { FireSystem } from "../shared/fire.js";
 import { saveSession } from "./storage.js";
 import { openHistoryModal } from "./history.js";
-import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../shared/haptic.js";
 
 // ── DOM ───────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -82,7 +86,10 @@ let fillPauseStart = 0;
 
 function fillTick() {
   if (!sessionActive) return;
-  const progress = Math.min((Date.now() - sessionStartTime - fillPausedTotal) / TOTAL_DURATION, 1);
+  const progress = Math.min(
+    (Date.now() - sessionStartTime - fillPausedTotal) / TOTAL_DURATION,
+    1,
+  );
   setBrainFill(progress);
   fillRafId = requestAnimationFrame(fillTick);
 }
@@ -95,7 +102,10 @@ function startFillLoop() {
 
 function pauseFill() {
   fillPauseStart = Date.now();
-  if (fillRafId) { cancelAnimationFrame(fillRafId); fillRafId = null; }
+  if (fillRafId) {
+    cancelAnimationFrame(fillRafId);
+    fillRafId = null;
+  }
 }
 
 function resumeFill() {
@@ -104,7 +114,10 @@ function resumeFill() {
 }
 
 function stopFillLoop() {
-  if (fillRafId) { cancelAnimationFrame(fillRafId); fillRafId = null; }
+  if (fillRafId) {
+    cancelAnimationFrame(fillRafId);
+    fillRafId = null;
+  }
 }
 
 // ── Ball picker ───────────────────────────────────────────
@@ -155,10 +168,22 @@ function animate() {
     obj.x += obj.dx * 0.4;
     obj.y += obj.dy * 0.4;
 
-    if (obj.x <= bounds.xMin) { obj.x = bounds.xMin; obj.dx *= -1; }
-    if (obj.x >= bounds.xMax) { obj.x = bounds.xMax; obj.dx *= -1; }
-    if (obj.y <= bounds.yMin) { obj.y = bounds.yMin; obj.dy *= -1; }
-    if (obj.y >= bounds.yMax) { obj.y = bounds.yMax; obj.dy *= -1; }
+    if (obj.x <= bounds.xMin) {
+      obj.x = bounds.xMin;
+      obj.dx *= -1;
+    }
+    if (obj.x >= bounds.xMax) {
+      obj.x = bounds.xMax;
+      obj.dx *= -1;
+    }
+    if (obj.y <= bounds.yMin) {
+      obj.y = bounds.yMin;
+      obj.dy *= -1;
+    }
+    if (obj.y >= bounds.yMax) {
+      obj.y = bounds.yMax;
+      obj.dy *= -1;
+    }
 
     obj.element.style.left = obj.x + "%";
     obj.element.style.top = obj.y + "%";
@@ -268,10 +293,14 @@ function runPhase2() {
   });
 
   schedule(() => {
-    startVerification([targets[targets.length - 1]], "Tap the last flashed ball", (got) => {
-      results.phase2 = got >= 1 ? 1 : 0;
-      runPhase3();
-    });
+    startVerification(
+      [targets[targets.length - 1]],
+      "Tap the last flashed ball",
+      (got) => {
+        results.phase2 = got >= 1 ? 1 : 0;
+        runPhase3();
+      },
+    );
   }, PHASE_DURATION);
 }
 
@@ -303,8 +332,10 @@ function endSession() {
   instrEl.textContent = "";
 
   const score = results.phase1 + results.phase2 + results.phase3;
-  const accuracy = Math.round(((results.phase1 + results.phase2 + results.phase3 / 3) / 3) * 100);
-  const eb = parseFloat((ballCount * accuracy / 100).toFixed(1));
+  const accuracy = Math.round(
+    ((results.phase1 + results.phase2 + results.phase3 / 3) / 3) * 100,
+  );
+  const eb = parseFloat(((ballCount * accuracy) / 100).toFixed(1));
 
   $("modal-eb").textContent = eb;
   $("modal-score").textContent = score + " / 5";
@@ -314,7 +345,15 @@ function endSession() {
   $("modal-p2").textContent = results.phase2 ? "✓" : "✗";
   $("modal-p3").textContent = results.phase3 + " / 3";
 
-  saveSession({ balls: ballCount, accuracy, eb, score, phase1: results.phase1, phase2: results.phase2, phase3: results.phase3 });
+  saveSession({
+    balls: ballCount,
+    accuracy,
+    eb,
+    score,
+    phase1: results.phase1,
+    phase2: results.phase2,
+    phase3: results.phase3,
+  });
 
   $("results-modal").classList.remove("hidden");
 }
@@ -342,7 +381,9 @@ function showIntro() {
   isAnimating = false;
   cancelAnimationFrame(animationFrame);
   sessionActive = false;
-  objects.forEach((o) => o.element.classList.remove("correct", "wrong", "shine"));
+  objects.forEach((o) =>
+    o.element.classList.remove("correct", "wrong", "shine"),
+  );
   instrEl.textContent = "";
   setBrainFill(0);
   introOverlay.style.display = "";

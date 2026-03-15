@@ -96,12 +96,12 @@ function initNumpad() {
       btnPlay.className = "numpad-btn play-btn";
       btnPlay.innerHTML = playIcon;
 
-     btnPlay.addEventListener("click",
-			  (e) => {
-					if (btnPlay.disabled) return;
-          e.preventDefault();
-          triggerHaptic();
-			  }); btnPlay.addEventListener("pointerdown", (e) => {
+      btnPlay.addEventListener("click", (e) => {
+        if (btnPlay.disabled) return;
+        e.preventDefault();
+        triggerHaptic();
+      });
+      btnPlay.addEventListener("pointerdown", (e) => {
         e.preventDefault();
         btnPlay.classList.add("pressed");
         togglePlayState();
@@ -132,12 +132,11 @@ function initNumpad() {
       const btn = document.createElement("button");
       btn.className = "numpad-btn";
       btn.innerText = key;
-      btn.addEventListener("click",
-			  (e) => {
-					if (btn.disabled) return;
-          e.preventDefault();
-          triggerHaptic();
-			  });
+      btn.addEventListener("click", (e) => {
+        if (btn.disabled) return;
+        e.preventDefault();
+        triggerHaptic();
+      });
       btn.addEventListener("pointerdown", (e) => {
         if (btn.disabled) return;
         e.preventDefault();

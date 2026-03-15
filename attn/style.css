@@ -231,7 +231,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .picker-btn:hover {
@@ -268,7 +270,9 @@ button {
   border-radius: 0.75rem;
   font-size: 1.1rem;
   font-weight: 600;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .start-btn:hover {
@@ -286,21 +290,32 @@ button {
   height: 32px;
   border-radius: 50%;
   background: #94a3b8;
-  transition: box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   cursor: pointer;
   transform: translate(-50%, -50%);
 }
 
 .ball.shine {
-  animation: pulse-glow 1.0s ease-out;
+  animation: pulse-glow 1s ease-out;
   z-index: 10;
   background: #ffffff;
 }
 
 @keyframes pulse-glow {
-  0%   { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0.7); }
-  50%  { transform: translate(-50%, -50%) scale(1.6); box-shadow: 0 0 30px 15px rgba(255, 255, 255, 0.9); }
-  100% { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0); }
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0.7);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.6);
+    box-shadow: 0 0 30px 15px rgba(255, 255, 255, 0.9);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+  }
 }
 
 .ball.correct {
@@ -395,7 +410,9 @@ button {
   border-radius: 0.75rem;
   font-size: 1.1rem;
   font-weight: 600;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .modal-btn:hover {

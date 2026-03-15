@@ -170,11 +170,18 @@ const APPS = [
     id: "dotmatrix",
     name: "Dot Matrix",
     path: "./dotmatrix/",
+    icon: "./dotmatrix/icon.png",
     color: "#d97706",
     storageKey: "dotmatrix_history",
     keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
     metricDefs: [
-      { key: "accuracy", label: "Acc", desc: "Correctness", unit: "%", invertColor: false },
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
       { key: "correct", label: "Correct", unit: "", invertColor: false },
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
@@ -360,12 +367,18 @@ async function exportData() {
   const appHistories = {};
   for (const app of APPS) {
     if (app.storageKey) {
-      appHistories[app.storageKey] = await makeStorage(app.storageKey).getHistory();
+      appHistories[app.storageKey] = await makeStorage(
+        app.storageKey,
+      ).getHistory();
     }
   }
 
   const payload = JSON.stringify(
-    { exported: new Date().toISOString(), version: 1, data: { sessions: nbRaw, ...appHistories } },
+    {
+      exported: new Date().toISOString(),
+      version: 1,
+      data: { sessions: nbRaw, ...appHistories },
+    },
     null,
     2,
   );
@@ -400,16 +413,23 @@ async function importData(file) {
       const existing = (await get("sessions")) || [];
       const byDate = new Map(existing.map((s) => [s.date, s]));
       for (const s of payload.data.sessions) byDate.set(s.date, s);
-      await set("sessions", [...byDate.values()].sort((a, b) => a.date - b.date));
+      await set(
+        "sessions",
+        [...byDate.values()].sort((a, b) => a.date - b.date),
+      );
     }
 
     // Merge all other apps (keyed by .timestamp)
     for (const app of APPS) {
-      if (!app.storageKey || !Array.isArray(payload.data[app.storageKey])) continue;
+      if (!app.storageKey || !Array.isArray(payload.data[app.storageKey]))
+        continue;
       const existing = await makeStorage(app.storageKey).getHistory();
       const byTs = new Map(existing.map((s) => [s.timestamp, s]));
       for (const s of payload.data[app.storageKey]) byTs.set(s.timestamp, s);
-      await set(app.storageKey, [...byTs.values()].sort((a, b) => a.timestamp - b.timestamp));
+      await set(
+        app.storageKey,
+        [...byTs.values()].sort((a, b) => a.timestamp - b.timestamp),
+      );
     }
 
     triggerHaptic();

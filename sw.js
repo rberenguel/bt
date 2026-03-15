@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.2.6";
+const CACHE_NAME = "bt-hub-v0.2.7";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -24,6 +24,10 @@ const CACHE_FILES = [
   "./clauer/js/ui.js",
   "./clauer/manifest.json",
   "./clauer/style.css",
+  "./dotmatrix/favicon.ico",
+  "./dotmatrix/icon.png",
+  "./dotmatrix/index.html",
+  "./dotmatrix/manifest.json",
   "./icon.png",
   "./index.html",
   "./manifest.json",

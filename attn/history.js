@@ -12,7 +12,8 @@ const { open } = makeHistoryUI({
     { key: "phase2", label: "Phase 2", unit: "/1", invertColor: false },
     { key: "phase3", label: "Phase 3", unit: "/3", invertColor: false },
   ],
-  sessionTitle: (s, i) => "Session " + (i + 1) + " — " + s.metrics.balls + " balls",
+  sessionTitle: (s, i) =>
+    "Session " + (i + 1) + " — " + s.metrics.balls + " balls",
   listElId: "history-list",
   modalElId: "history-modal",
 });
