@@ -1,6 +1,6 @@
 import { makeHistoryUI } from "./shared/history.js";
 import { makeStorage } from "./shared/storage.js";
-import { get } from "./shared/idb-keyval.js";
+import { get, set } from "./shared/idb-keyval.js";
 import { initHaptic, triggerHaptic } from "./shared/haptic.js";
 
 // ── App registry ──────────────────────────────────────────────────────────────
@@ -144,6 +144,26 @@ const APPS = [
       { key: "eb", label: "Eff. balls", unit: "", invertColor: false },
       { key: "balls", label: "Balls", unit: "", invertColor: false },
       { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+    ],
+  },
+  {
+    id: "mussol",
+    name: "Mussol",
+    path: "./mussol/",
+    icon: "./mussol/icon.png",
+    color: "#a855f7",
+    storageKey: "mussol_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    metricDefs: [
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      { key: "correct", label: "Correct", unit: "", invertColor: false },
+      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
   },
 ];
@@ -319,11 +339,89 @@ function initModal() {
   });
 }
 
+// ── Data export / import ──────────────────────────────────────────────────────
+
+async function exportData() {
+  triggerHaptic();
+  const nbRaw = (await get("sessions")) || [];
+  const appHistories = {};
+  for (const app of APPS) {
+    if (app.storageKey) {
+      appHistories[app.storageKey] = await makeStorage(app.storageKey).getHistory();
+    }
+  }
+
+  const payload = JSON.stringify(
+    { exported: new Date().toISOString(), version: 1, data: { sessions: nbRaw, ...appHistories } },
+    null,
+    2,
+  );
+
+  const filename = `bt-backup-${new Date().toISOString().split("T")[0]}.json`;
+  const blob = new Blob([payload], { type: "application/json" });
+
+  if (navigator.canShare) {
+    const file = new File([blob], filename, { type: "application/json" });
+    if (navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "BT Backup" });
+      return;
+    }
+  }
+
+  // Fallback: direct download
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importData(file) {
+  try {
+    const payload = JSON.parse(await file.text());
+    if (!payload.data) throw new Error("Invalid backup file");
+
+    // Merge NB sessions (keyed by .date)
+    if (Array.isArray(payload.data.sessions)) {
+      const existing = (await get("sessions")) || [];
+      const byDate = new Map(existing.map((s) => [s.date, s]));
+      for (const s of payload.data.sessions) byDate.set(s.date, s);
+      await set("sessions", [...byDate.values()].sort((a, b) => a.date - b.date));
+    }
+
+    // Merge all other apps (keyed by .timestamp)
+    for (const app of APPS) {
+      if (!app.storageKey || !Array.isArray(payload.data[app.storageKey])) continue;
+      const existing = await makeStorage(app.storageKey).getHistory();
+      const byTs = new Map(existing.map((s) => [s.timestamp, s]));
+      for (const s of payload.data[app.storageKey]) byTs.set(s.timestamp, s);
+      await set(app.storageKey, [...byTs.values()].sort((a, b) => a.timestamp - b.timestamp));
+    }
+
+    triggerHaptic();
+    location.reload();
+  } catch (e) {
+    console.error("Import failed", e);
+    alert("Import failed: " + e.message);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function init() {
   initHaptic();
   initModal();
+
+  document.getElementById("export-btn").addEventListener("click", exportData);
+  document.getElementById("import-btn").addEventListener("click", () => {
+    document.getElementById("import-file").click();
+  });
+  document.getElementById("import-file").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) importData(file);
+    e.target.value = "";
+  });
 
   // Load all session data
   const nbSessions = await loadNbSessions();

@@ -15,10 +15,18 @@
   <body>
     <div id="app">
       <header>
-        <h1>Brain Training</h1>
         <div id="streak"></div>
       </header>
       <div id="app-grid"></div>
+      <div id="data-actions">
+        <button id="export-btn" title="Export data" aria-label="Export data">
+          <i class="ph-light ph-floppy-disk"></i>
+        </button>
+        <button id="import-btn" title="Import data" aria-label="Import data">
+          <i class="ph-light ph-upload-simple"></i>
+        </button>
+        <input id="import-file" type="file" accept=".json" hidden />
+      </div>
     </div>
 
     <!-- Shared history modal (populated by shared/history.js) -->

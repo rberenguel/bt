@@ -222,9 +222,8 @@ export function makeHistoryUI({
       const max = Math.max(...values, 1);
       const min = Math.min(...values);
       const range = max - min;
-      const padding = range * 0.1;
       const chartMax = max;
-      const chartMin = Math.max(0, min - padding);
+      const chartMin = Math.max(0, min - range);
 
       let bars = "";
       values.forEach((val) => {

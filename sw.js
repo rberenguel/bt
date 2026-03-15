@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
-// Sub-app sw.js files are added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.2.5";
+// Dynamic fetch() targets added manually (not reachable via import graph).
+const CACHE_NAME = "bt-hub-v0.2.6";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -24,10 +24,19 @@ const CACHE_FILES = [
   "./clauer/js/ui.js",
   "./clauer/manifest.json",
   "./clauer/style.css",
-  "./clauer/sw.js",
   "./icon.png",
   "./index.html",
   "./manifest.json",
+  "./mussol/app.js",
+  "./mussol/data/questions.md",
+  "./mussol/faker.js",
+  "./mussol/history.js",
+  "./mussol/icon.png",
+  "./mussol/icon192.png",
+  "./mussol/index.html",
+  "./mussol/manifest.json",
+  "./mussol/storage.js",
+  "./mussol/style.css",
   "./nb/fireworks.js",
   "./nb/icon.png",
   "./nb/icon_512.png",
@@ -37,7 +46,6 @@ const CACHE_FILES = [
   "./nb/modals.js",
   "./nb/nb.js",
   "./nb/style.css",
-  "./nb/sw.js",
   "./shared/fire.js",
   "./shared/fonts/InterDisplay-Bold.woff2",
   "./shared/fonts/InterDisplay-Italic.woff2",
@@ -84,6 +92,7 @@ const CACHE_FILES = [
   "./tanmateix/history.js",
   "./tanmateix/icon.png",
   "./tanmateix/index.html",
+  "./tanmateix/lib/TAU-PROLOG-LICENSE",
   "./tanmateix/lib/tau-prolog-core.js",
   "./tanmateix/main.js",
   "./tanmateix/manifest.json",
@@ -96,7 +105,6 @@ const CACHE_FILES = [
   "./tanmateix/render/Vocabulary.js",
   "./tanmateix/render/logic.css",
   "./tanmateix/storage.js",
-  "./tanmateix/sw.js",
   "./tanmateix/utils/EntityFactory.js",
   "./tanmateix/utils/RandomUtils.js",
   "./tanmateix/utils/SpatialGrid.js",

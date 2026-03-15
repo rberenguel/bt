@@ -16,9 +16,12 @@
   --radius: 12px;
 }
 
-html,
-body {
+html {
   height: 100%;
+}
+
+body {
+  min-height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: "Inter Display", "Inter", system-ui, sans-serif;
@@ -139,6 +142,40 @@ header h1 {
 }
 .stats-btn:active {
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Data actions ─────────────────────────────────────────────── */
+#data-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+#data-actions button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+#data-actions button:hover {
+  color: var(--text);
+  border-color: #555;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#data-actions button:active {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ── History modal ────────────────────────────────────────────── */
