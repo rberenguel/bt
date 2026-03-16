@@ -109,7 +109,7 @@ function displayQuestion() {
   currentCorrectIndex = finalChoices.findIndex((c) => c === correctAnswer);
 
   elQuestionStem.innerHTML = `<span class="item-A">${q.stem[0]}</span> is to <span class="item-B">${q.stem[1]}</span> as`;
-
+  console.log(finalChoices)
   finalChoices.forEach((pair, index) => {
     const wrapper = document.createElement("div");
     wrapper.className = "choice-wrapper";
@@ -209,14 +209,14 @@ function startNewSession() {
 // --- Data loading ---
 const parseMarkdownQuestions = (text) => {
   const questions = [];
-  const lines = text.split("\n");
+  const lines = text.split("\n").filter(l => l.trim() !== "");
   let current = null;
 
   lines.forEach((line) => {
     line = line.trim();
     if (line.startsWith("#")) {
       if (current) questions.push(current);
-      const stem = line.replace(/^#\s*(?:\d+\.\s*)?/, "").trim();
+      const stem = line.slice(2).trim()
       const parts = stem.split(",").map((p) => p.trim());
       if (parts.length >= 2) {
         current = {
@@ -227,8 +227,8 @@ const parseMarkdownQuestions = (text) => {
         };
       }
     } else if (line.startsWith("-") && current) {
-      let choiceText = line.replace(/^-/, "").trim();
-      const isCorrect = choiceText.startsWith("*") && choiceText.endsWith("*");
+      let choiceText = line.slice(2).trim()
+      const isCorrect = (choiceText.startsWith("*") && choiceText.endsWith("*")) || choiceText.startsWith("_") && choiceText.endsWith("_");
       if (isCorrect) choiceText = choiceText.slice(1, -1).trim();
       const parts = choiceText.split(",").map((p) => p.trim());
       if (parts.length >= 2) {
