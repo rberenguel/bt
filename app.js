@@ -186,6 +186,27 @@ const APPS = [
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
   },
+  {
+    id: "regles",
+    name: "Regles",
+    path: "./regles/",
+    icon: "./regles/icon.png",
+    color: "#5e5ce6",
+    storageKey: "regles_history",
+    keyMetric: (s) => s.metrics.errorRate + "% err",
+    metricDefs: [
+      { key: "errorRate", label: "Errors", desc: "Wrong taps", unit: "%", invertColor: true },
+      {
+        key: "avgShiftLatency",
+        label: "SSL",
+        desc: "Shift Latency",
+        unit: "s",
+        invertColor: true,
+        format: (v) => v !== null ? v.toFixed(2) : "—",
+      },
+      { key: "interferenceRate", label: "IER", desc: "Interference", unit: "%", invertColor: true },
+    ],
+  },
 ];
 
 // ── Data loading ──────────────────────────────────────────────────────────────
