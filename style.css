@@ -32,11 +32,11 @@ body {
 #app {
   max-width: 640px;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1rem 0.75rem 3rem;
 }
 
 header {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -55,8 +55,8 @@ header h1 {
 /* ── App grid ─────────────────────────────────────────────────── */
 #app-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
 }
 
 .app-card {
@@ -64,28 +64,44 @@ header h1 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   overflow: hidden;
   transition: border-color 0.15s;
+}
+
+.app-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  padding: 0.55rem 0.5rem 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-body {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem 0.55rem;
 }
 
 .app-link {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1rem;
+  gap: 0.5rem;
   text-decoration: none;
   color: inherit;
 }
 .app-link:hover {
-  background: rgba(255, 255, 255, 0.03);
+  opacity: 0.85;
 }
 
 .app-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
   flex-shrink: 0;
   object-fit: cover;
 }
@@ -95,15 +111,8 @@ header h1 {
   min-width: 0;
 }
 
-.app-name {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
-  color: var(--text);
-}
-
 .app-last {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--muted);
 }
 .app-last.muted {
@@ -111,37 +120,34 @@ header h1 {
 }
 
 .app-week {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   color: var(--muted);
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
 .app-metric {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  margin-top: 0.4rem;
+  margin-top: 0.2rem;
   color: var(--text);
 }
 
 .stats-btn {
   background: none;
   border: none;
-  border-left: 1px solid var(--border);
-  padding: 0 0.85rem;
+  padding: 0.15rem 0.25rem;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   color: var(--muted);
-  transition:
-    background 0.15s,
-    color 0.15s;
   flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.15s;
 }
 .stats-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
   color: var(--text);
 }
 .stats-btn:active {
-  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.7;
 }
 
 /* ── Data actions ─────────────────────────────────────────────── */

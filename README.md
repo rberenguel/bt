@@ -28,6 +28,14 @@ Arithmetic under pressure. A running sum is shown — tap True or False to confi
 
 Visual adaptation of the [Attention Training Technique](https://en.wikipedia.org/wiki/Attention_training_technique) (ATT) from Adrian Wells' Metacognitive Therapy. Trains voluntary attentional control — the ability to deliberately direct focus away from self-focused rumination. Three phases per session: selective attention (track one highlighted ball among identical moving distractors), attention switching (follow a sequence of flashes, identify the last), and divided attention (track three simultaneously highlighted balls). Ball count is configurable (3–15); the key metric is _effective balls_ (ball count × accuracy), which rewards both difficulty and performance.
 
+### [rot](./rot/)
+
+3D shape rotation matching. Six cubelet shapes are shown simultaneously, all slowly wobbling in 3D. Exactly two are identical — find the matching pair before the 2-minute timer runs out. Score is the number of correct matches. Colors are randomised per shape as a mild interference layer; the pair will never share a color.
+
+### [regles](./regles/)
+
+Set-shifting under memory load. A rule stack grows one rule per level over 10 levels — only the new rule is shown; all prior rules must be held in working memory. Tiles are cleared by tapping whichever one satisfies the current active rule; once all valid tiles for that rule are gone, the next rule in the stack becomes active. Tracks error rate, set-shift latency (time from rule change to first correct tap), and interference error rate (wrong taps that would have been valid under the prior rule).
+
 ## Structure
 
 ```
@@ -48,7 +56,9 @@ bt/
 ├── tanmateix/
 ├── summum/
 ├── stop/
-└── attn/
+├── attn/
+├── regles/
+└── rot/
 ```
 
 ## Offline

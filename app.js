@@ -25,6 +25,117 @@ const APPS = [
       (s._triple ? " (triple)" : s._quad ? " (quad)" : ""),
   },
   {
+    id: "tanmateix",
+    name: "Tanmateix",
+    path: "./tanmateix/",
+    icon: "./tanmateix/icon.png",
+    color: "#9b5de5",
+    storageKey: "tanmateix_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    filterDisplay: (s) => s.metrics.total !== undefined,
+    metricDefs: [
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+      {
+        key: "score",
+        label: "Score",
+        unit: "",
+        invertColor: false,
+        format: (v, s) =>
+          s.metrics.total ? `${v}/${s.metrics.total}` : `${v}/30`,
+      },
+      { key: "maxStreak", label: "Streak", unit: "", invertColor: false },
+      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
+    ],
+  },
+  {
+    id: "rot",
+    name: "Rot",
+    path: "./rot/",
+    icon: "./rot/icon.png",
+    color: "#f43f5e",
+    storageKey: "rot_history",
+    keyMetric: (s) => s.metrics.score + " pts",
+    metricDefs: [
+      { key: "score", label: "Score", unit: "", invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+    ],
+  },
+  {
+    id: "dotmatrix",
+    name: "Dot Matrix",
+    path: "./dotmatrix/",
+    icon: "./dotmatrix/icon.png",
+    color: "#d97706",
+    storageKey: "dotmatrix_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    metricDefs: [
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      { key: "correct", label: "Correct", unit: "", invertColor: false },
+      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
+    ],
+  },
+  {
+    id: "mussol",
+    name: "Mussol",
+    path: "./mussol/",
+    icon: "./mussol/icon.png",
+    color: "#a855f7",
+    storageKey: "mussol_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    metricDefs: [
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      { key: "correct", label: "Correct", unit: "", invertColor: false },
+      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
+    ],
+  },
+  {
+    id: "regles",
+    name: "Regles",
+    path: "./regles/",
+    icon: "./regles/icon.png",
+    color: "#5e5ce6",
+    storageKey: "regles_history",
+    keyMetric: (s) => s.metrics.errorRate + "% err",
+    metricDefs: [
+      { key: "errorRate", label: "Errors", desc: "Wrong taps", unit: "%", invertColor: true },
+      {
+        key: "avgShiftLatency",
+        label: "SSL",
+        desc: "Shift Latency",
+        unit: "s",
+        invertColor: true,
+        format: (v) => v !== null ? v.toFixed(2) : "—",
+      },
+      { key: "interferenceRate", label: "IER", desc: "Interference", unit: "%", invertColor: true },
+    ],
+  },
+  {
+    id: "attn",
+    name: "Attn",
+    path: "./attn/",
+    icon: "./attn/icon.png",
+    color: "#38bdf8",
+    storageKey: "attn_history",
+    keyMetric: (s) => s.metrics.eb + " EB",
+    metricDefs: [
+      { key: "eb", label: "Eff. balls", unit: "", invertColor: false },
+      { key: "balls", label: "Balls", unit: "", invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+    ],
+  },
+  {
     id: "clauer",
     name: "Clauer",
     path: "./clauer/",
@@ -64,26 +175,17 @@ const APPS = [
     ],
   },
   {
-    id: "tanmateix",
-    name: "Tanmateix",
-    path: "./tanmateix/",
-    icon: "./tanmateix/icon.png",
-    color: "#9b5de5",
-    storageKey: "tanmateix_history",
-    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
-    filterDisplay: (s) => s.metrics.total !== undefined,
+    id: "stop",
+    name: "Stop",
+    path: "./stop/",
+    icon: "./stop/icon.png",
+    color: "#457b9d",
+    storageKey: "stop_history",
+    keyMetric: (s) => Math.round(s.metrics.stopAcc) + "% stop",
     metricDefs: [
-      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
-      {
-        key: "score",
-        label: "Score",
-        unit: "",
-        invertColor: false,
-        format: (v, s) =>
-          s.metrics.total ? `${v}/${s.metrics.total}` : `${v}/30`,
-      },
-      { key: "maxStreak", label: "Streak", unit: "", invertColor: false },
-      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
+      { key: "goAcc", label: "Go acc", unit: "%", invertColor: false },
+      { key: "stopAcc", label: "Stop acc", unit: "%", invertColor: false },
+      { key: "avgRt", label: "Avg RT", unit: "ms", invertColor: true },
     ],
   },
   {
@@ -116,95 +218,6 @@ const APPS = [
         unit: "s",
         invertColor: true,
       },
-    ],
-  },
-  {
-    id: "stop",
-    name: "Stop",
-    path: "./stop/",
-    icon: "./stop/icon.png",
-    color: "#457b9d",
-    storageKey: "stop_history",
-    keyMetric: (s) => Math.round(s.metrics.goAcc) + "% go",
-    metricDefs: [
-      { key: "goAcc", label: "Go acc", unit: "%", invertColor: false },
-      { key: "stopAcc", label: "Stop acc", unit: "%", invertColor: false },
-      { key: "avgRt", label: "Avg RT", unit: "ms", invertColor: true },
-    ],
-  },
-  {
-    id: "attn",
-    name: "Attn",
-    path: "./attn/",
-    icon: "./attn/icon.png",
-    color: "#38bdf8",
-    storageKey: "attn_history",
-    keyMetric: (s) => s.metrics.eb + " EB",
-    metricDefs: [
-      { key: "eb", label: "Eff. balls", unit: "", invertColor: false },
-      { key: "balls", label: "Balls", unit: "", invertColor: false },
-      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
-    ],
-  },
-  {
-    id: "mussol",
-    name: "Mussol",
-    path: "./mussol/",
-    icon: "./mussol/icon.png",
-    color: "#a855f7",
-    storageKey: "mussol_history",
-    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
-    metricDefs: [
-      {
-        key: "accuracy",
-        label: "Acc",
-        desc: "Correctness",
-        unit: "%",
-        invertColor: false,
-      },
-      { key: "correct", label: "Correct", unit: "", invertColor: false },
-      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
-    ],
-  },
-  {
-    id: "dotmatrix",
-    name: "Dot Matrix",
-    path: "./dotmatrix/",
-    icon: "./dotmatrix/icon.png",
-    color: "#d97706",
-    storageKey: "dotmatrix_history",
-    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
-    metricDefs: [
-      {
-        key: "accuracy",
-        label: "Acc",
-        desc: "Correctness",
-        unit: "%",
-        invertColor: false,
-      },
-      { key: "correct", label: "Correct", unit: "", invertColor: false },
-      { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
-    ],
-  },
-  {
-    id: "regles",
-    name: "Regles",
-    path: "./regles/",
-    icon: "./regles/icon.png",
-    color: "#5e5ce6",
-    storageKey: "regles_history",
-    keyMetric: (s) => s.metrics.errorRate + "% err",
-    metricDefs: [
-      { key: "errorRate", label: "Errors", desc: "Wrong taps", unit: "%", invertColor: true },
-      {
-        key: "avgShiftLatency",
-        label: "SSL",
-        desc: "Shift Latency",
-        unit: "s",
-        invertColor: true,
-        format: (v) => v !== null ? v.toFixed(2) : "—",
-      },
-      { key: "interferenceRate", label: "IER", desc: "Interference", unit: "%", invertColor: true },
     ],
   },
 ];
@@ -315,16 +328,17 @@ function renderCards(appData) {
     card.style.setProperty("--app-color", app.color);
 
     card.innerHTML =
+      '<div class="app-name">' +
+      app.name +
+      "</div>" +
+      '<div class="app-body">' +
       '<a class="app-link" href="' +
       app.path +
       '">' +
       (app.icon ? '<img class="app-icon" src="' + app.icon + '" alt="">' : "") +
       '<div class="app-info">' +
-      '<div class="app-name">' +
-      app.name +
-      "</div>" +
       (last
-        ? '<div class="app-last">Last: ' + last + "</div>"
+        ? '<div class="app-last">' + last + "</div>"
         : '<div class="app-last muted">No sessions yet</div>') +
       (week > 0 ? '<div class="app-week">' + week + " this week</div>" : "") +
       (keyM ? '<div class="app-metric">' + keyM + "</div>" : "") +
@@ -332,7 +346,8 @@ function renderCards(appData) {
       "</a>" +
       (hasHistory
         ? '<button class="stats-btn" title="Show stats"><i class="ph-light ph-chart-bar"></i></button>'
-        : "");
+        : "") +
+      "</div>";
 
     card.querySelector(".app-link").addEventListener("click", () => {
       triggerHaptic();
