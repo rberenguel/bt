@@ -219,8 +219,8 @@ function renderBoard() {
             <span class="tile-number">${tile.number}</span>
             <i class="ph-light ${tile.icon}" style="color:${tile.color.hex}"></i>
         `;
-        btn.addEventListener("touchstart", e => { e.preventDefault(); handleTap(tile.id); }, { passive: false });
-        btn.addEventListener("mousedown",  e => { if (e.button === 0) handleTap(tile.id); });
+        btn.addEventListener("click", e => { e.preventDefault(); handleTap(tile.id); }, { passive: false });
+       
         DOM.grid.appendChild(btn);
     });
 }
@@ -232,6 +232,7 @@ function updateHeader() {
 // ── Tap handling ──────────────────────────────────────────────────────────────
 
 function handleTap(tileId) {
+	  triggerHaptic();
     if (state.status !== "PLAYING") return;
     if (state.activeRuleIndex < 0 || state.activeRuleIndex >= state.rules.length) return;
 
@@ -245,7 +246,7 @@ function handleTap(tileId) {
 
     if (currentRule.isValid(tile, state.board)) {
         // ── Correct ──────────────────────────────────────────────────────────
-        triggerHaptic();
+        
 
         if (met.ruleShiftAt !== null) {
             met.shiftTimes.push(performance.now() - met.ruleShiftAt);
