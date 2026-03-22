@@ -2,20 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Rot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Precís</title>
     <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="manifest" href="manifest.json" />
   </head>
   <body>
-    <div class="app-container">
+    <div class="app-container" id="app-container">
       <div class="header">
         <a href="../" class="app-name" style="text-decoration:none;color:inherit">
-          Rot <span id="app-version" class="version-text"></span>
+          Precís <span id="app-version" class="version-text"></span>
         </a>
         <button id="stats-btn" class="stats-btn" aria-label="Stats">
           <div class="brain-container" id="battery-icon">
@@ -28,19 +25,48 @@
       </div>
 
       <div class="top-row">
+        <span id="phase-badge" class="phase-badge"></span>
+        <span id="q-counter" class="q-counter"></span>
         <span id="score-display" class="score-display"></span>
       </div>
       <div class="timer-bar-track"><div id="timer-bar" class="timer-bar"></div></div>
 
-      <div id="display-area" class="display-area">
+      <div class="display-area">
         <div id="idle-overlay" class="idle-overlay">
-          <p>Find the two identical shapes.</p>
-          <p class="sub">They may be rotated differently.</p>
+          <p><strong>Literal:</strong> Does this entity pass the rule? ALLOW or DENY.</p>
+          <p><strong>Scope:</strong> Which parse tree matches the sentence? Or flag it as ambiguous.</p>
+          <p class="sub">Train to read language like a compiler.</p>
         </div>
-        <div id="shape-grid" class="shape-grid"></div>
+
+        <!-- Phase B: Literal drill -->
+        <div id="phase-b-area" class="phase-area hidden">
+          <div class="section-label">valid if</div>
+          <div id="rule-text" class="rule-text"></div>
+          <div class="section-label entity-label">entity</div>
+          <div id="payload-card" class="payload-card"></div>
+        </div>
+
+        <!-- Phase A: Scope drill -->
+        <div id="phase-a-area" class="phase-area hidden">
+          <div class="section-label">sentence</div>
+          <div id="scope-sentence" class="scope-sentence"></div>
+          <div class="section-label">which parse is correct?</div>
+          <div class="parse-options">
+            <button id="option-a" class="parse-option"></button>
+            <button id="option-b" class="parse-option"></button>
+          </div>
+        </div>
       </div>
 
       <div class="controls-row">
+        <!-- Phase B answer buttons -->
+        <div id="phase-b-btns" class="btn-pair hidden">
+          <button id="deny-btn"  class="control-btn deny-btn"><span class="btn-main">DENY</span><span class="btn-sub">fails rule</span></button>
+          <button id="allow-btn" class="control-btn allow-btn"><span class="btn-main">ALLOW</span><span class="btn-sub">passes rule</span></button>
+        </div>
+        <!-- Phase A: flag ambiguous -->
+        <button id="ambig-btn" class="control-btn ambig-btn hidden">Sentence is ambiguous</button>
+        <!-- Idle: play -->
         <button id="play-btn" class="control-btn play-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,12 +86,20 @@
             <span id="modal-score">—</span>
           </div>
           <div class="modal-stat">
-            <span class="label">Accuracy</span>
+            <span class="label">Overall</span>
             <span id="modal-accuracy">—</span>
           </div>
           <div class="modal-stat">
-            <span class="label">Duration</span>
-            <span id="modal-avgtime">2:00</span>
+            <span class="label">Scope acc</span>
+            <span id="modal-scope-acc">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Literal acc</span>
+            <span id="modal-literal-acc">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Level reached</span>
+            <span id="modal-level">—</span>
           </div>
         </div>
         <button id="modal-close-btn" class="modal-btn">Play again</button>

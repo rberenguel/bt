@@ -896,3 +896,13 @@ hr {
   font-weight: 500;
   letter-spacing: 0.5px;
 }
+
+.modal-hub-link {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  text-decoration: none;
+  text-align: center;
+}
+.modal-hub-link:hover { color: #94a3b8; }

@@ -325,3 +325,14 @@ main {
     .overlay-icon { width: 52px; height: 52px; }
     #overlay-title { font-size: 1.4rem; }
 }
+
+.overlay-hub-link {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  text-decoration: none;
+  text-align: center;
+}
+.overlay-hub-link:hover { opacity: 0.8; }
+.overlay-hub-link.hidden { display: none !important; }

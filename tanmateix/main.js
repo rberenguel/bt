@@ -768,6 +768,7 @@ function showGameOver() {
             <i class="ph-light ph-clock"></i>
           </button>
         </div>
+        <a href="../" style="display:block;margin-top:1.25rem;font-size:0.85rem;color:var(--text-muted,#64748b);text-decoration:none;text-align:center;">← Back to hub</a>
     </div>
 `;
 

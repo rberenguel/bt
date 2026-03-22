@@ -639,3 +639,13 @@ button {
 .trend-bar:focus .trend-tooltip {
   opacity: 1;
 }
+
+.modal-hub-link {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-500);
+  text-decoration: none;
+  text-align: center;
+}
+.modal-hub-link:hover { color: var(--text-400); }

@@ -433,7 +433,11 @@ function evaluateSelection() {
     state.score++;
     scoreEl.textContent = state.score;
     setBrainFill(Math.min(1, state.score / state.target));
-    startRound();
+    shapeGrid.classList.add("fading");
+    schedule(() => {
+      startRound();
+      shapeGrid.classList.remove("fading");
+    }, 350);
   } else {
     triggerHapticError();
     for (const i of state.selected) state.cells[i].classList.add("wrong");

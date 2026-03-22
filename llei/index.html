@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Llei</title>
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div class="app-container">
+
+      <!-- Header -->
+      <div class="header">
+        <a href="../" class="app-name" style="text-decoration:none;color:inherit">
+          Llei <span id="app-version" class="version-text"></span>
+        </a>
+        <button id="stats-btn" class="stats-btn" aria-label="Stats">
+          <div class="brain-container">
+            <div class="brain-base">&#xe74e;</div>
+            <div class="brain-progress-fill">&#xe74e;</div>
+            <div class="brain-fire-fill">&#xe74e;</div>
+            <canvas id="fire-canvas"></canvas>
+          </div>
+        </button>
+      </div>
+
+      <!-- Top row -->
+      <div class="top-row">
+        <span id="q-counter" class="q-counter"></span>
+        <span id="score-display" class="score-display"></span>
+      </div>
+      <div class="timer-bar-track"><div id="timer-bar" class="timer-bar"></div></div>
+
+      <!-- Display area -->
+      <div class="display-area">
+
+        <!-- Idle overlay -->
+        <div id="idle-overlay" class="idle-overlay">
+          <p><strong>Llei</strong> — you are the lawmaker.</p>
+          <p>Study the examples, then write the law that separates legal from illegal.</p>
+          <p class="sub">Use: <code>AND</code>&nbsp; <code>OR</code>&nbsp; <code>NOT</code></p>
+        </div>
+
+        <!-- Game area -->
+        <div id="game-area" class="game-area hidden">
+
+          <!-- Examples -->
+          <div class="examples-grid">
+            <div class="col-header valid-header">LEGAL</div>
+            <div class="col-header invalid-header">ILLEGAL</div>
+            <div id="valid-col"   class="example-col"></div>
+            <div id="invalid-col" class="example-col"></div>
+          </div>
+
+          <!-- Rule builder -->
+          <div class="rule-section">
+            <div class="section-label">your law:</div>
+
+            <!-- Editable rule display -->
+            <div class="rule-area">
+              <div id="rule-builder" class="rule-builder"></div>
+              <button id="rule-backspace" class="rb-ctrl" aria-label="Delete last">⌫</button>
+            </div>
+
+            <!-- Trash (reveals when dragging) -->
+            <div id="rule-trash" class="rule-trash">
+              <i class="ph-light ph-trash-simple"></i> drop to delete
+            </div>
+
+            <!-- Building blocks -->
+            <div class="block-section">
+              <!-- Attr buttons -->
+              <div class="block-row">
+                <button class="block-btn" data-action="attr" data-key="active"   style="--c:#38bdf8"><i class="ph-light ph-pulse"></i></button>
+                <button class="block-btn" data-action="attr" data-key="approved" style="--c:#4ade80"><i class="ph-light ph-check-circle"></i></button>
+                <button class="block-btn" data-action="attr" data-key="flagged"  style="--c:#f87171"><i class="ph-light ph-flag"></i></button>
+                <button class="block-btn" data-action="attr" data-key="premium"  style="--c:#fbbf24"><i class="ph-light ph-star"></i></button>
+                <button class="block-btn" data-action="attr" data-key="urgent"   style="--c:#fb923c"><i class="ph-light ph-bell"></i></button>
+              </div>
+              <!-- Operator buttons + clear -->
+              <div class="block-row">
+                <button class="block-btn op-btn" data-action="op" data-value="AND">AND</button>
+                <button class="block-btn op-btn" data-action="op" data-value="OR">OR</button>
+                <button class="block-btn op-btn" data-action="op" data-value="NOT">NOT</button>
+<button class="block-btn paren-btn" data-action="paren">( )</button>
+                <button id="rule-clear" class="rb-ctrl">CLR</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Check area -->
+          <div class="check-area">
+            <div id="check-feedback" class="check-feedback"></div>
+            <button id="check-btn" class="control-btn check-btn">CHECK</button>
+          </div>
+
+        </div><!-- /game-area -->
+      </div><!-- /display-area -->
+
+      <!-- Controls row (idle only) -->
+      <div id="controls-row" class="controls-row">
+        <button id="play-btn" class="control-btn play-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </button>
+      </div>
+
+    </div><!-- /app-container -->
+
+    <!-- Results modal -->
+    <div id="results-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Done</h2>
+        <div class="modal-stats">
+          <div class="modal-stat">
+            <span class="label">Score</span>
+            <span id="modal-score">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Accuracy</span>
+            <span id="modal-accuracy">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Level reached</span>
+            <span id="modal-level">—</span>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="modal-btn">Play again</button>
+        <a href="../" class="modal-hub-link">← Back to hub</a>
+      </div>
+    </div>
+
+    <!-- History modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div class="modal-content" style="padding:1rem 0;height:90vh;display:flex;flex-direction:column;overflow:hidden;width:95%;max-width:24rem;">
+        <h2 style="margin:0 1rem 0.5rem 1rem">History</h2>
+        <div id="history-list" style="flex:1 1 auto;overflow-y:auto;padding:0 1rem;position:relative;"></div>
+        <div style="padding:0 1rem;margin-top:1rem">
+          <button id="close-history-btn" class="modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

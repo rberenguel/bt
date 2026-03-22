@@ -32,6 +32,14 @@ Visual adaptation of the [Attention Training Technique](https://en.wikipedia.org
 
 3D shape rotation matching. Six cubelet shapes are shown simultaneously, all slowly wobbling in 3D. Exactly two are identical — find the matching pair before the 2-minute timer runs out. Score is the number of correct matches. Colors are randomised per shape as a mild interference layer; the pair will never share a color.
 
+### [precis](./precis/)
+
+Boolean compliance drill. A rule (e.g. `approved AND NOT flagged`) and an entity with a set of binary attributes are shown; you judge ALLOW or DENY based on strict literal evaluation. A second phase trains parse-tree disambiguation — given a structurally ambiguous sentence, you identify which of two parse trees matches it, or flag it as genuinely ambiguous. Trains the ability to read language like a compiler.
+
+### [llei](./llei/)
+
+Inductive rule learning. A set of labeled examples is shown — some LEGAL, some ILLEGAL — each as a row of binary property icons. Your task is to construct the boolean law (using AND, OR, NOT) that correctly classifies all of them. The rule is built visually with icon blocks and operator buttons; no typing required. Each puzzle uses at least three attributes and property positions are scrambled per card to prevent geometric pattern matching. Difficulty increases through levels, adding negation and tightening the timer.
+
 ### [regles](./regles/)
 
 Set-shifting under memory load. A rule stack grows one rule per level over 10 levels — only the new rule is shown; all prior rules must be held in working memory. Tiles are cleared by tapping whichever one satisfies the current active rule; once all valid tiles for that rule are gone, the next rule in the stack becomes active. Tracks error rate, set-shift latency (time from rule change to first correct tap), and interference error rate (wrong taps that would have been valid under the prior rule).

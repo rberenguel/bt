@@ -12,8 +12,9 @@
   --color-green: #4ade80;
   --color-red: #f87171;
   --color-orange: #fb923c;
-  --border-green: rgba(34, 197, 94, 0.4);
-  --border-red: rgba(239, 68, 68, 0.4);
+  --color-indigo: #818cf8;
+  --border-green: rgba(74, 222, 128, 0.4);
+  --border-red: rgba(248, 113, 113, 0.4);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,6 +51,7 @@ button {
   height: 100dvh;
 }
 
+/* ── Header ── */
 .header {
   display: flex;
   justify-content: space-between;
@@ -124,13 +126,32 @@ button {
   mix-blend-mode: screen;
 }
 
+/* ── Top row ── */
 .top-row {
   display: flex;
   justify-content: flex-end;
   align-items: baseline;
+  gap: 0.75rem;
   padding: 0 0.25rem;
   margin-bottom: 0.3rem;
   min-height: 1.4rem;
+}
+
+.phase-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-indigo);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.phase-badge.visible { opacity: 1; }
+
+.q-counter {
+  font-size: 0.75rem;
+  color: var(--text-500);
+  font-variant-numeric: tabular-nums;
 }
 
 .score-display {
@@ -140,11 +161,12 @@ button {
   color: var(--text-400);
 }
 
+/* ── Timer bar ── */
 .timer-bar-track {
   height: 4px;
   background: var(--bg-btn);
   border-radius: 2px;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.6rem;
   overflow: hidden;
 }
 
@@ -159,12 +181,12 @@ button {
 
 .timer-bar.urgent { background: var(--color-red); }
 
-/* Display area */
+/* ── Display area ── */
 .display-area {
   flex: 1;
   position: relative;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -184,7 +206,6 @@ button {
 }
 
 .idle-overlay.hidden { display: none !important; }
-
 .idle-overlay p { margin-bottom: 0.5rem; }
 .idle-overlay p.sub {
   font-size: 0.875rem;
@@ -192,47 +213,142 @@ button {
   color: var(--text-500);
 }
 
-/* Shape grid */
-.shape-grid {
+.phase-area {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  padding: 0;
-  transition: opacity 0.35s ease;
-}
-.shape-grid.fading { opacity: 0; }
-
-.shape-cell {
-  position: relative;
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+/* ── Section labels ── */
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-500);
+  padding: 0 0.25rem;
+  margin-bottom: 0.2rem;
+  flex-shrink: 0;
+}
+
+.entity-label {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-gray);
+}
+
+/* ── Phase B: Literal drill ── */
+.rule-text {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--text-200);
+  padding: 1.25rem 0.25rem 1rem;
+  flex-shrink: 0;
+}
+
+.kw-not    { color: #f87171; font-weight: 800; }
+.kw-and    { color: #60a5fa; }
+.kw-or     { color: #a78bfa; }
+.kw-unless { color: #f97316; }
+
+.payload-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 1rem;
+  flex-shrink: 0;
+}
+
+.attr-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(100, 116, 139, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  color: var(--text-400);
+}
+
+/* Distractor attrs (not part of the rule) — slightly dimmer */
+.attr-distract {
+  opacity: 0.45;
+}
+
+/* ── Phase A: Scope drill ── */
+.scope-sentence {
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-200);
+  padding: 1rem 0.25rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.parse-options {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow: hidden;
+}
+
+.parse-option {
+  flex: 1;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-gray);
+  border-radius: 0.875rem;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-200);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
-.shape-cell canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+.parse-option:hover  { background: var(--bg-btn-hover); }
+.parse-option:active { background: var(--bg-btn-active); transform: scale(0.98); }
+
+.parse-group {
+  background: rgba(129, 140, 248, 0.18);
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-weight: 700;
+  color: #c7d2fe;
+  white-space: nowrap;
 }
 
-.shape-cell.selected { outline: 3px solid var(--color-blue); outline-offset: -3px; }
-.shape-cell.wrong { opacity: 0.5; transition: opacity 0.15s; }
-.shape-cell:not(.wrong) { opacity: 1; transition: opacity 0.3s; }
+.parse-op {
+  font-weight: 800;
+  font-size: 0.8em;
+  letter-spacing: 0.04em;
+  padding: 0 0.3em;
+}
 
-.hidden { display: none !important; }
+.parse-atom {
+  color: var(--text-400);
+}
 
-/* Controls */
+/* ── Controls row ── */
 .controls-row {
   display: flex;
   gap: 0.5rem;
-  height: 4rem;
+  height: 4.5rem;
+  flex-shrink: 0;
 }
 
-.app-container.playing .controls-row { display: none; }
-.app-container:not(.playing) .timer-bar-track { visibility: hidden; }
+.btn-pair {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+}
 
 .control-btn {
   flex: 1;
@@ -241,23 +357,48 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, transform 0.1s;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background 0.12s, transform 0.08s;
 }
 
-.control-btn:hover { background: var(--bg-btn-hover); }
-.control-btn:active { background: var(--bg-btn-active); transform: scale(0.95); }
+.control-btn:hover  { background: var(--bg-btn-hover); }
+.control-btn:active { background: var(--bg-btn-active); transform: scale(0.97); }
 
-.play-btn { color: #60a5fa; }
-.reset-btn { color: var(--text-400); }
+.play-btn  { color: #60a5fa; width: 100%; }
+.deny-btn  { color: var(--color-red);    border: 1px solid rgba(248, 113, 113, 0.2); flex-direction: column; gap: 0.1rem; }
+.allow-btn { color: var(--color-green);  border: 1px solid rgba(74, 222, 128, 0.2);  flex-direction: column; gap: 0.1rem; }
+.ambig-btn { color: var(--color-orange); border: 1px solid rgba(251, 146, 60, 0.2);  width: 100%; }
 
-/* Round indicator */
-.round-indicator {
-  font-size: 0.7rem;
-  color: var(--text-500);
-  letter-spacing: 0.04em;
+.btn-main { font-size: 0.9rem; font-weight: 800; letter-spacing: 0.06em; }
+.btn-sub  { font-size: 0.6rem;  font-weight: 500; letter-spacing: 0.04em; opacity: 0.65; }
+
+/* ── Answer feedback ── */
+.parse-option.btn-correct,
+.control-btn.btn-correct {
+  background: rgba(74, 222, 128, 0.12) !important;
+  border-color: var(--border-green) !important;
+  color: var(--color-green) !important;
 }
 
-/* Modal */
+.parse-option.btn-wrong,
+.control-btn.btn-wrong {
+  background: rgba(248, 113, 113, 0.12) !important;
+  border-color: var(--border-red) !important;
+  color: var(--color-red) !important;
+}
+
+.parse-option.btn-hint,
+.control-btn.btn-hint {
+  background: rgba(251, 146, 60, 0.1) !important;
+  border-color: rgba(251, 146, 60, 0.4) !important;
+  color: var(--color-orange) !important;
+}
+
+.hidden { display: none !important; }
+
+/* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -330,10 +471,20 @@ button {
   transition: background 0.15s, transform 0.1s;
 }
 
-.modal-btn:hover { background: #2563eb; }
+.modal-btn:hover  { background: #2563eb; }
 .modal-btn:active { transform: scale(0.97); }
 
-/* Calendar / History (shared pattern) */
+.modal-hub-link {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-500);
+  text-decoration: none;
+  text-align: center;
+}
+.modal-hub-link:hover { color: var(--text-400); }
+
+/* ── History modal (shared pattern) ── */
 .calendar-streak { text-align: center; font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.75rem; color: var(--text-400); }
 .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .calendar-header h3 { margin: 0; font-size: 1.1rem; color: var(--text-200); font-weight: 600; }
@@ -372,13 +523,3 @@ button {
 .trend-bar.low { background: var(--color-red); }
 .trend-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-dark); color: var(--text-200); padding: 0.15rem 0.3rem; border-radius: 4px; font-size: 0.65rem; pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; margin-bottom: 2px; z-index: 20; border: 1px solid var(--border-gray); }
 .trend-bar:hover .trend-tooltip, .trend-bar:focus .trend-tooltip { opacity: 1; }
-
-.modal-hub-link {
-  display: block;
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-500);
-  text-decoration: none;
-  text-align: center;
-}
-.modal-hub-link:hover { color: var(--text-400); }
