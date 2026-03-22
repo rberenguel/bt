@@ -2,6 +2,13 @@ import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.
 import { FireSystem } from "../shared/fire.js";
 import { saveSessionRecord } from "./storage.js";
 
+(async () => {
+  try {
+    const m = await (await fetch("manifest.json")).json();
+    if (m.version) document.getElementById("app-version").textContent = "v" + m.version;
+  } catch {}
+})();
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const COLORS = [
@@ -106,8 +113,6 @@ function showOverlay({ icon = true, title, desc, ruleText = null, stats = null, 
 
     DOM.oBtn.textContent = btn;
     DOM.overlay.classList.add("active");
-    const hubLink = document.getElementById("overlay-hub-link");
-    if (hubLink) hubLink.classList.toggle("hidden", btn !== "Play Again");
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

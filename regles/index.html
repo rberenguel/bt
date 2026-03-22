@@ -14,7 +14,7 @@
     <div id="app">
         <header>
             <div class="header-main">
-                <a href="../" class="back-link"><i class="ph-light ph-arrow-left"></i></a>
+                <a href="../" class="app-name">REGLES <span id="app-version" class="version-text"></span></a>
                 <div class="header-info">
                     <span id="level-display">Level 1 / 10</span>
                 </div>
@@ -33,12 +33,11 @@
 
         <div id="overlay" class="active">
             <img id="overlay-icon" src="icon.png" alt="" class="overlay-icon">
-            <h1 id="overlay-title">REGLES</h1>
+            <h1 id="overlay-title"><a href="../" style="text-decoration:none;color:inherit">REGLES</a></h1>
             <p id="overlay-desc">Clear the board following the active rule. Rules stack — only the new one is shown each time. Remember the rest.</p>
             <div id="overlay-rule" class="overlay-rule hidden"></div>
             <div id="overlay-stats" class="overlay-stats hidden"></div>
             <button id="overlay-btn" class="primary-btn">Start</button>
-            <a href="../" id="overlay-hub-link" class="overlay-hub-link hidden">← Back to hub</a>
         </div>
     </div>
 
