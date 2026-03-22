@@ -5,10 +5,10 @@ import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.
 
 // ── Config ────────────────────────────────────────────────
 const CONFIG = {
-  questionsPerSession: 15,
-  phaseARate: 0.50,           // 50/50 split from the start
+  questionsPerSession: 10,
+  phaseBRate: 0.25,           // 25% Literal, 75% Exploit
   timeByLevel: [0, 14, 12, 10, 8, 7, 6],  // index = level
-  phaseABonusSec: 4,
+  phaseCBonusSec: 8,
   levelUpEvery: 3,
   maxLevel: 6,
   feedbackMs: 500,
@@ -148,6 +148,100 @@ function genTrapPayload(ast) {
   return pick(candidates);
 }
 
+// ── Phase C: Exploit engine ───────────────────────────────
+
+// Like genTrapPayload but guaranteed to PASS the rule.
+function genPassingTrapPayload(ast) {
+  const keys = [...collectAttrs(ast)];
+  const passing = Array.from({ length: 30 }, () => genPayload(ast)).filter((p) => evalAST(ast, p));
+
+  if (passing.length === 0) {
+    for (let bits = 0; bits < (1 << keys.length); bits++) {
+      const p = Object.fromEntries(keys.map((k, i) => [k, !!(bits & (1 << i))]));
+      if (evalAST(ast, p)) return p;
+    }
+    return Object.fromEntries(keys.map((k) => [k, false]));
+  }
+
+  const allPos = Object.fromEntries(keys.map((k) => [k, true]));
+  if (!evalAST(ast, allPos)) return pick(passing); // all-positive fails → any pass is surprising
+
+  // Prefer payloads with the most "negative" (false) attrs — maximally counterintuitive
+  const withNeg = passing.filter((p) => keys.some((k) => !p[k]));
+  if (withNeg.length > 0) {
+    const scored = withNeg.map((p) => ({ p, n: keys.filter((k) => !p[k]).length }));
+    scored.sort((a, b) => b.n - a.n);
+    return scored[0].p;
+  }
+  return pick(passing);
+}
+
+// Identify the structural clause that clinched the pass — the loophole.
+function findLoophole(node, payload) {
+  if (node.type === "UNLESS" && !evalAST(node.cond, payload)) {
+    const condAttr = ATTRS.find((a) => a.key === node.cond.attr);
+    return { label: `UNLESS ${condAttr.pos} didn't fire`, attrs: collectAttrs(node.main) };
+  }
+  if (node.type === "OR") {
+    const lp = evalAST(node.left, payload);
+    const rp = evalAST(node.right, payload);
+    if (lp && !rp) return { label: "passed via OR branch", attrs: collectAttrs(node.left) };
+    if (rp && !lp) return { label: "passed via OR branch", attrs: collectAttrs(node.right) };
+  }
+  if (node.left)  { const r = findLoophole(node.left,  payload); if (r) return r; }
+  if (node.right) { const r = findLoophole(node.right, payload); if (r) return r; }
+  if (node.main)  { const r = findLoophole(node.main,  payload); if (r) return r; }
+  return { label: "all conditions satisfied", attrs: collectAttrs(node) };
+}
+
+function hasChoice(node) {
+  if (node.type === "OR" || node.type === "UNLESS") return true;
+  if (node.left  && hasChoice(node.left))  return true;
+  if (node.right && hasChoice(node.right)) return true;
+  if (node.main  && hasChoice(node.main))  return true;
+  return false;
+}
+
+function genExploitQuestion(level) {
+  // Exploit needs at least 3-term rules with OR/UNLESS to produce real loopholes
+  const effectiveLevel = Math.max(level, 2);
+  let ast;
+  for (let i = 0; i < 15; i++) {
+    ast = genAST(effectiveLevel, true);
+    if (hasChoice(ast)) break;
+  }
+  const ruleKeys = [...collectAttrs(ast)];
+  const target = genPassingTrapPayload(ast);
+
+  // "Wrong" attrs: ones that deviate from naive expectation (all-positive)
+  const allPos = Object.fromEntries(ruleKeys.map((k) => [k, true]));
+  const naiveResult = evalAST(ast, allPos);
+  const wrongAttrs = {};
+  for (const k of ruleKeys) {
+    if (naiveResult ? target[k] === false : target[k] === true) wrongAttrs[k] = target[k];
+  }
+  if (Object.keys(wrongAttrs).length === 0) wrongAttrs[ruleKeys[0]] = target[ruleKeys[0]];
+
+  const maxWrong = effectiveLevel <= 2 ? 1 : effectiveLevel <= 3 ? 2 : 3;
+  const objKeys  = Object.keys(wrongAttrs).slice(0, maxWrong);
+  const objAttrs = Object.fromEntries(objKeys.map((k) => [k, wrongAttrs[k]]));
+
+  const numDist  = effectiveLevel >= 4 ? 2 : effectiveLevel >= 3 ? (Math.random() < 0.5 ? 1 : 0) : 0;
+  const distAttrs = pickN(ATTRS.filter((a) => !new Set(ruleKeys).has(a.key)), numDist);
+  const distKeys  = distAttrs.map((a) => a.key);
+
+  const chipKeys   = [...ruleKeys, ...distKeys];
+  const initPayload = Object.fromEntries(
+    chipKeys.map((k) => [k, objAttrs[k] !== undefined ? objAttrs[k] : false])
+  );
+  const objDesc = objKeys.map((k) => {
+    const attr = ATTRS.find((a) => a.key === k);
+    return objAttrs[k] ? attr.pos : attr.neg;
+  }).join(", ");
+
+  return { phase: "C", ast, ruleText: renderAST(ast, true), target, objAttrs, ruleKeys, distKeys, chipKeys, initPayload, objDesc };
+}
+
 // ── Phase B: Literal question ─────────────────────────────
 // Build a Phase B question from a given AST (used both standalone and for linked mode).
 function genLiteralFromAST(ast, isLinked = false) {
@@ -165,60 +259,6 @@ function genLiteralQuestion(level) {
   return genLiteralFromAST(genAST(level, true));
 }
 
-// ── Phase A: Scope question ───────────────────────────────
-// Returns a question about whether a 3-term mixed-op sentence is ambiguous
-// or maps to a specific parse tree.
-function genScopeQuestion() {
-  const attrs = pickN(ATTRS, 3);
-  const op1 = pick(["AND", "OR"]);
-  const op2 = op1 === "AND" ? "OR" : "AND";
-
-  // treeA = (attrs[0] op1 attrs[1]) op2 attrs[2]
-  // treeB = attrs[0] op1 (attrs[1] op2 attrs[2])
-
-  const isAmbiguous = Math.random() < 0.3;
-  let sentence, correctAnswer;
-
-  if (isAmbiguous) {
-    // No disambiguation markers — genuinely ambiguous
-    sentence = `${attrs[0].pos} ${op1.toLowerCase()} ${attrs[1].pos} ${op2.toLowerCase()} ${attrs[2].pos}`;
-    correctAnswer = "ambiguous";
-  } else {
-    correctAnswer = Math.random() < 0.5 ? "A" : "B";
-    if (correctAnswer === "A") {
-      // (a op1 b) op2 c: comma before op2 groups left side
-      sentence = `${attrs[0].pos} ${op1.toLowerCase()} ${attrs[1].pos}, ${op2.toLowerCase()} ${attrs[2].pos}`;
-    } else {
-      // a op1 (b op2 c): "either/both" groups the right side
-      const groupWord = op2 === "OR" ? "either" : "both";
-      sentence = `${attrs[0].pos} ${op1.toLowerCase()} ${groupWord} ${attrs[1].pos} ${op2.toLowerCase()} ${attrs[2].pos}`;
-    }
-  }
-
-  // Pre-build the linked Phase B question using the correct tree's AST,
-  // so correct Phase A immediately chains into evaluating the same rule.
-  const treeA = bin(op2, bin(op1, leaf(attrs[0]), leaf(attrs[1])), leaf(attrs[2]));
-  const treeB = bin(op1, leaf(attrs[0]), bin(op2, leaf(attrs[1]), leaf(attrs[2])));
-  const linkedLiteral = correctAnswer !== "ambiguous"
-    ? { ...genLiteralFromAST(correctAnswer === "A" ? treeA : treeB, true), isLinked: true }
-    : null;
-
-  return { phase: "A", attrs, op1, op2, sentence, correctAnswer, treeA, treeB, linkedLiteral };
-}
-
-// Render one parse-option button's HTML content
-// innerOnLeft=true  → [a op1 b] op2 c
-// innerOnLeft=false → a op1 [b op2 c]
-function renderOptionHtml(innerOnLeft, a, innerOp, b, outerOp, c) {
-  const grouped = `${a} <span class="kw-${innerOp.toLowerCase()}">${innerOp}</span> ${b}`;
-  const groupSpan = `<span class="parse-group">${grouped}</span>`;
-  const restSpan  = `<span class="parse-atom">${c}</span>`;
-  const opSpan    = `<span class="kw-${outerOp.toLowerCase()} parse-op">${outerOp}</span>`;
-  return innerOnLeft
-    ? `${groupSpan} ${opSpan} ${restSpan}`
-    : `${restSpan} ${opSpan} ${groupSpan}`;
-}
-
 // ── State ─────────────────────────────────────────────────
 let state = null;
 
@@ -227,11 +267,13 @@ function fresh() {
     phase: "idle",
     questionIdx: 0,
     score: 0, correct: 0, incorrect: 0,
-    scopeCorrect: 0, scopeTotal: 0,
     literalCorrect: 0, literalTotal: 0,
+    exploitCorrect: 0, exploitTotal: 0,
     consecutiveCorrect: 0,
     level: 1,
     currentQ: null,
+    playerPayload: {},
+    wrongAttempts: 0,
     timerRaf: null,
     timerEnd: 0,
     target: 10,
@@ -287,18 +329,47 @@ function stopTimer() {
   if (state.timerRaf) { cancelAnimationFrame(state.timerRaf); state.timerRaf = null; }
 }
 
+// ── Phase C: Chip rendering ───────────────────────────────
+// loopholeAttrs: Set of attr keys to highlight (post-reveal); null = interactive mode.
+function renderChips(loopholeAttrs = null) {
+  const q = state.currentQ;
+  $("chip-grid").innerHTML = q.chipKeys.map((k) => {
+    const attr = ATTRS.find((a) => a.key === k);
+    const isOn      = state.playerPayload[k];
+    const isDist    = q.distKeys.includes(k);
+    const isLoophole = loopholeAttrs && loopholeAttrs.has(k);
+    const cls = ["attr-chip", "chip-toggle",
+      isOn       ? "chip-on"       : "",
+      isDist     ? "attr-distract" : "",
+      isLoophole ? "chip-loophole" : "",
+    ].filter(Boolean).join(" ");
+    return `<button class="${cls}" data-key="${k}"${loopholeAttrs ? " disabled" : ""}>${isOn ? attr.pos : attr.neg}</button>`;
+  }).join("");
+
+  if (!loopholeAttrs) {
+    $("chip-grid").querySelectorAll(".chip-toggle").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (state.phase !== "playing") return;
+        state.playerPayload[btn.dataset.key] = !state.playerPayload[btn.dataset.key];
+        triggerHaptic();
+        renderChips();
+      });
+    });
+  }
+}
+
 // ── Display ───────────────────────────────────────────────
 function showQuestion(q) {
   state.currentQ = q;
 
   // Reset button feedback states
-  ["deny-btn", "allow-btn", "option-a", "option-b", "ambig-btn"].forEach((id) => {
+  ["deny-btn", "allow-btn"].forEach((id) => {
     $(id)?.classList.remove("btn-correct", "btn-wrong", "btn-hint");
   });
 
   // Update HUD
   const phaseBadge = $("phase-badge");
-  phaseBadge.textContent = q.isLinked ? "→ APPLY IT" : q.phase === "A" ? "SCOPE" : "LITERAL";
+  phaseBadge.textContent = q.phase === "B" ? "LITERAL" : "EXPLOIT";
   phaseBadge.classList.add("visible");
   $("q-counter").textContent = `${state.questionIdx + 1} / ${CONFIG.questionsPerSession}`;
 
@@ -309,9 +380,20 @@ function showQuestion(q) {
 
   // Show correct phase area + controls
   $("phase-b-area").classList.toggle("hidden", q.phase !== "B");
-  $("phase-a-area").classList.toggle("hidden", q.phase !== "A");
+  $("phase-c-area").classList.toggle("hidden", q.phase !== "C");
   $("phase-b-btns").classList.toggle("hidden", q.phase !== "B");
-  $("ambig-btn").classList.toggle("hidden",    q.phase !== "A");
+  $("submit-btn").classList.toggle("hidden",   q.phase !== "C");
+
+  if (q.phase === "C") {
+    $("rule-text-c").innerHTML = highlightKeywords(q.ruleText);
+    $("obj-attrs").textContent = q.objDesc;
+    state.playerPayload = { ...q.initPayload };
+    state.wrongAttempts = 0;
+    renderChips();
+    $("reveal-area").classList.add("hidden");
+    $("feedback-bar").textContent = "";
+    $("feedback-bar").className = "feedback-bar";
+  }
 
   if (q.phase === "B") {
     $("rule-text").innerHTML = highlightKeywords(q.ruleText);
@@ -325,17 +407,10 @@ function showQuestion(q) {
       const isDistract = !ruleKeys.has(k);
       return `<span class="attr-chip ${isTrue ? "attr-true" : "attr-false"}${isDistract ? " attr-distract" : ""}">${label}</span>`;
     }).join("");
-  } else {
-    $("scope-sentence").textContent = `"${q.sentence}"`;
-
-    const { attrs, op1, op2 } = q;
-    // Option A: (attrs[0] op1 attrs[1]) op2 attrs[2]  →  [a op1 b] op2 c
-    $("option-a").innerHTML = renderOptionHtml(true,  attrs[0].pos, op1, attrs[1].pos, op2, attrs[2].pos);
-    // Option B: attrs[0] op1 (attrs[1] op2 attrs[2])  →  a op1 [b op2 c]
-    $("option-b").innerHTML = renderOptionHtml(false, attrs[1].pos, op2, attrs[2].pos, op1, attrs[0].pos);
   }
 
-  const timeSec = (CONFIG.timeByLevel[state.level] || 5) + (q.phase === "A" ? CONFIG.phaseABonusSec : 0);
+  const timeSec = (CONFIG.timeByLevel[state.level] || 5)
+    + (q.phase === "C" ? CONFIG.phaseCBonusSec : 0);
   state.phase = "playing";
   startTimer(timeSec);
 }
@@ -343,29 +418,43 @@ function showQuestion(q) {
 // ── Answer handling ───────────────────────────────────────
 function onAnswer(correct, isTimeout = false) {
   if (state.phase !== "playing") return;
+
+  // Phase C has its own flow; only intercept the timer-triggered timeout
+  if (isTimeout && state.currentQ?.phase === "C") {
+    state.phase = "feedback";
+    stopTimer();
+    state.incorrect++;
+    state.exploitTotal++;
+    state.consecutiveCorrect = 0;
+    triggerHapticError();
+    state.playerPayload = { ...state.currentQ.target };
+    const loophole = findLoophole(state.currentQ.ast, state.currentQ.target);
+    renderChips(loophole.attrs);
+    $("reveal-label").textContent = loophole.label + " — time's up";
+    $("reveal-area").classList.remove("hidden");
+    $("submit-btn").classList.add("hidden");
+    setTimeout(() => {
+      state.questionIdx++;
+      if (state.questionIdx >= CONFIG.questionsPerSession) endSession();
+      else nextQuestion();
+    }, 2200);
+    return;
+  }
+
   state.phase = "feedback";
   stopTimer();
 
   const q = state.currentQ;
 
   if (isTimeout) {
-    // Reveal correct answer on timeout
-    if (q.phase === "B") {
-      (q.result ? $("allow-btn") : $("deny-btn")).classList.add("btn-hint");
-    } else {
-      const id = q.correctAnswer === "A" ? "option-a"
-               : q.correctAnswer === "B" ? "option-b"
-               : "ambig-btn";
-      $(id).classList.add("btn-hint");
-    }
+    (q.result ? $("allow-btn") : $("deny-btn")).classList.add("btn-hint");
   }
 
   if (correct) {
     state.score++;
     state.correct++;
     state.consecutiveCorrect++;
-    if (q.phase === "A") state.scopeCorrect++;
-    else                 state.literalCorrect++;
+    state.literalCorrect++;
     triggerHaptic();
     setBrainFill(Math.min(1, state.score / state.target));
     if (state.consecutiveCorrect >= CONFIG.levelUpEvery) {
@@ -378,16 +467,8 @@ function onAnswer(correct, isTimeout = false) {
     if (!isTimeout) triggerHapticError();
   }
 
-  if (q.phase === "A") state.scopeTotal++;
-  else                 state.literalTotal++;
-
+  state.literalTotal++;
   $("score-display").textContent = state.score;
-
-  // Phase A correct + has a linked literal → chain immediately into same question slot
-  if (correct && !isTimeout && q.phase === "A" && q.linkedLiteral) {
-    setTimeout(() => showQuestion(q.linkedLiteral), CONFIG.feedbackMs);
-    return;
-  }
 
   setTimeout(() => {
     state.questionIdx++;
@@ -396,10 +477,69 @@ function onAnswer(correct, isTimeout = false) {
   }, correct ? CONFIG.feedbackMs : CONFIG.wrongMs);
 }
 
+// ── Phase C: Submit ───────────────────────────────────────
+function onExploitSubmit() {
+  if (state.phase !== "playing") return;
+  const q = state.currentQ;
+  const payload = state.playerPayload;
+  const passes = evalAST(q.ast, payload);
+  const objOk  = Object.keys(q.objAttrs).every((k) => payload[k] === q.objAttrs[k]);
+
+  if (passes && objOk) {
+    state.phase = "feedback";
+    stopTimer();
+    state.score++;
+    state.correct++;
+    state.exploitCorrect++;
+    state.exploitTotal++;
+    state.consecutiveCorrect++;
+    triggerHaptic();
+    setBrainFill(Math.min(1, state.score / state.target));
+    $("score-display").textContent = state.score;
+    if (state.consecutiveCorrect >= CONFIG.levelUpEvery) {
+      state.consecutiveCorrect = 0;
+      state.level = Math.min(CONFIG.maxLevel, state.level + 1);
+    }
+    const loophole = findLoophole(q.ast, payload);
+    renderChips(loophole.attrs);
+    $("reveal-label").textContent = loophole.label;
+    $("reveal-area").classList.remove("hidden");
+    $("submit-btn").classList.add("hidden");
+    setTimeout(() => {
+      state.questionIdx++;
+      if (state.questionIdx >= CONFIG.questionsPerSession) endSession();
+      else nextQuestion();
+    }, 1500);
+  } else {
+    // Wrong submit: penalise score, stay on question
+    state.wrongAttempts++;
+    state.consecutiveCorrect = 0;
+    state.score = Math.max(0, state.score - 1);
+    $("score-display").textContent = state.score;
+    triggerHapticError();
+    let msg;
+    if (!objOk) {
+      const needed = Object.keys(q.objAttrs)
+        .filter((k) => payload[k] !== q.objAttrs[k])
+        .map((k) => { const a = ATTRS.find((x) => x.key === k); return q.objAttrs[k] ? a.pos : a.neg; })
+        .join(", ");
+      msg = `objective not met — needs: ${needed}`;
+    } else {
+      msg = "rule not satisfied — keep trying";
+    }
+    const fb = $("feedback-bar");
+    fb.textContent = msg;
+    fb.className = "feedback-bar fb-wrong";
+    setTimeout(() => {
+      if (state.phase === "playing") { fb.textContent = ""; fb.className = "feedback-bar"; }
+    }, 1500);
+  }
+}
+
 // ── Game flow ─────────────────────────────────────────────
 function nextQuestion() {
-  const usePhaseA = Math.random() < CONFIG.phaseARate;
-  showQuestion(usePhaseA ? genScopeQuestion() : genLiteralQuestion(state.level));
+  if (Math.random() < CONFIG.phaseBRate) showQuestion(genLiteralQuestion(state.level));
+  else                                   showQuestion(genExploitQuestion(state.level));
 }
 
 function startSession() {
@@ -407,6 +547,7 @@ function startSession() {
   state.target = scoreTarget;
   $("idle-overlay").classList.add("hidden");
   $("play-btn").classList.add("hidden");
+  $("timer-track").classList.remove("hidden");
   $("score-display").textContent = "0";
   setBrainFill(0);
   nextQuestion();
@@ -417,22 +558,22 @@ function endSession() {
   stopTimer();
 
   $("phase-b-area").classList.add("hidden");
-  $("phase-a-area").classList.add("hidden");
+  $("phase-c-area").classList.add("hidden");
   $("phase-b-btns").classList.add("hidden");
-  $("ambig-btn").classList.add("hidden");
+  $("submit-btn").classList.add("hidden");
 
   const total      = state.correct + state.incorrect;
   const accuracy   = total ? Math.round(state.correct / total * 100) : 0;
-  const scopeAcc   = state.scopeTotal   ? Math.round(state.scopeCorrect   / state.scopeTotal   * 100) : null;
   const literalAcc = state.literalTotal ? Math.round(state.literalCorrect / state.literalTotal * 100) : null;
+  const exploitAcc = state.exploitTotal ? Math.round(state.exploitCorrect / state.exploitTotal * 100) : null;
 
-  $("modal-score").textContent       = state.score;
-  $("modal-accuracy").textContent    = accuracy + "%";
-  $("modal-scope-acc").textContent   = scopeAcc   !== null ? scopeAcc   + "%" : "—";
-  $("modal-literal-acc").textContent = literalAcc !== null ? literalAcc + "%" : "—";
-  $("modal-level").textContent       = state.level;
+  $("modal-score").textContent        = state.score;
+  $("modal-accuracy").textContent     = accuracy + "%";
+  $("modal-literal-acc").textContent  = literalAcc !== null ? literalAcc + "%" : "—";
+  $("modal-exploit-acc").textContent  = exploitAcc !== null ? exploitAcc + "%" : "—";
+  $("modal-level").textContent        = state.level;
 
-  saveSession({ score: state.score, accuracy, scopeAcc, literalAcc, finalLevel: state.level });
+  saveSession({ score: state.score, accuracy, literalAcc, exploitAcc, finalLevel: state.level });
   if (state.score >= scoreTarget) scoreTarget = state.score + 1;
 
   $("results-modal").classList.remove("hidden");
@@ -445,14 +586,18 @@ function resetSession() {
   $("idle-overlay").classList.remove("hidden");
   $("play-btn").classList.remove("hidden");
   $("phase-b-area").classList.add("hidden");
-  $("phase-a-area").classList.add("hidden");
+  $("phase-c-area").classList.add("hidden");
   $("phase-b-btns").classList.add("hidden");
-  $("ambig-btn").classList.add("hidden");
+  $("submit-btn").classList.add("hidden");
   $("results-modal").classList.add("hidden");
   $("phase-badge").classList.remove("visible");
   $("q-counter").textContent = "";
   $("score-display").textContent = "";
+  $("chip-grid").innerHTML = "";
+  $("reveal-area").classList.add("hidden");
+  $("feedback-bar").textContent = "";
 
+  $("timer-track").classList.add("hidden");
   const bar = $("timer-bar");
   bar.style.transform = "scaleX(1)";
   bar.classList.remove("urgent");
@@ -461,6 +606,7 @@ function resetSession() {
 
 // ── Events ────────────────────────────────────────────────
 $("play-btn").addEventListener("click", () => { triggerHaptic(); startSession(); });
+$("submit-btn").addEventListener("click", () => { triggerHaptic(); onExploitSubmit(); });
 $("modal-close-btn").addEventListener("click", () => { triggerHaptic(); resetSession(); });
 $("stats-btn").addEventListener("click", () => { triggerHaptic(); openHistoryModal(); });
 $("close-history-btn").addEventListener("click", () => $("history-modal").classList.add("hidden"));
@@ -483,38 +629,3 @@ $("allow-btn").addEventListener("click", () => {
   onAnswer(correct);
 });
 
-$("option-a").addEventListener("click", () => {
-  if (state?.phase !== "playing") return;
-  triggerHaptic();
-  const correct = state.currentQ.correctAnswer === "A";
-  $("option-a").classList.add(correct ? "btn-correct" : "btn-wrong");
-  if (!correct) {
-    const hintId = state.currentQ.correctAnswer === "B" ? "option-b" : "ambig-btn";
-    $(hintId).classList.add("btn-hint");
-  }
-  onAnswer(correct);
-});
-
-$("option-b").addEventListener("click", () => {
-  if (state?.phase !== "playing") return;
-  triggerHaptic();
-  const correct = state.currentQ.correctAnswer === "B";
-  $("option-b").classList.add(correct ? "btn-correct" : "btn-wrong");
-  if (!correct) {
-    const hintId = state.currentQ.correctAnswer === "A" ? "option-a" : "ambig-btn";
-    $(hintId).classList.add("btn-hint");
-  }
-  onAnswer(correct);
-});
-
-$("ambig-btn").addEventListener("click", () => {
-  if (state?.phase !== "playing") return;
-  triggerHaptic();
-  const correct = state.currentQ.correctAnswer === "ambiguous";
-  $("ambig-btn").classList.add(correct ? "btn-correct" : "btn-wrong");
-  if (!correct) {
-    const hintId = state.currentQ.correctAnswer === "A" ? "option-a" : "option-b";
-    $(hintId).classList.add("btn-hint");
-  }
-  onAnswer(correct);
-});

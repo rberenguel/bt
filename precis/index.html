@@ -6,6 +6,7 @@
     <title>Precís</title>
     <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="icon.png" type="image/png" />
     <link rel="manifest" href="manifest.json" />
   </head>
   <body>
@@ -29,13 +30,12 @@
         <span id="q-counter" class="q-counter"></span>
         <span id="score-display" class="score-display"></span>
       </div>
-      <div class="timer-bar-track"><div id="timer-bar" class="timer-bar"></div></div>
+      <div class="timer-bar-track hidden" id="timer-track"><div id="timer-bar" class="timer-bar"></div></div>
 
       <div class="display-area">
         <div id="idle-overlay" class="idle-overlay">
           <p><strong>Literal:</strong> Does this entity pass the rule? ALLOW or DENY.</p>
-          <p><strong>Scope:</strong> Which parse tree matches the sentence? Or flag it as ambiguous.</p>
-          <p class="sub">Train to read language like a compiler.</p>
+          <p><strong>Exploit:</strong> Build an entity that gets ALLOW while meeting the objective.</p>
         </div>
 
         <!-- Phase B: Literal drill -->
@@ -46,16 +46,21 @@
           <div id="payload-card" class="payload-card"></div>
         </div>
 
-        <!-- Phase A: Scope drill -->
-        <div id="phase-a-area" class="phase-area hidden">
-          <div class="section-label">sentence</div>
-          <div id="scope-sentence" class="scope-sentence"></div>
-          <div class="section-label">which parse is correct?</div>
-          <div class="parse-options">
-            <button id="option-a" class="parse-option"></button>
-            <button id="option-b" class="parse-option"></button>
+        <!-- Phase C: Exploit drill -->
+        <div id="phase-c-area" class="phase-area hidden">
+          <div class="section-label">valid if</div>
+          <div id="rule-text-c" class="rule-text"></div>
+          <div class="section-label obj-label">objective</div>
+          <div class="objective-text">Get ALLOW for a <span id="obj-attrs"></span> entity.</div>
+          <div class="section-label entity-label">build your entity</div>
+          <div id="chip-grid" class="chip-grid"></div>
+          <div id="feedback-bar" class="feedback-bar"></div>
+          <div id="reveal-area" class="reveal-area hidden">
+            <span class="reveal-icon">&#x25CE;</span>
+            <span id="reveal-label" class="reveal-label"></span>
           </div>
         </div>
+
       </div>
 
       <div class="controls-row">
@@ -64,8 +69,8 @@
           <button id="deny-btn"  class="control-btn deny-btn"><span class="btn-main">DENY</span><span class="btn-sub">fails rule</span></button>
           <button id="allow-btn" class="control-btn allow-btn"><span class="btn-main">ALLOW</span><span class="btn-sub">passes rule</span></button>
         </div>
-        <!-- Phase A: flag ambiguous -->
-        <button id="ambig-btn" class="control-btn ambig-btn hidden">Sentence is ambiguous</button>
+        <!-- Phase C: submit -->
+        <button id="submit-btn" class="control-btn submit-btn hidden">SUBMIT</button>
         <!-- Idle: play -->
         <button id="play-btn" class="control-btn play-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
@@ -90,12 +95,12 @@
             <span id="modal-accuracy">—</span>
           </div>
           <div class="modal-stat">
-            <span class="label">Scope acc</span>
-            <span id="modal-scope-acc">—</span>
-          </div>
-          <div class="modal-stat">
             <span class="label">Literal acc</span>
             <span id="modal-literal-acc">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Exploit acc</span>
+            <span id="modal-exploit-acc">—</span>
           </div>
           <div class="modal-stat">
             <span class="label">Level reached</span>

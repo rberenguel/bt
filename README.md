@@ -34,7 +34,7 @@ Visual adaptation of the [Attention Training Technique](https://en.wikipedia.org
 
 ### [precis](./precis/)
 
-Boolean compliance drill. A rule (e.g. `approved AND NOT flagged`) and an entity with a set of binary attributes are shown; you judge ALLOW or DENY based on strict literal evaluation. A second phase trains parse-tree disambiguation — given a structurally ambiguous sentence, you identify which of two parse trees matches it, or flag it as genuinely ambiguous. Trains the ability to read language like a compiler.
+Two-mode compliance drill. **Literal**: a rule and an entity are shown; judge ALLOW or DENY by strict literal evaluation. **Exploit**: given a rule and a malicious objective (e.g. get ALLOW for a flagged, non-premium entity), toggle the entity's attributes to find the structural loophole — the OR branch, NOT flip, or UNLESS miss that lets the wrong entity through. Trains both reading rules like a compiler and red-teaming your own specs.
 
 ### [llei](./llei/)
 

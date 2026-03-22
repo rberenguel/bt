@@ -277,65 +277,6 @@ button {
   opacity: 0.45;
 }
 
-/* ── Phase A: Scope drill ── */
-.scope-sentence {
-  font-size: 1.2rem;
-  font-weight: 600;
-  font-style: italic;
-  line-height: 1.5;
-  color: var(--text-200);
-  padding: 1rem 0.25rem 0.75rem;
-  flex-shrink: 0;
-}
-
-.parse-options {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  overflow: hidden;
-}
-
-.parse-option {
-  flex: 1;
-  background: var(--bg-btn);
-  border: 2px solid var(--border-gray);
-  border-radius: 0.875rem;
-  padding: 0.875rem 1rem;
-  text-align: left;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text-200);
-  cursor: pointer;
-  transition: background 0.12s, border-color 0.12s, transform 0.08s;
-  display: flex;
-  align-items: center;
-}
-
-.parse-option:hover  { background: var(--bg-btn-hover); }
-.parse-option:active { background: var(--bg-btn-active); transform: scale(0.98); }
-
-.parse-group {
-  background: rgba(129, 140, 248, 0.18);
-  border: 1px solid rgba(129, 140, 248, 0.4);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-weight: 700;
-  color: #c7d2fe;
-  white-space: nowrap;
-}
-
-.parse-op {
-  font-weight: 800;
-  font-size: 0.8em;
-  letter-spacing: 0.04em;
-  padding: 0 0.3em;
-}
-
-.parse-atom {
-  color: var(--text-400);
-}
-
 /* ── Controls row ── */
 .controls-row {
   display: flex;
@@ -366,10 +307,10 @@ button {
 .control-btn:hover  { background: var(--bg-btn-hover); }
 .control-btn:active { background: var(--bg-btn-active); transform: scale(0.97); }
 
-.play-btn  { color: #60a5fa; width: 100%; }
-.deny-btn  { color: var(--color-red);    border: 1px solid rgba(248, 113, 113, 0.2); flex-direction: column; gap: 0.1rem; }
-.allow-btn { color: var(--color-green);  border: 1px solid rgba(74, 222, 128, 0.2);  flex-direction: column; gap: 0.1rem; }
-.ambig-btn { color: var(--color-orange); border: 1px solid rgba(251, 146, 60, 0.2);  width: 100%; }
+.play-btn   { color: #60a5fa; width: 100%; }
+.deny-btn   { color: var(--color-red);    border: 1px solid rgba(248, 113, 113, 0.2); flex-direction: column; gap: 0.1rem; }
+.allow-btn  { color: var(--color-green);  border: 1px solid rgba(74, 222, 128, 0.2);  flex-direction: column; gap: 0.1rem; }
+.submit-btn { color: var(--color-orange); border: 1px solid rgba(251, 146, 60, 0.3);  width: 100%; font-size: 1rem; letter-spacing: 0.1em; }
 
 .btn-main { font-size: 0.9rem; font-weight: 800; letter-spacing: 0.06em; }
 .btn-sub  { font-size: 0.6rem;  font-weight: 500; letter-spacing: 0.04em; opacity: 0.65; }
@@ -395,6 +336,73 @@ button {
   border-color: rgba(251, 146, 60, 0.4) !important;
   color: var(--color-orange) !important;
 }
+
+/* ── Phase C: Exploit drill ── */
+.obj-label    { margin-top: 0.75rem; }
+.objective-text {
+  font-size: 0.95rem;
+  color: var(--color-orange);
+  padding: 0.3rem 0.25rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.chip-toggle {
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(100, 116, 139, 0.08);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  color: var(--text-500);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.08s, color 0.1s;
+  touch-action: manipulation;
+}
+
+.chip-toggle:active { transform: scale(0.94); }
+
+.chip-on {
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.4);
+  color: var(--color-orange);
+}
+
+.chip-loophole {
+  background: rgba(74, 222, 128, 0.14) !important;
+  border-color: rgba(74, 222, 128, 0.5) !important;
+  color: var(--color-green) !important;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+}
+
+.feedback-bar {
+  min-height: 1.4rem;
+  font-size: 0.8rem;
+  color: var(--text-500);
+  padding: 0.25rem 0.25rem 0;
+  flex-shrink: 0;
+}
+
+.fb-wrong { color: var(--color-red); }
+
+.reveal-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0;
+  flex-shrink: 0;
+}
+
+.reveal-icon  { font-size: 1rem; color: var(--color-green); flex-shrink: 0; }
+.reveal-label { font-size: 0.8rem; font-style: italic; color: var(--color-green); }
 
 .hidden { display: none !important; }
 

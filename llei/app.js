@@ -5,7 +5,7 @@ import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.
 
 // ── Config ────────────────────────────────────────────────
 const CONFIG = {
-  puzzlesPerSession: 10,
+  puzzlesPerSession: 6,
   targetExamples:   8,   // 4 valid + 4 invalid
   timeByLevel: [0, 60, 50, 42, 35, 28, 22],
   levelUpEvery: 2,
@@ -639,6 +639,7 @@ function startSession() {
   $("play-btn").classList.add("hidden");
   $("controls-row").classList.add("hidden");
   $("game-area").classList.remove("hidden");
+  $("timer-track").classList.remove("hidden");
   $("score-display").textContent = "0";
   setBrainFill(0);
   nextPuzzle();
@@ -675,6 +676,7 @@ function resetSession() {
   $("results-modal").classList.add("hidden");
   $("q-counter").textContent     = "";
   $("score-display").textContent = "";
+  $("timer-track").classList.add("hidden");
 
   const bar = $("timer-bar");
   bar.style.transform = "scaleX(1)";

@@ -10,8 +10,8 @@ export function saveSession(data) {
     metrics: {
       score: data.score,
       accuracy: data.accuracy,
-      scopeAcc: data.scopeAcc,
       literalAcc: data.literalAcc,
+      exploitAcc: data.exploitAcc,
       finalLevel: data.finalLevel,
     },
   });
