@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.4.0";
+const CACHE_NAME = "bt-hub-v0.4.2";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -24,6 +24,25 @@ const CACHE_FILES = [
   "./clauer/js/ui.js",
   "./clauer/manifest.json",
   "./clauer/style.css",
+  "./entrellat/game.js",
+  "./entrellat/history.js",
+  "./entrellat/icon.png",
+  "./entrellat/index.html",
+  "./entrellat/libs/LineGeometry.js",
+  "./entrellat/libs/LineMaterial.js",
+  "./entrellat/libs/LineSegments2.js",
+  "./entrellat/libs/LineSegmentsGeometry.js",
+  "./entrellat/libs/three.js",
+  "./entrellat/manifest.json",
+  "./entrellat/storage.js",
+  "./entrellat/style.css",
+  "./flux/app.js",
+  "./flux/history.js",
+  "./flux/icon.png",
+  "./flux/index.html",
+  "./flux/manifest.json",
+  "./flux/storage.js",
+  "./flux/style.css",
   "./dotmatrix/favicon.ico",
   "./dotmatrix/icon.png",
   "./dotmatrix/index.html",

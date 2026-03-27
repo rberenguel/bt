@@ -33,11 +33,18 @@ const BASE_RULES = [
     { id: "DESC", text: "Tap Descending", isValid: (t, b) => t.number === Math.max(...b.map(x => x.number)) },
 ];
 
+// Each rule belongs to a dimension. The hard constraint is: never exhaust a
+// dimension (i.e. use all its options), because that would mean every tile is
+// claimed by some rule in that dimension — leaving nothing meaningful for the
+// rules below or for the base rule. The limit is always (dimension_size - 1).
+const DIM_SIZE = { parity: 2, color: 4, icon: 6, number: 9 };
+
 const FILTER_RULES = [
-    ...COLORS.map(c => ({ id: `COL_${c.id}`, text: `Tap ${c.id}`,                isValid: (t) => t.color.id === c.id })),
-    ...ICONS.map(i  => ({ id: `ICO_${i}`,    text: `Tap ${i.replace("ph-", "")}`, isValid: (t) => t.icon === i })),
-    { id: "ODD",  text: "Tap Odds",  isValid: (t) => t.number % 2 !== 0 },
-    { id: "EVEN", text: "Tap Evens", isValid: (t) => t.number % 2 === 0 },
+    { id: "ODD",  text: "Tap Odds",  dim: "parity", isValid: (t) => t.number % 2 !== 0 },
+    { id: "EVEN", text: "Tap Evens", dim: "parity", isValid: (t) => t.number % 2 === 0 },
+    ...COLORS.map(c => ({ id: `COL_${c.id}`, text: `Tap ${c.id}`,                 dim: "color",  isValid: (t) => t.color.id === c.id })),
+    ...ICONS.map(i  => ({ id: `ICO_${i}`,    text: `Tap ${i.replace("ph-", "")}`,  dim: "icon",   isValid: (t) => t.icon === i })),
+    ...[1,2,3,4,5,6,7,8,9].map(n => ({ id: `NUM_${n}`, text: `Tap ${n}s`, dim: "number", isValid: (t) => t.number === n })),
 ];
 
 // ── Game state ────────────────────────────────────────────────────────────────
@@ -145,8 +152,25 @@ function setupLevel() {
     if (state.level === 1) {
         newRule = BASE_RULES[Math.floor(Math.random() * BASE_RULES.length)];
     } else {
-        let available = FILTER_RULES.filter(r => !state.rules.some(sr => sr.id === r.id));
-        if (available.length === 0) available = FILTER_RULES;
+        // Count how many rules per dimension are already in the stack.
+        const dimCounts = {};
+        for (const r of state.rules) {
+            if (r.dim) dimCounts[r.dim] = (dimCounts[r.dim] || 0) + 1;
+        }
+
+        // Hard constraint: never exhaust a dimension (always leave ≥1 option unused).
+        let available = FILTER_RULES.filter(r =>
+            !state.rules.some(sr => sr.id === r.id) &&
+            (dimCounts[r.dim] || 0) < DIM_SIZE[r.dim] - 1
+        );
+
+        // Prefer dimensions not yet represented — keeps the stack varied.
+        const fresh = available.filter(r => !dimCounts[r.dim]);
+        if (fresh.length > 0) available = fresh;
+
+        // Fallback: relax constraints if pool is exhausted.
+        if (available.length === 0) available = FILTER_RULES.filter(r => !state.rules.some(sr => sr.id === r.id));
+
         newRule = available[Math.floor(Math.random() * available.length)];
     }
 
@@ -211,6 +235,8 @@ function forceTileToMatchRule(target, rule) {
     } else if (rule.id === "EVEN") {
         const evens = [2, 4, 6, 8];
         target.number = evens[Math.floor(Math.random() * evens.length)];
+    } else if (rule.id.startsWith("NUM_")) {
+        target.number = parseInt(rule.id.replace("NUM_", ""), 10);
     }
 }
 

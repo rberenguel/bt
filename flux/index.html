@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Flow</title>
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="header">
+        <a href="../" class="app-name" style="text-decoration: none; color: inherit">
+          Flow <span id="app-version" class="version-text"></span>
+        </a>
+        <button id="stats-btn" class="stats-btn" aria-label="Stats">
+          <div class="brain-container" id="battery-icon">
+            <div class="brain-base">&#xe74e;</div>
+            <div class="brain-progress-fill">&#xe74e;</div>
+            <div class="brain-fire-fill">&#xe74e;</div>
+            <canvas id="fire-canvas"></canvas>
+          </div>
+        </button>
+      </div>
+
+      <div id="phase-label" class="phase-label hidden"></div>
+
+      <div id="display-area" class="display-area">
+        <div id="idle-text" class="idle-text">
+          <p>Classify the stream.</p>
+          <p class="sub">Left ← &nbsp;·&nbsp; Right →</p>
+          <p class="sub">Hold your intention → center</p>
+        </div>
+        <div id="stimulus-word" class="stimulus-word hidden"></div>
+        <div id="deadline-bar-wrap" class="deadline-bar-wrap hidden">
+          <div id="deadline-bar" class="deadline-bar"></div>
+        </div>
+      </div>
+
+      <div class="tap-zones">
+        <button id="zone-left" class="tap-zone zone-left" disabled>
+          <span class="zone-label-top" id="zone-left-label">←</span>
+          <span class="zone-arrow">←</span>
+        </button>
+        <button id="zone-center" class="tap-zone zone-center" disabled>
+          <span class="zone-label-top">Intention</span>
+          <span class="zone-center-dot">●</span>
+        </button>
+        <button id="zone-right" class="tap-zone zone-right" disabled>
+          <span class="zone-label-top" id="zone-right-label">→</span>
+          <span class="zone-arrow">→</span>
+        </button>
+      </div>
+
+      <div class="controls-row">
+        <button id="reset-btn" class="control-btn reset-btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+        </button>
+        <button id="play-btn" class="control-btn play-btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div id="status-text" class="status-text"></div>
+    </div>
+
+    <!-- Intention Modal -->
+    <div id="intention-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Remember</h2>
+        <div id="intention-rules"></div>
+        <p id="intention-progress" class="intention-progress"></p>
+        <button id="intention-confirm-btn" class="modal-btn">Got it →</button>
+      </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="results-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Done</h2>
+        <div class="modal-stats">
+          <div class="modal-stat">
+            <span class="label">PM targets hit</span>
+            <span id="modal-targets">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Hit rate</span>
+            <span id="modal-hit-rate">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">False alarms</span>
+            <span id="modal-fa-rate">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Miss rate</span>
+            <span id="modal-miss-rate">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">RT cost</span>
+            <span id="modal-rt-cost">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Level</span>
+            <span id="modal-level">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Category</span>
+            <span id="modal-pair">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Final deadline</span>
+            <span id="modal-deadline">—</span>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="modal-btn">Play again</button>
+        <a href="../" class="modal-hub-link">← Back to hub</a>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div
+        class="modal-content"
+        style="
+          padding: 1rem 0;
+          height: 90vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          width: 95%;
+          max-width: 24rem;
+        "
+      >
+        <h2 style="margin: 0 1rem 0.5rem 1rem">History</h2>
+        <div
+          id="history-list"
+          style="
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 0 1rem;
+            position: relative;
+          "
+        ></div>
+        <div style="padding: 0 1rem; margin-top: 1rem">
+          <button id="close-history-btn" class="modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

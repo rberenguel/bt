@@ -1,0 +1,18 @@
+{
+  "name": "Entrellat",
+  "version": "0.1.1",
+  "short_name": "Entrellat",
+  "description": "3D face matching",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

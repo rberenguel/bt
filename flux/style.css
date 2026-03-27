@@ -1,0 +1,794 @@
+/* Variables */
+:root {
+  --bg-dark: #0a0a0c;
+  --bg-panel: #121216;
+  --bg-btn: #1a1a20;
+  --bg-btn-hover: #25252d;
+  --bg-btn-active: #30303a;
+  --text-200: #e2e8f0;
+  --text-400: #94a3b8;
+  --text-500: #64748b;
+  --border-gray: #1f2937;
+  --color-accent: #6366f1;
+  --color-green: #4ade80;
+  --color-red: #f87171;
+  --color-center: #a855f7;
+  --border-green: rgba(34, 197, 94, 0.4);
+  --border-red: rgba(239, 68, 68, 0.4);
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-200);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+button {
+  touch-action: manipulation;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Layout */
+.app-container {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.75rem;
+  padding-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.app-name {
+  font-size: 0.75rem;
+  color: var(--text-500);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.version-text {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  font-weight: 400;
+  text-transform: lowercase;
+  margin-left: 0.2rem;
+}
+
+/* Stats button */
+.stats-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Brain / Battery */
+.brain-container {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  font-family: "Phosphor-Light";
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.brain-base {
+  color: var(--text-500);
+  opacity: 0.3;
+}
+
+.brain-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-accent);
+  clip-path: inset(var(--progress-inset, 100%) 0 0 0);
+  transition: clip-path 0.5s ease;
+}
+
+.brain-fire-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to top, #dc143c, #ff4500, #ffa500, #ffd700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  clip-path: inset(var(--fire-inset, 100%) 0 0 0);
+  transition: clip-path 0.5s ease;
+}
+
+#fire-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: screen;
+}
+
+/* Phase label */
+.phase-label {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-500);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  min-height: 1.2rem;
+}
+
+/* Display area */
+.display-area {
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  border-radius: 1rem;
+  border: 2px solid var(--border-gray);
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.display-area.border-correct {
+  border-color: var(--border-green);
+}
+
+.display-area.border-wrong {
+  border-color: var(--border-red);
+}
+
+.idle-text {
+  text-align: center;
+  color: var(--text-400);
+  padding: 1.75rem 1.5rem;
+}
+
+.idle-text p {
+  margin-bottom: 0.6rem;
+}
+
+.idle-text p:last-child {
+  margin-bottom: 0;
+}
+
+.idle-text .rule-main {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-200);
+  letter-spacing: -0.01em;
+}
+
+.idle-text p.sub {
+  font-size: 0.875rem;
+  margin-bottom: 0;
+  color: var(--text-500);
+}
+
+/* Stimulus word */
+.stimulus-word {
+  font-size: clamp(2rem, 9vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: center;
+  padding: 0 1.5rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Deadline bar */
+.deadline-bar-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.deadline-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--color-accent);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Playing state: controls invisible but keep layout stable */
+.app-container.playing .controls-row {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Tap zones */
+.tap-zones {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 0.5rem;
+  height: 9rem;
+  margin-bottom: 0.5rem;
+}
+
+.tap-zone {
+  background: var(--bg-btn);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  transition:
+    background 0.1s,
+    transform 0.1s;
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+.tap-zone:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.tap-zone:not(:disabled):active,
+.tap-zone.pressed {
+  transform: scale(0.93);
+}
+
+.zone-left:not(:disabled) {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.zone-left.pressed,
+.zone-left:not(:disabled):active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.zone-center:not(:disabled) {
+  border-color: rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.07);
+}
+
+.zone-center.pressed,
+.zone-center:not(:disabled):active {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+.zone-right:not(:disabled) {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.zone-right.pressed,
+.zone-right:not(:disabled):active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.zone-label-top {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-500);
+  line-height: 1;
+}
+
+.zone-arrow {
+  font-size: 1.5rem;
+  color: var(--text-400);
+  line-height: 1;
+}
+
+.zone-center-dot {
+  font-size: 1.1rem;
+  color: var(--color-center);
+  line-height: 1;
+}
+
+/* Flash feedback on zones */
+@keyframes flashWrong {
+  0% { background: rgba(248, 113, 113, 0.45); border-color: rgba(248, 113, 113, 0.6); }
+  100% { background: rgba(168, 85, 247, 0.07); border-color: rgba(168, 85, 247, 0.3); }
+}
+
+.tap-zone.flash-wrong {
+  animation: flashWrong 0.35s ease-out forwards;
+}
+
+/* Controls */
+.controls-row {
+  display: flex;
+  gap: 0.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.control-btn {
+  flex: 1;
+  background: var(--bg-btn);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+
+.control-btn:hover {
+  background: var(--bg-btn-hover);
+}
+
+.control-btn:active {
+  background: var(--bg-btn-active);
+  transform: scale(0.95);
+}
+
+.play-btn {
+  color: var(--color-accent);
+}
+
+.reset-btn {
+  color: var(--text-400);
+}
+
+/* Status */
+.status-text {
+  height: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-500);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: opacity 0.2s;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  display: flex !important;
+}
+
+.modal-content {
+  background: var(--bg-panel);
+  border: 2px solid var(--border-gray);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 20rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.hidden .modal-content {
+  transform: translateY(1rem);
+}
+
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Intention rule card */
+.intention-rule {
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text-200);
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.intention-progress {
+  font-size: 0.8rem;
+  color: var(--text-500);
+  margin-bottom: 1.25rem;
+  min-height: 1.2rem;
+}
+
+/* Results modal */
+.modal-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.modal-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+.modal-stat:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.modal-stat .label {
+  color: var(--text-400);
+}
+
+.modal-btn {
+  width: 100%;
+  background: var(--color-accent);
+  color: #fff;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+
+.modal-btn:hover {
+  filter: brightness(1.1);
+}
+
+.modal-btn:active {
+  transform: scale(0.97);
+}
+
+.modal-hub-link {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-500);
+  text-decoration: none;
+  text-align: center;
+}
+
+.modal-hub-link:hover {
+  color: var(--text-400);
+}
+
+/* Calendar / History (used by shared/history.js) */
+.calendar-streak {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.75rem;
+  color: var(--text-400);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-200);
+  font-weight: 600;
+}
+
+.calendar-nav {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-200);
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.calendar-nav:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-nav:active {
+  transform: scale(0.95);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-500);
+  text-transform: uppercase;
+  padding-bottom: 0.25rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  color: var(--text-200);
+  transition: transform 0.1s;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.has-sessions {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+}
+
+.calendar-day.has-sessions:hover {
+  background: rgba(99, 102, 241, 0.25);
+  transform: scale(1.05);
+}
+
+.calendar-day.today {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+.calendar-day-number {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.session-indicator {
+  font-size: 0.55rem;
+  opacity: 0.8;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+/* Day details overlay */
+.day-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-panel);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem;
+}
+
+.day-details.hidden {
+  display: none !important;
+}
+
+.day-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-details-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-200);
+}
+
+.close-details {
+  background: none;
+  border: none;
+  color: var(--text-200);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  opacity: 0.7;
+}
+
+.close-details:hover {
+  opacity: 1;
+}
+
+.day-sessions {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.session-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.session-header strong {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.session-time {
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+
+.session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.session-stats span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Trends */
+.history-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px 0 10px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trend-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  color: var(--text-200);
+}
+
+.trend-label strong {
+  color: var(--color-accent);
+}
+
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 40px;
+  gap: 2px;
+  width: 100%;
+}
+
+.trend-bar {
+  flex: 1;
+  background: var(--color-accent);
+  opacity: 0.7;
+  border-radius: 1px 1px 0 0;
+  min-height: 2px;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+}
+
+.trend-bar.high {
+  opacity: 1;
+}
+
+.trend-bar.low {
+  background: var(--color-red);
+}
+
+.trend-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-dark);
+  color: var(--text-200);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  z-index: 20;
+  border: 1px solid var(--border-gray);
+}
+
+.trend-bar:hover .trend-tooltip,
+.trend-bar:focus .trend-tooltip {
+  opacity: 1;
+}

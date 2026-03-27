@@ -40,6 +40,10 @@ Two-mode compliance drill. **Literal**: a rule and an entity are shown; judge AL
 
 Inductive rule learning. A set of labeled examples is shown — some LEGAL, some ILLEGAL — each as a row of binary property icons. Your task is to construct the boolean law (using AND, OR, NOT) that correctly classifies all of them. The rule is built visually with icon blocks and operator buttons; no typing required. Each puzzle uses at least three attributes and property positions are scrambled per card to prevent geometric pattern matching. Difficulty increases through levels, adding negation and tightening the timer.
 
+### [entrellat](./entrellat/)
+
+3D face matching. A wireframe cube with animated maze patterns on three of its faces rotates freely in space. Four flat panels each show a 2D projection of a possible face — one of them matches an actual face on the cube (which may be viewed from inside or outside). Pick the correct panel. Drag the cube to inspect it from any angle. Uses Three.js for WebGL rendering with an orthographic camera, so the flat panels are exact projections with no perspective distortion.
+
 ### [regles](./regles/)
 
 Set-shifting under memory load. A rule stack grows one rule per level over 10 levels — only the new rule is shown; all prior rules must be held in working memory. Tiles are cleared by tapping whichever one satisfies the current active rule; once all valid tiles for that rule are gone, the next rule in the stack becomes active. Tracks error rate, set-shift latency (time from rule change to first correct tap), and interference error rate (wrong taps that would have been valid under the prior rule).

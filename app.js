@@ -251,6 +251,36 @@ const APPS = [
       },
     ],
   },
+  {
+    id: "entrellat",
+    name: "Entrellat",
+    path: "./entrellat/",
+    icon: "./entrellat/icon.png",
+    color: "#22d3ee",
+    storageKey: "entrellat_history",
+    keyMetric: (s) => s.metrics.solved + " solved",
+    metricDefs: [
+      { key: "solved", label: "Solved", unit: "", invertColor: false },
+      { key: "failed", label: "Failed", unit: "", invertColor: true },
+      { key: "total", label: "Total", unit: "", invertColor: false },
+    ],
+  },
+  {
+    id: "flux",
+    name: "Flow",
+    path: "./flux/",
+    icon: "./flux/icon.png",
+    color: "#6366f1",
+    storageKey: "flux_history",
+    keyMetric: (s) => s.metrics.pmHitRate + "% PM",
+    metricDefs: [
+      { key: "pmHitRate", label: "PM hits", unit: "%", invertColor: false },
+      { key: "falseAlarmRate", label: "False alarms", unit: "%", invertColor: true },
+      { key: "missRate", label: "Misses", unit: "%", invertColor: true },
+      { key: "rtCost", label: "RT cost", unit: "ms", invertColor: true },
+      { key: "level", label: "Level", unit: "", invertColor: false },
+    ],
+  },
 ];
 
 // ── Data loading ──────────────────────────────────────────────────────────────
