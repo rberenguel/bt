@@ -218,7 +218,8 @@ header h1 {
   margin-bottom: 1rem;
 }
 
-#close-history-btn {
+#close-history-btn,
+#close-radar-btn {
   display: block;
   width: 100%;
   margin-top: 1rem;
@@ -230,7 +231,8 @@ header h1 {
   font-size: 0.9rem;
   cursor: pointer;
 }
-#close-history-btn:hover {
+#close-history-btn:hover,
+#close-radar-btn:hover {
   background: #444;
 }
 

@@ -19,6 +19,9 @@
       </header>
       <div id="app-grid"></div>
       <div id="data-actions">
+        <button id="radar-btn" title="Cognitive profile" aria-label="Cognitive profile">
+          <i class="ph-light ph-chart-polar"></i>
+        </button>
         <button id="export-btn" title="Export data" aria-label="Export data">
           <i class="ph-light ph-floppy-disk"></i>
         </button>
@@ -26,6 +29,14 @@
           <i class="ph-light ph-upload-simple"></i>
         </button>
         <input id="import-file" type="file" accept=".json" hidden />
+      </div>
+    </div>
+
+    <!-- Radar modal -->
+    <div id="radar-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div id="radar-chart-container"></div>
+        <button id="close-radar-btn">Close</button>
       </div>
     </div>
 

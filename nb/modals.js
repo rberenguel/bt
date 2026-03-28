@@ -223,25 +223,17 @@ export function showInstructions() {
  * @param {number} stats.BACK - N-back level
  * @param {boolean} stats.triple - Triple mode?
  * @param {number} stats.total - Total rounds completed
- * @param {number} stats.correctPosC - Correct position answers
- * @param {number} stats.correctColC - Correct color answers
- * @param {number} stats.correctLetC - Correct letter answers (triple only)
+ * @param {Object} stats.hits - Signal detection hits per dimension
+ * @param {Object} stats.crs - Signal detection correct rejections per dimension
  * @param {Function} onClose - Callback when modal is closed (resume game)
  */
 export function showPauseStats(stats, onClose) {
-  // Calculate percentages (handle division by zero)
-  const pctPos =
-    stats.total > 0 ? Math.round((100 * stats.correctPosC) / stats.total) : 0;
-  const pctCol =
-    stats.total > 0 ? Math.round((100 * stats.correctColC) / stats.total) : 0;
-  const pctLet =
-    stats.triple && stats.total > 0
-      ? Math.round((100 * stats.correctLetC) / stats.total)
-      : 0;
-  const pctShape =
-    stats.quad && stats.total > 0
-      ? Math.round((100 * stats.correctShapeC) / stats.total)
-      : 0;
+  // Calculate percentages from signal-detection tallies
+  const h = stats.hits, r = stats.crs;
+  const pctPos   = stats.total > 0 ? Math.round(100 * (h.pos   + r.pos)   / stats.total) : 0;
+  const pctCol   = stats.total > 0 ? Math.round(100 * (h.col   + r.col)   / stats.total) : 0;
+  const pctLet   = stats.triple && stats.total > 0 ? Math.round(100 * (h.let   + r.let)   / stats.total) : 0;
+  const pctShape = stats.quad   && stats.total > 0 ? Math.round(100 * (h.shape + r.shape) / stats.total) : 0;
 
   let totalFactors = 2;
   if (stats.quad) totalFactors = 4;
@@ -249,13 +241,10 @@ export function showPauseStats(stats, onClose) {
 
   const totalAnswers = stats.total * totalFactors;
   const correctAnswers = stats.quad
-    ? stats.correctPosC +
-      stats.correctColC +
-      stats.correctLetC +
-      stats.correctShapeC
+    ? (h.pos + r.pos) + (h.col + r.col) + (h.let + r.let) + (h.shape + r.shape)
     : stats.triple
-      ? stats.correctPosC + stats.correctColC + stats.correctLetC
-      : stats.correctPosC + stats.correctColC;
+      ? (h.pos + r.pos) + (h.col + r.col) + (h.let + r.let)
+      : (h.pos + r.pos) + (h.col + r.col);
 
   const overall =
     totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
@@ -267,25 +256,22 @@ export function showPauseStats(stats, onClose) {
     `Rounds: ${stats.total} / 100`;
   document.getElementById("pause-overall").textContent = `Overall: ${overall}%`;
   document.getElementById("pause-position").textContent =
-    `Position: ${stats.correctPosC}/${stats.total} (${pctPos}%)`;
+    `Position: ${pctPos}%`;
   document.getElementById("pause-color").textContent =
-    `Color: ${stats.correctColC}/${stats.total} (${pctCol}%)`;
+    `Color: ${pctCol}%`;
 
   const pauseLetter = document.getElementById("pause-letter");
   if (stats.triple) {
-    pauseLetter.textContent = `Letter: ${stats.correctLetC}/${stats.total} (${pctLet}%)`;
+    pauseLetter.textContent = `Letter: ${pctLet}%`;
     pauseLetter.classList.remove("hidden");
   } else {
     pauseLetter.classList.add("hidden");
   }
 
   const pauseShape = document.getElementById("pause-shape");
-  // Check if element exists (need to add it to HTML first in next step, but let's handle JS now)
-  // I will create the element in JS if it doesn't exist? No, better to assume it exists or add logical check.
-  // I'll add the element to HTML later.
   if (pauseShape) {
     if (stats.quad) {
-      pauseShape.textContent = `Shape: ${stats.correctShapeC}/${stats.total} (${pctShape}%)`;
+      pauseShape.textContent = `Shape: ${pctShape}%`;
       pauseShape.classList.remove("hidden");
     } else {
       pauseShape.classList.add("hidden");
@@ -310,20 +296,11 @@ export function showPauseStats(stats, onClose) {
  * @param {Object} stats - Game statistics (same structure as pause stats)
  */
 export function showResults(stats) {
-  let totalFactors = 2;
-  if (stats.quad) totalFactors = 4;
-  else if (stats.triple) totalFactors = 3;
-
-  const totalAnswers = stats.total * totalFactors;
-  const correctAnswers = stats.quad
-    ? stats.correctPosC +
-      stats.correctColC +
-      stats.correctLetC +
-      stats.correctShapeC
-    : stats.triple
-      ? stats.correctPosC + stats.correctColC + stats.correctLetC
-      : stats.correctPosC + stats.correctColC;
-  const percentage = Math.round((correctAnswers / totalAnswers) * 100);
+  // Compute overall accuracy from per-dimension pcts
+  const pctDims = [stats.pctPos, stats.pctCol];
+  if (stats.triple) pctDims.push(stats.pctLet);
+  if (stats.quad)   pctDims.push(stats.pctShape);
+  const percentage = Math.round(pctDims.reduce((a, b) => a + b, 0) / pctDims.length);
 
   // Update modal content
   document.getElementById("results-level").textContent =
@@ -333,13 +310,13 @@ export function showResults(stats) {
   document.getElementById("results-overall").textContent =
     `Overall: ${percentage}%`;
   document.getElementById("results-position").textContent =
-    `Position: ${stats.correctPosC}/${stats.total} (${Math.round((stats.correctPosC / stats.total) * 100)}%)`;
+    `Position: ${Math.round(stats.pctPos)}%`;
   document.getElementById("results-color").textContent =
-    `Color: ${stats.correctColC}/${stats.total} (${Math.round((stats.correctColC / stats.total) * 100)}%)`;
+    `Color: ${Math.round(stats.pctCol)}%`;
 
   const resultsLetter = document.getElementById("results-letter");
   if (stats.triple) {
-    resultsLetter.textContent = `Letter: ${stats.correctLetC}/${stats.total} (${Math.round((stats.correctLetC / stats.total) * 100)}%)`;
+    resultsLetter.textContent = `Letter: ${Math.round(stats.pctLet)}%`;
     resultsLetter.classList.remove("hidden");
   } else {
     resultsLetter.classList.add("hidden");
@@ -348,22 +325,37 @@ export function showResults(stats) {
   const resultsShape = document.getElementById("results-shape");
   if (resultsShape) {
     if (stats.quad) {
-      const pctShape = Math.round((stats.correctShapeC / stats.total) * 100);
-      resultsShape.textContent = `Shape: ${stats.correctShapeC}/${stats.total} (${pctShape}%)`;
+      resultsShape.textContent = `Shape: ${Math.round(stats.pctShape)}%`;
       resultsShape.classList.remove("hidden");
     } else {
       resultsShape.classList.add("hidden");
     }
   }
 
-  // Add level suggestion based on performance
+  // d-prime display
+  const dPrimeDiv = document.getElementById("results-dprime");
+  if (dPrimeDiv && stats.dOverall != null) {
+    const dParts = [
+      `Pos: ${stats.dPos.toFixed(2)}`,
+      `Col: ${stats.dCol.toFixed(2)}`,
+    ];
+    if (stats.triple && stats.dLet != null) dParts.push(`Let: ${stats.dLet.toFixed(2)}`);
+    if (stats.quad && stats.dShape != null) dParts.push(`Shp: ${stats.dShape.toFixed(2)}`);
+    dPrimeDiv.innerHTML =
+      `<p style="margin-top:0.5rem">d' ${dParts.join('\u2002\u2009')}</p>` +
+      `<p>d' Overall: ${stats.dOverall.toFixed(2)}</p>`;
+  } else if (dPrimeDiv) {
+    dPrimeDiv.innerHTML = "";
+  }
+
+  // Level suggestion using d' sensitivity
   let suggestion = "";
-  if (percentage >= 80) {
+  if (stats.dOverall >= 1.5) {
     suggestion =
       stats.BACK < 9
         ? "Consider advancing to a higher level"
         : "Excellent work at maximum level!";
-  } else if (percentage >= 50) {
+  } else if (stats.dOverall >= 0.5) {
     suggestion = "Keep practicing at this level";
   } else {
     suggestion =

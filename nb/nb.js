@@ -11,10 +11,10 @@ let BACK = 1;
 let triple = false;
 let quad = false;
 let history = [];
-let correctPosC = 0;
-let correctColC = 0;
-let correctLetC = 0;
-let correctShapeC = 0;
+let hits   = { pos: 0, col: 0, let: 0, shape: 0 };
+let misses = { pos: 0, col: 0, let: 0, shape: 0 };
+let fas    = { pos: 0, col: 0, let: 0, shape: 0 };
+let crs    = { pos: 0, col: 0, let: 0, shape: 0 };
 let total = 0;
 let perfectRounds = 0; // Track perfect rounds for fire gradient
 let roundResults = []; // Track per-round correctness for visualization
@@ -50,17 +50,6 @@ async function saveSessions() {
 }
 
 async function addSession(stats) {
-  const pctPos = stats.total > 0 ? (stats.correctPosC / stats.total) * 100 : 0;
-  const pctCol = stats.total > 0 ? (stats.correctColC / stats.total) * 100 : 0;
-  const pctLet =
-    stats.triple && stats.total > 0
-      ? (stats.correctLetC / stats.total) * 100
-      : 0;
-  const pctShape =
-    stats.quad && stats.total > 0
-      ? (stats.correctShapeC / stats.total) * 100
-      : 0;
-
   // Encode round results compactly: each round as a number 0-15 (4 bits)
   // Bit 0: position, Bit 1: color, Bit 2: letter, Bit 3: shape
   const encodedResults = stats.roundResults
@@ -78,16 +67,21 @@ async function addSession(stats) {
     level: stats.BACK,
     triple: stats.triple,
     quad: stats.quad,
-    pctPos,
-    pctCol,
-    pctLet: stats.triple ? pctLet : null,
-    pctShape: stats.quad ? pctShape : null,
+    pctPos: stats.pctPos,
+    pctCol: stats.pctCol,
+    pctLet: stats.triple ? stats.pctLet : null,
+    pctShape: stats.quad ? stats.pctShape : null,
+    dPos: stats.dPos,
+    dCol: stats.dCol,
+    dLet: stats.triple ? stats.dLet : null,
+    dShape: stats.quad ? stats.dShape : null,
+    dOverall: stats.dOverall,
     date: Date.now(),
-    roundResults: encodedResults, // Store compact round-by-round results
+    roundResults: encodedResults,
   });
 
   await saveSessions();
-  updateSessionStars(); // Update stars after saving
+  updateSessionStars();
 }
 
 // Progress icon configurations
@@ -158,10 +152,10 @@ function resetReply() {
 
 function resetEverything() {
   history = [];
-  correctPosC = 0;
-  correctLetC = 0;
-  correctColC = 0;
-  correctShapeC = 0;
+  hits   = { pos: 0, col: 0, let: 0, shape: 0 };
+  misses = { pos: 0, col: 0, let: 0, shape: 0 };
+  fas    = { pos: 0, col: 0, let: 0, shape: 0 };
+  crs    = { pos: 0, col: 0, let: 0, shape: 0 };
   combo = -1;
   total = 0;
   perfectRounds = 0;
@@ -318,10 +312,10 @@ function togglePause() {
         triple,
         quad,
         total,
-        correctPosC,
-        correctColC,
-        correctLetC,
-        correctShapeC,
+        hits,
+        misses,
+        fas,
+        crs,
         roundResults,
       },
       resumeGame,
@@ -402,33 +396,15 @@ async function endGame() {
   roundDisplay.style.cursor = "";
   roundDisplay.style.opacity = "";
 
+  const sessionStats = computeSessionStats();
+
   // Save session if completed 100 rounds
   if (total === 100) {
-    await addSession({
-      BACK,
-      triple,
-      quad,
-      total,
-      correctPosC,
-      correctColC,
-      correctLetC,
-      correctShapeC,
-      roundResults,
-    });
+    await addSession({ BACK, triple, quad, roundResults, ...sessionStats });
   }
 
   // Show results
-  Modals.showResults({
-    BACK,
-    triple,
-    quad,
-    total,
-    correctPosC,
-    correctColC,
-    correctLetC,
-    correctShapeC,
-    roundResults,
-  });
+  Modals.showResults({ BACK, triple, quad, total, roundResults, ...sessionStats });
 }
 
 // Restart game (return to IDLE state)
@@ -736,6 +712,62 @@ buttonBottomRight.addEventListener("mousedown", (e) => {
   toggleButton(buttonBottomRight, "shape");
 });
 
+// Signal-detection tally
+function tally(dim, matched, pressed) {
+  if      ( matched &&  pressed) hits[dim]++;
+  else if ( matched && !pressed) misses[dim]++;
+  else if (!matched &&  pressed) fas[dim]++;
+  else                           crs[dim]++;
+}
+
+// Inverse normal CDF (rational approximation, max error < 4.5e-4)
+function zInv(p) {
+  p = Math.max(0.001, Math.min(0.999, p));
+  const t = p < 0.5 ? Math.sqrt(-2 * Math.log(p)) : Math.sqrt(-2 * Math.log(1 - p));
+  const c = [2.515517, 0.802853, 0.010328];
+  const d = [1.432788, 0.189269, 0.001308];
+  const z = t - (c[0] + t * (c[1] + t * c[2])) / (1 + t * (d[0] + t * (d[1] + t * d[2])));
+  return p < 0.5 ? -z : z;
+}
+
+// d' per dimension (log-linear correction for boundary values)
+function dprime(dim, matchTotal, nonMatchTotal) {
+  const hr  = (hits[dim] + 0.5) / (matchTotal + 1);
+  const far = (fas[dim]  + 0.5) / (nonMatchTotal + 1);
+  return zInv(hr) - zInv(far);
+}
+
+// Compute all session metrics from current tallies
+function computeSessionStats() {
+  const tPos = hits.pos + misses.pos + fas.pos + crs.pos;
+  const tCol = hits.col + misses.col + fas.col + crs.col;
+  const pctPos = tPos > 0 ? (hits.pos + crs.pos) / tPos * 100 : 0;
+  const pctCol = tCol > 0 ? (hits.col + crs.col) / tCol * 100 : 0;
+  const dPos = dprime('pos', hits.pos + misses.pos, fas.pos + crs.pos);
+  const dCol = dprime('col', hits.col + misses.col, fas.col + crs.col);
+
+  let pctLet = null, dLet = null;
+  if (triple) {
+    const tLet = hits.let + misses.let + fas.let + crs.let;
+    pctLet = tLet > 0 ? (hits.let + crs.let) / tLet * 100 : 0;
+    dLet = dprime('let', hits.let + misses.let, fas.let + crs.let);
+  }
+
+  let pctShape = null, dShape = null;
+  if (quad) {
+    const tShape = hits.shape + misses.shape + fas.shape + crs.shape;
+    pctShape = tShape > 0 ? (hits.shape + crs.shape) / tShape * 100 : 0;
+    dShape = dprime('shape', hits.shape + misses.shape, fas.shape + crs.shape);
+  }
+
+  const activeDims = [dPos, dCol];
+  if (triple) activeDims.push(dLet);
+  if (quad) activeDims.push(dShape);
+  const dOverall = activeDims.reduce((a, b) => a + b, 0) / activeDims.length;
+
+  return { pctPos, pctCol, pctLet, pctShape, dPos, dCol, dLet, dShape, dOverall };
+}
+
 // Check answers at end of round and provide feedback
 function checkAnswers() {
   if (history.length < 1 + BACK) return;
@@ -750,25 +782,22 @@ function checkAnswers() {
 
   // Check position
   const posMatch = current.position === prev.position;
-  const posCorrect =
-    (posMatch && lastReply.position) || (!posMatch && !lastReply.position);
-  if (posCorrect) correctPosC++;
+  tally('pos', posMatch, lastReply.position);
+  const posCorrect = posMatch === lastReply.position;
   flashButton(buttonLeft, posCorrect);
 
   // Check color
   const colMatch = current.color === prev.color;
-  const colCorrect =
-    (colMatch && lastReply.color) || (!colMatch && !lastReply.color);
-  if (colCorrect) correctColC++;
+  tally('col', colMatch, lastReply.color);
+  const colCorrect = colMatch === lastReply.color;
   flashButton(buttonRight, colCorrect);
 
   // Check letter (if triple mode)
   let letCorrect = true; // Default true for dual mode
   if (triple) {
     const letMatch = current.letter === prev.letter;
-    letCorrect =
-      (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
-    if (letCorrect) correctLetC++;
+    tally('let', letMatch, lastReply.letter);
+    letCorrect = letMatch === lastReply.letter;
     flashButton(quad ? buttonBottomLeft : buttonBottom, letCorrect);
   }
 
@@ -776,9 +805,8 @@ function checkAnswers() {
   let shapeCorrect = true;
   if (quad) {
     const shapeMatch = current.shape === prev.shape;
-    shapeCorrect =
-      (shapeMatch && lastReply.shape) || (!shapeMatch && !lastReply.shape);
-    if (shapeCorrect) correctShapeC++;
+    tally('shape', shapeMatch, lastReply.shape);
+    shapeCorrect = shapeMatch === lastReply.shape;
     flashButton(buttonBottomRight, shapeCorrect);
   }
 

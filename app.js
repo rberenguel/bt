@@ -2,6 +2,7 @@ import { makeHistoryUI } from "./shared/history.js";
 import { makeStorage } from "./shared/storage.js";
 import { get, set } from "./shared/idb-keyval.js";
 import { initHaptic, triggerHaptic } from "./shared/haptic.js";
+import { openRadarModal } from "./radar.js";
 
 // ── App registry ──────────────────────────────────────────────────────────────
 
@@ -18,6 +19,7 @@ const APPS = [
       { key: "level", label: "Level", unit: "", invertColor: false },
       { key: "pctPos", label: "Pos", unit: "%", invertColor: false },
       { key: "pctCol", label: "Col", unit: "%", invertColor: false },
+      { key: "dOverall", label: "d'", desc: "Sensitivity", unit: "", invertColor: false, format: (v) => v !== null ? v.toFixed(2) : "—" },
     ],
     sessionTitle: (s) =>
       "N-" +
@@ -297,6 +299,13 @@ async function loadNbSessions() {
           level: s.level,
           pctPos: Math.round(s.pctPos),
           pctCol: Math.round(s.pctCol),
+          pctLet: s.triple ? Math.round(s.pctLet) : null,
+          pctShape: s.quad ? Math.round(s.pctShape) : null,
+          dPos: s.dPos ?? null,
+          dCol: s.dCol ?? null,
+          dLet: s.dLet ?? null,
+          dShape: s.dShape ?? null,
+          dOverall: s.dOverall ?? null,
         },
         _triple: s.triple,
         _quad: s.quad,
@@ -572,6 +581,23 @@ async function init() {
   const daySets = appData.map(({ sessions }) => daysWithSessions(sessions));
   renderStreak(computeStreak(daySets));
   renderCards(appData);
+
+  // Radar
+  const radarModal = document.getElementById("radar-modal");
+  document.getElementById("radar-btn").addEventListener("click", () => {
+    triggerHaptic();
+    openRadarModal(appData);
+  });
+  document.getElementById("close-radar-btn").addEventListener("click", () => {
+    triggerHaptic();
+    radarModal.classList.add("hidden");
+  });
+  radarModal.addEventListener("pointerdown", (e) => {
+    if (e.target === radarModal) {
+      triggerHaptic();
+      radarModal.classList.add("hidden");
+    }
+  });
 }
 
 init();
