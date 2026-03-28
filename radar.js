@@ -141,7 +141,7 @@ function ptsAttr(pts) {
 }
 
 function buildSVG(domains) {
-  const svg = el("svg", { viewBox: "0 0 300 300", width: "100%", style: "max-width:280px;display:block;margin:0 auto" });
+  const svg = el("svg", { viewBox: "-30 -10 360 320", width: "100%", style: "max-width:280px;display:block;margin:0 auto" });
 
   // Grid rings
   for (const frac of [0.25, 0.5, 0.75, 1.0]) {
