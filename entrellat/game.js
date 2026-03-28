@@ -41,6 +41,11 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', saveCurrentSession);
 
+document.getElementById("app-title").addEventListener("click", e => {
+	triggerHaptic()
+	saveCurrentSession();
+})
+
 // --- GAME STATE ---
 let score = 0;
 let isResolving = false;
@@ -485,7 +490,7 @@ document.getElementById('info-btn').addEventListener('click', () => {
 
 // --- STATS ---
 document.getElementById('stats-btn').addEventListener('click', () => {
-    triggerHaptic();
+    triggerHaptic(); 
     openHistoryModal();
 });
 
