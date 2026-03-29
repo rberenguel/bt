@@ -1,0 +1,568 @@
+:root {
+  --bg: #000000;
+  --text: #93a1a1;
+  --text-bright: #eee8d5;
+  --surface: #073642;
+  --border: #586e75;
+  --node-size: 50px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+header {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.game-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+}
+.network-name {
+  font-family: monospace;
+  color: #ffca3a;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stats-btn {
+  background: none;
+  border: none;
+  color: var(--border);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+.stats-btn:active {
+  color: var(--text-bright);
+}
+
+#timer-container {
+  width: 100%;
+  height: 4px;
+  background: var(--surface);
+  z-index: 10;
+}
+
+#progress-bar {
+  height: 100%;
+  background: #1982c4;
+  width: 100%;
+  transform-origin: left;
+}
+
+#game-area {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+#edge-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#node-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+#distractor-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ball {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.node {
+  position: absolute;
+  width: var(--node-size);
+  height: var(--node-size);
+  border-radius: 12px;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  transform: translate(-50%, -50%);
+  border: 2px solid;
+}
+
+.ui-panel {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--bg);
+  padding: 1rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.question-text {
+  font-size: 1.25rem;
+  color: var(--text-bright);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.q-node {
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+button {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text-bright);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  font-family: inherit;
+  touch-action: manipulation;
+}
+
+button:active {
+  background: var(--surface);
+  border-color: var(--text-bright);
+}
+button.primary {
+  background: var(--surface);
+  border-color: #1982c4;
+}
+
+/* Results mode: shrink graph area and reveal scrollable results below */
+body.results-mode {
+  overflow-y: auto;
+  height: auto;
+}
+
+#results-section {
+  padding: 1.25rem 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+#results-section h2 {
+  color: var(--text-bright);
+  font-size: 1.2rem;
+}
+
+#score-text {
+  font-size: 1.5rem;
+  color: var(--text-bright);
+}
+
+#recap-list {
+  text-align: left;
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recap-item {
+  padding: 0.75rem;
+  border-radius: 6px;
+  line-height: 1.4;
+  color: var(--text-bright);
+}
+
+.recap-correct {
+  border-left: 4px solid #8ac926;
+  background: rgba(138, 201, 38, 0.15);
+}
+
+.recap-incorrect {
+  border-left: 4px solid #ff595e;
+  background: rgba(255, 89, 94, 0.15);
+}
+
+.hub-link {
+  display: block;
+  text-align: center;
+  color: var(--border);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+.hub-link:hover {
+  color: var(--text-bright);
+}
+
+/* History modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  position: relative;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 0;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 95%;
+  max-width: 24rem;
+}
+
+.modal-content h2 {
+  margin: 0 1rem 0.5rem 1rem;
+  color: var(--text-bright);
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Calendar / History ───────────────────────────────────────────────────── */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem 0.75rem;
+}
+.calendar-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+.calendar-nav {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-bright);
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 0;
+  padding: 0;
+  flex: none;
+}
+.calendar-nav:active {
+  transform: scale(0.95);
+}
+.calendar-streak {
+  text-align: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 0.5rem;
+}
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--border);
+  text-transform: uppercase;
+  padding-bottom: 0.25rem;
+}
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  position: relative;
+  color: var(--text-bright);
+  transition: transform 0.1s ease;
+}
+.calendar-day.empty {
+  background: transparent;
+}
+.calendar-day.has-sessions {
+  background: rgba(25, 130, 196, 0.2);
+  border: 1px solid rgba(25, 130, 196, 0.4);
+  cursor: pointer;
+}
+.calendar-day.has-sessions:active {
+  transform: scale(1.05);
+}
+.calendar-day.today {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+.calendar-day-number {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.session-indicator {
+  font-size: 0.55rem;
+  opacity: 0.8;
+  line-height: 1;
+  color: #1982c4;
+}
+.day-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0d1117;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem;
+  box-sizing: border-box;
+}
+.day-details.hidden {
+  display: none !important;
+}
+.day-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.day-details-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-bright);
+}
+.close-details {
+  background: none;
+  border: none;
+  color: var(--text-bright);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin: 0;
+  opacity: 0.7;
+}
+.close-details:active {
+  opacity: 1;
+}
+.day-sessions {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.session-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+}
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+.session-header strong {
+  color: #1982c4;
+  font-weight: 600;
+}
+.session-time {
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+.session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+.session-stats span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: var(--text-bright);
+}
+.history-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px 0 10px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.trend-chart {
+  display: flex;
+  flex-direction: column;
+}
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  color: var(--text-bright);
+  opacity: 0.9;
+}
+.trend-label strong {
+  color: #1982c4;
+}
+.trend-best {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text);
+  opacity: 0.7;
+}
+.trend-best svg {
+  width: 14px;
+  height: 14px;
+}
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 40px;
+  gap: 2px;
+  width: 100%;
+}
+.trend-bar {
+  flex: 1;
+  background: #1982c4;
+  opacity: 0.7;
+  border-radius: 1px 1px 0 0;
+  min-height: 2px;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+}
+.trend-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg);
+  color: var(--text-bright);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  z-index: 20;
+  border: 1px solid var(--border);
+}
+.trend-bar:hover .trend-tooltip,
+.trend-bar:active .trend-tooltip,
+.trend-bar:focus .trend-tooltip {
+  opacity: 1;
+}
+.trend-bar.high {
+  opacity: 1;
+}
+.trend-bar.low {
+  background: #ff595e;
+}

@@ -4,72 +4,86 @@ const DOMAINS = [
   {
     label: "Speed",
     games: [
-      { id: "clauer",  metric: s => s.metrics.cpm,      invert: false },
-      { id: "summum",  metric: s => s.metrics.bestPace,  invert: true  },
+      { id: "clauer", metric: (s) => s.metrics.cpm, invert: false },
+      { id: "summum", metric: (s) => s.metrics.bestPace, invert: true },
     ],
   },
   {
     label: "Memory",
     games: [
-      { id: "nb",      metric: s => {
-        if (s.metrics.dOverall != null) {
-          const streams = s._quad ? 4 : s._triple ? 3 : 2;
-          return s.metrics.dOverall * s.metrics.level * streams;
-        }
-        // legacy fallback
-        const dims = [s.metrics.pctPos, s.metrics.pctCol];
-        if (s.metrics.pctLet   != null) dims.push(s.metrics.pctLet);
-        if (s.metrics.pctShape != null) dims.push(s.metrics.pctShape);
-        const meanAcc = dims.reduce((a, b) => a + b, 0) / dims.length;
-        return s.metrics.level * dims.length * (meanAcc / 100);
-      }, invert: false },
-      { id: "regles",  metric: s => s.metrics.errorRate, invert: true  },
-      { id: "safata",  metric: s => s.metrics.redAccuracy, invert: false },
+      {
+        id: "nb",
+        metric: (s) => {
+          if (s.metrics.dOverall != null) {
+            const streams = s._quad ? 4 : s._triple ? 3 : 2;
+            return s.metrics.dOverall * s.metrics.level * streams;
+          }
+          // legacy fallback
+          const dims = [s.metrics.pctPos, s.metrics.pctCol];
+          if (s.metrics.pctLet != null) dims.push(s.metrics.pctLet);
+          if (s.metrics.pctShape != null) dims.push(s.metrics.pctShape);
+          const meanAcc = dims.reduce((a, b) => a + b, 0) / dims.length;
+          return s.metrics.level * dims.length * (meanAcc / 100);
+        },
+        invert: false,
+      },
+      { id: "regles", metric: (s) => s.metrics.errorRate, invert: true },
+      { id: "safata", metric: (s) => s.metrics.redAccuracy, invert: false },
+      // accuracy weighted by number of graphs (total / 5 questions per graph)
+      {
+        id: "topos",
+        metric: (s) => s.metrics.accuracy * ((s.metrics.total ?? 5) / 5),
+        invert: false,
+      },
     ],
   },
   {
     label: "Spatial",
     games: [
-      { id: "rot",       metric: s => s.metrics.score,    invert: false },
-      { id: "entrellat", metric: s => s.metrics.accuracy, invert: false },
-      { id: "dotmatrix", metric: s => s.metrics.accuracy, invert: false },
+      { id: "rot", metric: (s) => s.metrics.score, invert: false },
+      { id: "entrellat", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "dotmatrix", metric: (s) => s.metrics.accuracy, invert: false },
     ],
   },
   {
     label: "Reasoning",
     games: [
-      { id: "tanmateix", metric: s => s.metrics.accuracy, invert: false },
-      { id: "precis",    metric: s => s.metrics.accuracy, invert: false },
-      { id: "llei",      metric: s => s.metrics.accuracy, invert: false },
+      { id: "tanmateix", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "precis", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "llei", metric: (s) => s.metrics.accuracy, invert: false },
+      // graph traversal inference, weighted by complexity (see Memory)
+      {
+        id: "topos",
+        metric: (s) => s.metrics.accuracy * ((s.metrics.total ?? 5) / 5),
+        invert: false,
+      },
     ],
   },
   {
     label: "Inhibition",
     games: [
-      { id: "stop", metric: s => s.metrics.stopAcc,   invert: false },
-      { id: "flux", metric: s => s.metrics.pmHitRate, invert: false },
+      { id: "stop", metric: (s) => s.metrics.stopAcc, invert: false },
+      { id: "flux", metric: (s) => s.metrics.pmHitRate, invert: false },
     ],
   },
   {
     label: "Attention",
     games: [
-      { id: "attn", metric: s => s.metrics.eb, invert: false },
-      { id: "safata", metric: s => s.metrics.redAccuracy, invert: false },
-      { id: "flux", metric: s => s.metrics.pmHitRate, invert: false },
-      { id: "clauer",  metric: s => s.metrics.cpm, invert: false },
+      { id: "attn", metric: (s) => s.metrics.eb, invert: false },
+      { id: "safata", metric: (s) => s.metrics.redAccuracy, invert: false },
+      { id: "flux", metric: (s) => s.metrics.pmHitRate, invert: false },
+      { id: "clauer", metric: (s) => s.metrics.cpm, invert: false },
     ],
   },
   {
     label: "Verbal",
-    games: [
-      { id: "mussol", metric: s => s.metrics.accuracy, invert: false },
-    ],
+    games: [{ id: "mussol", metric: (s) => s.metrics.accuracy, invert: false }],
   },
 ];
 
-const STALE_MS   = 7  * 24 * 60 * 60 * 1000;
-const RECENT_MS  = 7  * 24 * 60 * 60 * 1000; // "this week"
-const WINDOW_MS  = 21 * 24 * 60 * 60 * 1000; // baseline window
+const STALE_MS = 7 * 24 * 60 * 60 * 1000;
+const RECENT_MS = 7 * 24 * 60 * 60 * 1000; // "this week"
+const WINDOW_MS = 21 * 24 * 60 * 60 * 1000; // baseline window
 
 // ── Scoring ────────────────────────────────────────────────────────────────────
 //
@@ -87,11 +101,13 @@ const WINDOW_MS  = 21 * 24 * 60 * 60 * 1000; // baseline window
 function computeGameScore(sessions, metricFn, invert) {
   if (!sessions || sessions.length === 0) return { score: null, lastTs: null };
 
-  const pairs = sessions.flatMap(s => {
+  const pairs = sessions.flatMap((s) => {
     try {
       const v = metricFn(s);
       return v != null && isFinite(v) ? [{ v, ts: s.timestamp }] : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   });
 
   if (pairs.length === 0) return { score: null, lastTs: null };
@@ -100,21 +116,29 @@ function computeGameScore(sessions, metricFn, invert) {
   const lastTs = pairs[pairs.length - 1].ts;
 
   // Baseline: last 21 days, falling back to all history if too few sessions
-  const windowPairs = pairs.filter(p => p.ts >= now - WINDOW_MS);
+  const windowPairs = pairs.filter((p) => p.ts >= now - WINDOW_MS);
   const baselinePairs = windowPairs.length > 0 ? windowPairs : pairs;
-  const windowMean = baselinePairs.reduce((s, p) => s + p.v, 0) / baselinePairs.length;
+  const windowMean =
+    baselinePairs.reduce((s, p) => s + p.v, 0) / baselinePairs.length;
 
   // Recent: last 7 days
-  const recentValues = pairs.filter(p => p.ts >= now - RECENT_MS).map(p => p.v);
+  const recentValues = pairs
+    .filter((p) => p.ts >= now - RECENT_MS)
+    .map((p) => p.v);
 
   let perf;
   if (recentValues.length === 0) {
     perf = 0.5; // no sessions this week; recency drives the score
   } else {
-    const recentMean = recentValues.reduce((a, b) => a + b, 0) / recentValues.length;
+    const recentMean =
+      recentValues.reduce((a, b) => a + b, 0) / recentValues.length;
     const ratio = invert
-      ? (recentMean > 0 ? windowMean / recentMean : 1)
-      : (windowMean > 0 ? recentMean / windowMean : 1);
+      ? recentMean > 0
+        ? windowMean / recentMean
+        : 1
+      : windowMean > 0
+        ? recentMean / windowMean
+        : 1;
     perf = Math.min(1, ratio / 2);
   }
 
@@ -125,7 +149,7 @@ function computeGameScore(sessions, metricFn, invert) {
 }
 
 function computeDomains(appDataMap) {
-  return DOMAINS.map(domain => {
+  return DOMAINS.map((domain) => {
     const scores = [];
     let latestTs = null;
 
@@ -143,9 +167,10 @@ function computeDomains(appDataMap) {
       }
     }
 
-    const domainScore = scores.length > 0
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : null;
+    const domainScore =
+      scores.length > 0
+        ? scores.reduce((a, b) => a + b, 0) / scores.length
+        : null;
 
     return {
       label: domain.label,
@@ -158,7 +183,10 @@ function computeDomains(appDataMap) {
 // ── SVG radar ──────────────────────────────────────────────────────────────────
 
 const NS = "http://www.w3.org/2000/svg";
-const CX = 150, CY = 150, R = 100, N = 7;
+const CX = 150,
+  CY = 150,
+  R = 100,
+  N = 7;
 const LABEL_R = 128;
 
 function el(tag, attrs) {
@@ -169,7 +197,7 @@ function el(tag, attrs) {
 
 function spokePoints(r) {
   return Array.from({ length: N }, (_, i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / N;
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / N;
     return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
   });
 }
@@ -179,45 +207,69 @@ function ptsAttr(pts) {
 }
 
 function buildSVG(domains) {
-  const svg = el("svg", { viewBox: "-55 -20 460 340", width: "100%", style: "display:block;margin:0 auto" });
+  const svg = el("svg", {
+    viewBox: "-105 -20 510 340",
+    width: "100%",
+    style: "display:block;margin:0 auto",
+  });
 
   // Grid rings
   for (const frac of [0.25, 0.5, 0.75, 1.0]) {
-    svg.appendChild(el("polygon", {
-      points: ptsAttr(spokePoints(R * frac)),
-      fill: "none",
-      stroke: frac === 0.5 ? "#166534" : frac === 1.0 ? "#555" : "#404040",
-      "stroke-width": frac === 0.5 ? "1.5" : frac === 1.0 ? "1" : "0.5",
-    }));
+    svg.appendChild(
+      el("polygon", {
+        points: ptsAttr(spokePoints(R * frac)),
+        fill: "none",
+        stroke: frac === 0.5 ? "#166534" : frac === 1.0 ? "#555" : "#404040",
+        "stroke-width": frac === 0.5 ? "1.5" : frac === 1.0 ? "1" : "0.5",
+      }),
+    );
   }
 
   // Spoke lines
   for (const [x, y] of spokePoints(R)) {
-    svg.appendChild(el("line", { x1: CX, y1: CY, x2: x.toFixed(2), y2: y.toFixed(2), stroke: "#404040", "stroke-width": "0.5" }));
+    svg.appendChild(
+      el("line", {
+        x1: CX,
+        y1: CY,
+        x2: x.toFixed(2),
+        y2: y.toFixed(2),
+        stroke: "#404040",
+        "stroke-width": "0.5",
+      }),
+    );
   }
 
   // Top 3 worst domains
   const sorted = [...domains].sort((a, b) => b.score - a.score);
-  const top3 = new Set(sorted.slice(0, 3).map(d => d.label));
+  const top3 = new Set(sorted.slice(0, 3).map((d) => d.label));
 
   // Data polygon
   const dataPts = domains.map(({ score }, i) => {
-    const a = -Math.PI / 2 + i * 2 * Math.PI / N;
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / N;
     const r = score * R;
     return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
   });
 
-  svg.appendChild(el("polygon", {
-    points: ptsAttr(dataPts),
-    fill: "rgba(129,140,248,0.18)",
-    stroke: "#818cf8",
-    "stroke-width": "1.5",
-    "stroke-linejoin": "round",
-  }));
+  svg.appendChild(
+    el("polygon", {
+      points: ptsAttr(dataPts),
+      fill: "rgba(129,140,248,0.18)",
+      stroke: "#818cf8",
+      "stroke-width": "1.5",
+      "stroke-linejoin": "round",
+    }),
+  );
 
   for (const [i, [x, y]] of dataPts.entries()) {
     const bad = top3.has(domains[i].label);
-    svg.appendChild(el("circle", { cx: x.toFixed(2), cy: y.toFixed(2), r: bad ? "4" : "3", fill: bad ? "#c4b5fd" : "#818cf8" }));
+    svg.appendChild(
+      el("circle", {
+        cx: x.toFixed(2),
+        cy: y.toFixed(2),
+        r: bad ? "4" : "3",
+        fill: bad ? "#c4b5fd" : "#818cf8",
+      }),
+    );
   }
 
   // Labels
@@ -227,28 +279,32 @@ function buildSVG(domains) {
     const bad = top3.has(label);
     const fill = bad ? "#c4b5fd" : "#999";
 
-    svg.appendChild(el("text", {
-      x: x.toFixed(2),
-      y: y.toFixed(2),
-      "text-anchor": anchor,
-      "dominant-baseline": "middle",
-      "font-size": "14",
-      "font-family": "Inter Display, Inter, system-ui, sans-serif",
-      fill,
-    })).textContent = label;
+    svg.appendChild(
+      el("text", {
+        x: x.toFixed(2),
+        y: y.toFixed(2),
+        "text-anchor": anchor,
+        "dominant-baseline": "middle",
+        "font-size": "14",
+        "font-family": "Inter Display, Inter, system-ui, sans-serif",
+        fill,
+      }),
+    ).textContent = label;
 
     const gameNames = DOMAINS[i].games
-      .map(g => g.id[0].toUpperCase() + g.id.slice(1))
+      .map((g) => g.id[0].toUpperCase() + g.id.slice(1))
       .join(" · ");
-    svg.appendChild(el("text", {
-      x: x.toFixed(2),
-      y: (y + 15).toFixed(2),
-      "text-anchor": anchor,
-      "dominant-baseline": "middle",
-      "font-size": "9",
-      "font-family": "Inter Display, Inter, system-ui, sans-serif",
-      fill: "#666",
-    })).textContent = gameNames;
+    svg.appendChild(
+      el("text", {
+        x: x.toFixed(2),
+        y: (y + 15).toFixed(2),
+        "text-anchor": anchor,
+        "dominant-baseline": "middle",
+        "font-size": "9",
+        "font-family": "Inter Display, Inter, system-ui, sans-serif",
+        fill: "#666",
+      }),
+    ).textContent = gameNames;
   }
 
   return svg;
@@ -257,7 +313,9 @@ function buildSVG(domains) {
 // ── Public API ─────────────────────────────────────────────────────────────────
 
 export function openRadarModal(appData) {
-  const appDataMap = new Map(appData.map(({ app, sessions }) => [app.id, sessions]));
+  const appDataMap = new Map(
+    appData.map(({ app, sessions }) => [app.id, sessions]),
+  );
   const domains = computeDomains(appDataMap);
 
   const container = document.getElementById("radar-chart-container");
@@ -265,8 +323,10 @@ export function openRadarModal(appData) {
   container.appendChild(buildSVG(domains));
 
   const desc = document.createElement("p");
-  desc.textContent = "Larger spokes mean an area needs more attention — either recent performance is below your usual or you haven't trained it lately. The green ring marks your average baseline. Highlighted labels are the top 3 areas to focus on.";
-  desc.style.cssText = "margin:12px 16px 0;font-size:14px;color:#666;line-height:1.5;text-align:center;";
+  desc.textContent =
+    "Larger spokes mean an area needs more attention — either recent performance is below your usual or you haven't trained it lately. The green ring marks your average baseline. Highlighted labels are the top 3 areas to focus on.";
+  desc.style.cssText =
+    "margin:12px 16px 0;font-size:14px;color:#666;line-height:1.5;text-align:center;";
   container.appendChild(desc);
 
   document.getElementById("radar-modal").classList.remove("hidden");

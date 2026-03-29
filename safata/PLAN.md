@@ -18,7 +18,7 @@ This is deliberately distinct from:
 
 - **Serial task-switching** (A/B alternation): in classic set-shifting paradigms (and in Regles), one context is active at a time and is replaced. The cost measured is the switch cost. Safata has no switch cost in that sense — all contexts remain active at all times; the cost is the binding load.
 - **Working memory updating** (n-back / NB): NB asks you to update a single rolling buffer. Safata asks you to maintain N separate, stable rule–context bindings simultaneously.
-- **Prospective memory** (Flux): Flux asks you to remember to do something when a specific future cue appears. Safata asks you to remember *what you were doing* when you return to a context that has been interrupted.
+- **Prospective memory** (Flux): Flux asks you to remember to do something when a specific future cue appears. Safata asks you to remember _what you were doing_ when you return to a context that has been interrupted.
 
 The specific binding challenge: each tmux tile has a rule. When you return to tile #4 (the database tile, lit red), you must recall: "database tile = tap odds." You learned it on the first visit. You have since been to three other tiles. Now you must retrieve it from memory, not from a visible cue.
 
@@ -28,17 +28,17 @@ The specific binding challenge: each tmux tile has a rule. When you return to ti
 
 The battery at `/Users/ruben/code/bt/` currently covers:
 
-| Game | Construct |
-|------|-----------|
-| Clauer, Summum | Processing speed |
-| NB | Working memory (updating / n-back) |
-| Rot, Entrellat, Dotmatrix | Spatial rotation speed |
-| Tanmateix, Precis, Llei | Reasoning |
-| Stop | Inhibition |
-| Attn | Attention control |
-| Regles | Set-shifting under growing memory load |
-| Flux | Prospective / episodic memory |
-| **Safata** | **Parallel context maintenance / multi-task rule memory** |
+| Game                      | Construct                                                 |
+| ------------------------- | --------------------------------------------------------- |
+| Clauer, Summum            | Processing speed                                          |
+| NB                        | Working memory (updating / n-back)                        |
+| Rot, Entrellat, Dotmatrix | Spatial rotation speed                                    |
+| Tanmateix, Precis, Llei   | Reasoning                                                 |
+| Stop                      | Inhibition                                                |
+| Attn                      | Attention control                                         |
+| Regles                    | Set-shifting under growing memory load                    |
+| Flux                      | Prospective / episodic memory                             |
+| **Safata**                | **Parallel context maintenance / multi-task rule memory** |
 
 Safata is the only game in the battery explicitly targeting multi-context binding in working memory.
 
@@ -47,6 +47,7 @@ Safata is the only game in the battery explicitly targeting multi-context bindin
 ## 3. Relationship to Regles
 
 Regles (`/regles/`) is a set-shifting game. Its mechanic:
+
 - 10 levels; each level adds one rule to a growing stack.
 - At each level, the player clears a board of number+icon+color tiles by applying the rules in stack order (top rule first; when all matching tiles are gone, drop to next rule).
 - Only the newly added rule is shown between levels; all prior rules must be recalled from memory.
@@ -54,12 +55,14 @@ Regles (`/regles/`) is a set-shifting game. Its mechanic:
 **Key distinction**: In Regles, there is one active context at a time. The player is always in one mode. The challenge is that the rule stack grows, but you are never simultaneously managing multiple independent streams.
 
 **What Safata borrows from Regles**:
+
 1. The rule definitions (BASE_RULES, FILTER_RULES, DIM_SIZE, COLORS, ICONS).
 2. The board generation logic (12 tiles, numbers 1–9, random color and icon, guarantee ≥1 matching tile per rule in the stack).
 3. The task screen UI (the 3×3 grid of tiles, the tap handler, the cleared/error animation states).
 4. The `forceTileToMatchRule` logic to ensure playability.
 
 **What Safata does not borrow**:
+
 - The multi-level progression structure (Safata uses a CC grid instead).
 - The rule stack (in Safata, each tile has exactly one rule — a single filter or base rule assigned at the start of the session).
 - The rule-shown-once-per-new-level mechanic (Safata uses the visit count threshold).
@@ -75,14 +78,16 @@ Because both games share rule machinery and task UI, that code must be extracted
 The top-level screen. Shows a grid of up to 9 tiles. Each tile represents a tmux-window-like workstream.
 
 **Tile properties**:
+
 - `id`: integer 0–8, stable for the session
-- `icon`: a Phosphor icon class (e.g. `ph-terminal`, `ph-bug`, `ph-clock`) — *semantic*, representing the type of work
+- `icon`: a Phosphor icon class (e.g. `ph-terminal`, `ph-bug`, `ph-clock`) — _semantic_, representing the type of work
 - `rule`: the Regles filter or base rule assigned to this tile at session start, fixed for the entire session
 - `visitCount`: how many times the player has completed a task screen for this tile
 - `hasWork`: boolean — whether this tile currently has pending work
 - `justProcessed`: boolean — cleared after the next turn update; prevents immediate re-lighting
 
 **Tile color states**:
+
 - **Yellow** (`--cc-yellow`): `hasWork === true` AND `visitCount < 3`. The rule will be shown on entry. The player is still learning this tile's rule. Yellow = "safe to enter."
 - **Red** (`--cc-red`): `hasWork === true` AND `visitCount >= 3`. The rule will NOT be shown on entry. The player must recall it. Red = "memory required."
 - **Blue/neutral dark** (`--cc-idle`): `hasWork === false`. No pending work; tile is dimmed and non-interactive.
@@ -92,11 +97,13 @@ The top-level screen. Shows a grid of up to 9 tiles. Each tile represents a tmux
 **Grid size**: Always a 3×3 grid (9 tile positions). Not all tiles need to be active — a session might start with 3–5 active tiles and grow. The number of active tiles is the maximum number of parallel contexts to maintain.
 
 **Icon set for the CC** (distinct from Regles task icons):
+
 ```
 ph-terminal       ph-bug           ph-clock
 ph-database       ph-file-code     ph-gear
 ph-robot          ph-cloud         ph-git-branch
 ```
+
 These are semantic icons chosen to evoke distinct workstream identities (terminal session, bug report, cron job, database, code review, config, automation, cloud, version control). They are deliberately different from the `ph-alien`, `ph-ghost`, etc. icons used inside the task screen tiles — the CC icons identify the context; the task tile icons are part of the classification task.
 
 ### 4.2 Task Screen
@@ -104,6 +111,7 @@ These are semantic icons chosen to evoke distinct workstream identities (termina
 Shown when the player taps a lit CC tile. This is a reused Regles-style screen.
 
 **Contents** (top to bottom):
+
 1. **Context header**: the CC tile's icon + label ("terminal", "database", etc.) so the player always knows which context they're in.
 2. **Rule display** (conditional): if `visitCount < 3` at the time of entry (i.e. this is visit 1 or 2), show the rule in the same styled box as Regles (`overlay-rule`). If `visitCount >= 3`, hide it entirely — no rule, no hint.
 3. **Board**: 12 tiles in a 3×4 grid (same as Regles), each tile having a number (1–9), a color (Red/Blue/Green/Yellow), and an icon (alien/bug/ghost/robot/rocket/skull).
@@ -133,6 +141,7 @@ Shown when the player taps a lit CC tile. This is a reused Regles-style screen.
 A "turn" is defined as: player taps one lit CC tile → completes the task screen → returns to CC. At that point the CC runs its update step.
 
 **Turn update algorithm**:
+
 ```
 1. Find the tile T that was just processed.
 2. Increment T.visitCount.
@@ -170,6 +179,7 @@ The session ends after **10 red-tile completions** — 10 task screens completed
 ### 5.4 Session End Screen
 
 Shown as an overlay (same pattern as Regles end session). Stats displayed:
+
 - Red completions: always 10 (the end condition)
 - Red accuracy: `redCorrect / redTotal` taps on rule-hidden screens
 - Yellow accuracy: `yellowCorrect / yellowTotal` taps on rule-visible screens
@@ -189,11 +199,13 @@ All metrics are saved via the shared storage module.
 ### 6.2 Accuracy metrics
 
 **`redAccuracy`**: accuracy percentage on rule-hidden task screens.
+
 - Computed as: `(1 - redWrongTaps / redTotalTaps) * 100`, rounded to integer.
 - A high-value metric: improving red accuracy means better rule recall and better context maintenance.
 - **Trend direction: higher is better.**
 
 **`yellowAccuracy`**: accuracy percentage on rule-visible task screens.
+
 - Same formula for yellow screens.
 - This is a baseline / calibration metric. High yellow accuracy means the player can apply the rule correctly when shown. If yellow accuracy is low, the player has a basic rule-application problem separate from the memory challenge.
 - **Trend direction: higher is better.**
@@ -201,10 +213,12 @@ All metrics are saved via the shared storage module.
 ### 6.3 Session profile metrics
 
 **`tilesReachedRed`**: count of distinct tiles that were visited ≥3 times during the session.
+
 - A higher number means the player managed more parallel contexts reaching memory-only state.
 - **Trend direction: higher is better** (more contexts maintained).
 
 **`avgVisitsPerTile`**: total visits across all tiles / number of active tiles.
+
 - Indicates how many rounds the player completed on average per context.
 - Contextual metric, not trended directly.
 
@@ -230,9 +244,19 @@ For `makeHistoryUI` in `history.js`:
 
 ```js
 const metricDefs = [
-  { key: "redAccuracy",      label: "Red accuracy",       unit: "%",  invertColor: false },
-  { key: "yellowAccuracy",   label: "Yellow accuracy",    unit: "%",  invertColor: false },
-  { key: "tilesReachedRed",  label: "Contexts memorised", unit: "",   invertColor: false },
+  { key: "redAccuracy", label: "Red accuracy", unit: "%", invertColor: false },
+  {
+    key: "yellowAccuracy",
+    label: "Yellow accuracy",
+    unit: "%",
+    invertColor: false,
+  },
+  {
+    key: "tilesReachedRed",
+    label: "Contexts memorised",
+    unit: "",
+    invertColor: false,
+  },
 ];
 ```
 
@@ -246,18 +270,18 @@ Match the aesthetic of the existing games (Regles, NB). CSS variables:
 
 ```css
 :root {
-  --bg:              #000;
-  --surface:         #1a1a1f;
-  --surface-active:  #2a2a30;
-  --text-main:       #f2f2f7;
-  --text-dim:        #8e8e93;
-  --accent:          #5e5ce6;
-  --error:           #ff453a;
+  --bg: #000;
+  --surface: #1a1a1f;
+  --surface-active: #2a2a30;
+  --text-main: #f2f2f7;
+  --text-dim: #8e8e93;
+  --accent: #5e5ce6;
+  --error: #ff453a;
 
   /* CC tile state colors */
-  --cc-yellow:       #FFCA3A;   /* work pending, rule visible */
-  --cc-red:          #FF595E;   /* work pending, rule hidden  */
-  --cc-idle:         #1a1a1f;   /* no work                    */
+  --cc-yellow: #ffca3a; /* work pending, rule visible */
+  --cc-red: #ff595e; /* work pending, rule hidden  */
+  --cc-idle: #1a1a1f; /* no work                    */
 }
 ```
 
@@ -273,6 +297,7 @@ Match the aesthetic of the existing games (Regles, NB). CSS variables:
 ### 7.3 Task screen
 
 Reused from Regles. Additions:
+
 - Context header at top of task screen (icon + name of the current CC tile).
 - Rule box: shown only if visit count < 3, same style as Regles `overlay-rule`.
 - "Return to command centre" happens automatically on board clear.
@@ -367,6 +392,7 @@ export function makeTaskScreen({
 ```
 
 Internally `makeTaskScreen`:
+
 1. Generates a board via `generateBoard([rule])`.
 2. Optionally renders the rule label.
 3. Renders the context header.
@@ -430,10 +456,10 @@ export function saveSessionRecord(data) {
     timestamp: now,
     dateStr: new Date(now).toISOString().split("T")[0],
     metrics: {
-      redCompletions:   data.redCompletions,
-      redAccuracy:      data.redAccuracy,
-      yellowAccuracy:   data.yellowAccuracy,
-      tilesReachedRed:  data.tilesReachedRed,
+      redCompletions: data.redCompletions,
+      redAccuracy: data.redAccuracy,
+      yellowAccuracy: data.yellowAccuracy,
+      tilesReachedRed: data.tilesReachedRed,
       avgVisitsPerTile: data.avgVisitsPerTile,
     },
   });
@@ -453,9 +479,24 @@ import { getHistory } from "./storage.js";
 export const historyUI = makeHistoryUI({
   getHistory,
   metricDefs: [
-    { key: "redAccuracy",     label: "Red accuracy",       unit: "%",  invertColor: false },
-    { key: "yellowAccuracy",  label: "Yellow accuracy",    unit: "%",  invertColor: false },
-    { key: "tilesReachedRed", label: "Contexts memorised", unit: "",   invertColor: false },
+    {
+      key: "redAccuracy",
+      label: "Red accuracy",
+      unit: "%",
+      invertColor: false,
+    },
+    {
+      key: "yellowAccuracy",
+      label: "Yellow accuracy",
+      unit: "%",
+      invertColor: false,
+    },
+    {
+      key: "tilesReachedRed",
+      label: "Contexts memorised",
+      unit: "",
+      invertColor: false,
+    },
   ],
   sessionTitle: (s, i) => `Session ${i + 1}`,
 });
@@ -466,6 +507,7 @@ The history button in `index.html` calls `historyUI.open()`.
 ### 8.8 `safata/index.html`
 
 Follows the structure of `regles/index.html`:
+
 - Imports `../shared/fonts/phosphor/phosphor.css`
 - Imports `style.css`
 - Contains the CC grid div, header, overlay div, history modal div
@@ -536,15 +578,16 @@ UNLIT: can gain work in turn update (0 or 1 per turn, not the just-processed til
 ### 9.3 Visit count and rule visibility
 
 | visitCount at entry | Rule shown | CC tile color before entry |
-|---------------------|-----------|---------------------------|
-| 0 (first visit) | YES | Yellow |
-| 1 (second visit) | YES | Yellow |
-| 2 (third visit) | NO | Red |
-| 3+ | NO | Red |
+| ------------------- | ---------- | -------------------------- |
+| 0 (first visit)     | YES        | Yellow                     |
+| 1 (second visit)    | YES        | Yellow                     |
+| 2 (third visit)     | NO         | Red                        |
+| 3+                  | NO         | Red                        |
 
-Note: the color shown in the CC *before* the player enters reflects the rule visibility they will experience *inside* the task. Yellow = rule will be shown; red = rule will not be shown.
+Note: the color shown in the CC _before_ the player enters reflects the rule visibility they will experience _inside_ the task. Yellow = rule will be shown; red = rule will not be shown.
 
 The threshold is `visitCount < 2` for showing the rule (0-indexed: visits 0 and 1 show the rule, visit 2 and above do not). A tile becomes red after completing its second visit (visitCount incremented to 2). This means:
+
 - First visit: rule visible (learning)
 - Second visit: rule visible (consolidation)
 - Third visit onward: rule hidden (recall)
@@ -558,6 +601,7 @@ The following sequence is recommended to avoid blocking dependencies:
 ### Step 1: Extract shared rule engine
 
 Create `/shared/rules/engine.js`:
+
 - Copy COLORS, ICONS, BASE_RULES, FILTER_RULES, DIM_SIZE, TILE_COUNT, MAX_NUM from `regles/game.js`.
 - Extract `generateBoard` and `forceTileToMatchRule` into exported functions.
 - Add `pickRules(count, existingRules)` (generalized from the Regles level-setup logic).
@@ -575,6 +619,7 @@ Test it in isolation by temporarily wiring it into Regles for a single level.
 ### Step 4: Scaffold Safata
 
 Create the directory structure and stub files:
+
 - `safata/index.html` (full HTML, with `<div id="cc-grid">`, overlays, etc.)
 - `safata/style.css` (CSS variables, CC grid styles, tile state styles)
 - `safata/manifest.json`
@@ -652,11 +697,11 @@ The 3×3 grid always shows all 9 positions. Inactive positions are rendered as e
 
 ```js
 // safata/game.js
-const N_ACTIVE_TILES        = 4;    // Number of tiles active at session start
-const RULE_VISIBLE_VISITS   = 2;    // Visits where rule is shown (0..N-1 inclusive)
-const RED_COMPLETIONS_TARGET = 10;  // Session ends after this many red completions
-const P_REWORK              = 0.60; // Probability a just-completed tile gets re-lit next turn
-const P_NEW_WORK            = 0.45; // Probability a random idle tile gains work per turn
+const N_ACTIVE_TILES = 4; // Number of tiles active at session start
+const RULE_VISIBLE_VISITS = 2; // Visits where rule is shown (0..N-1 inclusive)
+const RED_COMPLETIONS_TARGET = 10; // Session ends after this many red completions
+const P_REWORK = 0.6; // Probability a just-completed tile gets re-lit next turn
+const P_NEW_WORK = 0.45; // Probability a random idle tile gains work per turn
 ```
 
 These are grouped as named constants at the top of `game.js` so they can be adjusted during calibration without hunting through logic.
@@ -713,16 +758,16 @@ The main battery index (`/index.html`) lists all games. Safata must be added as 
 
 ## 16. Summary of Design Decisions
 
-| Decision | Why |
-|----------|-----|
-| Turn-based (not timer-based) | Interference load is visit-count, not elapsed time. Keeps the measure precise. |
-| Fixed rule per tile for full session | Measures stable binding, not re-learning. |
-| Rule shown for first 2 visits | Allows learning before testing. 2 visits = one learning + one consolidation before pure recall. |
-| Session ends at 10 red completions | Clean, skill-based end condition. Measures recall events directly. |
-| Never re-light just-processed tile | Forces genuine parallel-context engagement; prevents single-tile cycling. |
-| Inject ≤1 new work tile per turn | Avoids flooding with easy yellow tiles; lets red tiles accumulate naturally. |
-| N=4 active tiles (default) | Enough parallel load to be challenging; not so many that the game becomes unlearnable in one session. |
-| Semantic icons in CC (terminal, bug, etc.) | Give each context a distinct, memorable identity beyond a color. The icon is the context ID. |
-| Task tile icons (alien, ghost, etc.) are different | Prevents confusion between context identity icons and classification task icons. |
-| Shared rule engine with Regles | Single source of truth for rule definitions; changes propagate to both games. |
-| Single rule per tile (not a stack) | The memory load in Safata is *breadth* (N contexts). Stacking within a tile would add *depth*, conflating two different constructs. |
+| Decision                                           | Why                                                                                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Turn-based (not timer-based)                       | Interference load is visit-count, not elapsed time. Keeps the measure precise.                                                      |
+| Fixed rule per tile for full session               | Measures stable binding, not re-learning.                                                                                           |
+| Rule shown for first 2 visits                      | Allows learning before testing. 2 visits = one learning + one consolidation before pure recall.                                     |
+| Session ends at 10 red completions                 | Clean, skill-based end condition. Measures recall events directly.                                                                  |
+| Never re-light just-processed tile                 | Forces genuine parallel-context engagement; prevents single-tile cycling.                                                           |
+| Inject ≤1 new work tile per turn                   | Avoids flooding with easy yellow tiles; lets red tiles accumulate naturally.                                                        |
+| N=4 active tiles (default)                         | Enough parallel load to be challenging; not so many that the game becomes unlearnable in one session.                               |
+| Semantic icons in CC (terminal, bug, etc.)         | Give each context a distinct, memorable identity beyond a color. The icon is the context ID.                                        |
+| Task tile icons (alien, ghost, etc.) are different | Prevents confusion between context identity icons and classification task icons.                                                    |
+| Shared rule engine with Regles                     | Single source of truth for rule definitions; changes propagate to both games.                                                       |
+| Single rule per tile (not a stack)                 | The memory load in Safata is _breadth_ (N contexts). Stacking within a tile would add _depth_, conflating two different constructs. |

@@ -1,6 +1,7 @@
 # Session Compaction Summary
 
 ## User Intent
+
 - Design and build **Precís**, a new brain-training PWA for the bt battery that trains literal compliance and ambiguity detection ("human compiler" mindset)
 - Iterate on Precís based on playtesting and analysis (Gemini review)
 - Plan two follow-on apps: **Exploit** (loophole finding) and **Llei** (rule writing from examples)
@@ -9,6 +10,7 @@
 ## Contextual Work Summary
 
 ### Precís — Initial Build
+
 - New PWA at `/Users/ruben/code/bt/precis/`
 - Two alternating drill phases: **Scope** (Phase A — identify parse tree or flag ambiguity) and **Literal** (Phase B — evaluate rule against entity payload, ALLOW/DENY)
 - AST engine: `genAST`, `evalAST`, `renderAST` — pure boolean logic over 5 abstract attributes (active, approved, flagged, premium, urgent)
@@ -18,6 +20,7 @@
 - Timings calibrated against Tanmateix: L1=14s, scaling to 6s at L6; Phase A gets +4s bonus
 
 ### Precís — Iteration Fixes
+
 - **Option B render bug**: `renderOptionHtml` was passing wrong args for option B, causing both parse options to show the same group. Fixed to show `[b op2 c]` for option B
 - **Color as hint**: Removed green/grey chip color distinction — all chips now visually neutral; state encoded in text only (`approved` vs `unapproved`)
 - **Phase A gating**: Removed `level >= 2` requirement; Phase A available from question 1
@@ -30,13 +33,16 @@
 - **UI framing**: Added `section-label` divs ("valid if" / "entity" / "sentence" / "which parse is correct?"); DENY/ALLOW buttons have sublabels ("fails rule" / "passes rule")
 
 ### Plans Written
+
 - `precis/EXPLOIT_PLAN.md`: Exploit app — inverse of Literal; player toggles entity attributes to find payload that satisfies rule letter while violating intent. Reuses full Precís engine. UI: toggleable chips + SUBMIT. Loophole reveal on correct answer. Recommended as standalone app
 - `llei/PLAN.md`: Llei app — player sees labeled valid/invalid entity examples, writes the separating rule. Generation follows Murder It Wrote approach (truth first → Gini-scored population → essentiality pruning to minimal examples). Rule input via condition selector or pseudocode. Recursive descent parser grammar documented. Key pitfalls from this session recorded in plan
 
 ### Hub Integration
+
 - Precís added to `app.js` APPS registry with `precis_history` storage key; metrics: score, overall accuracy, scope accuracy, literal accuracy, final level
 
 ### Back-to-Hub Fix (all apps)
+
 - All apps had header link (`href="../"`) but results modals covered it
 - Added `← Back to hub` anchor link inside results modals for: **rot, attn, stop, summum, mussol, dotmatrix, clauer**
 - **tanmateix**: added to JS-injected end-screen template in `main.js`
@@ -47,6 +53,7 @@
 ## Files Touched
 
 ### New App — Precís
+
 - **precis/index.html**: Full game UI; two phase display areas; labeled sections; DENY/ALLOW with sublabels
 - **precis/app.js**: AST engine, trap payload generator, Phase A/B question generation, chained mode, timer, brain fill/fire, all event handlers
 - **precis/style.css**: Full stylesheet; neutral chips, parse-group highlighting, section labels, feedback states
@@ -55,13 +62,16 @@
 - **precis/manifest.json**: PWA manifest
 
 ### New Plans
+
 - **precis/EXPLOIT_PLAN.md**: Full design plan for Exploit app
 - **llei/PLAN.md**: Full design plan for Llei app including generation algorithm, parser grammar, Gini scoring, pitfall notes
 
 ### Hub
+
 - **app.js**: Added Precís entry to APPS registry
 
 ### Back-to-Hub Fixes
+
 - **rot/index.html**, **attn/index.html**, **stop/index.html**, **summum/index.html**, **mussol/index.html**: Hub link + "Play again" label in results modal
 - **dotmatrix/index.html**: Hub link + inline CSS for `.modal-hub-link`
 - **clauer/index.html**: Hub link in results-screen buttons div

@@ -772,4 +772,6 @@ button {
   text-decoration: none;
   text-align: center;
 }
-.modal-hub-link:hover { color: var(--text-400); }
+.modal-hub-link:hover {
+  color: var(--text-400);
+}

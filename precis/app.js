@@ -1,13 +1,17 @@
 import { FireSystem } from "../shared/fire.js";
 import { saveSession, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
-import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../shared/haptic.js";
 
 // ── Config ────────────────────────────────────────────────
 const CONFIG = {
   questionsPerSession: 10,
-  phaseBRate: 0.25,           // 25% Literal, 75% Exploit
-  timeByLevel: [0, 14, 12, 10, 8, 7, 6],  // index = level
+  phaseBRate: 0.25, // 25% Literal, 75% Exploit
+  timeByLevel: [0, 14, 12, 10, 8, 7, 6], // index = level
   phaseCBonusSec: 8,
   levelUpEvery: 3,
   maxLevel: 6,
@@ -17,16 +21,18 @@ const CONFIG = {
 
 // ── Domain ────────────────────────────────────────────────
 const ATTRS = [
-  { key: "active",   pos: "active",    neg: "inactive"   },
-  { key: "approved", pos: "approved",  neg: "unapproved" },
-  { key: "flagged",  pos: "flagged",   neg: "unflagged"  },
-  { key: "premium",  pos: "premium",   neg: "standard"   },
-  { key: "urgent",   pos: "urgent",    neg: "non-urgent" },
+  { key: "active", pos: "active", neg: "inactive" },
+  { key: "approved", pos: "approved", neg: "unapproved" },
+  { key: "flagged", pos: "flagged", neg: "unflagged" },
+  { key: "premium", pos: "premium", neg: "standard" },
+  { key: "urgent", pos: "urgent", neg: "non-urgent" },
 ];
 
 // ── Utilities ─────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 function pickN(arr, n) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -38,15 +44,24 @@ function pickN(arr, n) {
 
 // ── AST ──────────────────────────────────────────────────
 function leaf(attr, negated = false) {
-  return { type: "LEAF", attr: attr.key, pos: attr.pos, neg: attr.neg, negated };
+  return {
+    type: "LEAF",
+    attr: attr.key,
+    pos: attr.pos,
+    neg: attr.neg,
+    negated,
+  };
 }
 
-function bin(type, left, right) { return { type, left, right }; }
+function bin(type, left, right) {
+  return { type, left, right };
+}
 
 // Generate rule AST. allowNegation=true for Phase B (adds NOT leaves and UNLESS).
 function genAST(level, allowNegation = false) {
   const attrs = pickN(ATTRS, level <= 1 ? 2 : 3);
-  const mk = (attr) => leaf(attr, allowNegation && level >= 2 && Math.random() < 0.3);
+  const mk = (attr) =>
+    leaf(attr, allowNegation && level >= 2 && Math.random() < 0.3);
 
   if (level === 1) {
     return bin(pick(["AND", "OR"]), mk(attrs[0]), mk(attrs[1]));
@@ -54,15 +69,17 @@ function genAST(level, allowNegation = false) {
 
   const op1 = pick(["AND", "OR"]);
   const op2 = op1 === "AND" ? "OR" : "AND";
-  const base = Math.random() < 0.5
-    ? bin(op2, bin(op1, mk(attrs[0]), mk(attrs[1])), mk(attrs[2]))
-    : bin(op1, mk(attrs[0]), bin(op2, mk(attrs[1]), mk(attrs[2])));
+  const base =
+    Math.random() < 0.5
+      ? bin(op2, bin(op1, mk(attrs[0]), mk(attrs[1])), mk(attrs[2]))
+      : bin(op1, mk(attrs[0]), bin(op2, mk(attrs[1]), mk(attrs[2])));
 
   // Add UNLESS at level 3+ — the key "catch" mechanism
   if (allowNegation && level >= 3 && Math.random() < 0.45) {
     const used = collectAttrs(base);
     const extra = ATTRS.filter((a) => !used.has(a.key));
-    if (extra.length) return { type: "UNLESS", main: base, cond: leaf(pick(extra)) };
+    if (extra.length)
+      return { type: "UNLESS", main: base, cond: leaf(pick(extra)) };
   }
 
   return base;
@@ -70,32 +87,44 @@ function genAST(level, allowNegation = false) {
 
 // Evaluate AST against a payload { attr: boolean, ... }
 function evalAST(node, payload) {
-  if (node.type === "LEAF")   return node.negated ? !payload[node.attr] : !!payload[node.attr];
-  if (node.type === "AND")    return evalAST(node.left, payload) && evalAST(node.right, payload);
-  if (node.type === "OR")     return evalAST(node.left, payload) || evalAST(node.right, payload);
-  if (node.type === "UNLESS") return evalAST(node.main, payload) && !evalAST(node.cond, payload);
+  if (node.type === "LEAF")
+    return node.negated ? !payload[node.attr] : !!payload[node.attr];
+  if (node.type === "AND")
+    return evalAST(node.left, payload) && evalAST(node.right, payload);
+  if (node.type === "OR")
+    return evalAST(node.left, payload) || evalAST(node.right, payload);
+  if (node.type === "UNLESS")
+    return evalAST(node.main, payload) && !evalAST(node.cond, payload);
   return false;
 }
 
 // Collect all attr keys referenced by a rule
 function collectAttrs(node, out = new Set()) {
-  if (node.type === "LEAF") { out.add(node.attr); return out; }
-  if (node.left)  collectAttrs(node.left, out);
+  if (node.type === "LEAF") {
+    out.add(node.attr);
+    return out;
+  }
+  if (node.left) collectAttrs(node.left, out);
   if (node.right) collectAttrs(node.right, out);
-  if (node.main)  collectAttrs(node.main, out);
-  if (node.cond)  collectAttrs(node.cond, out);
+  if (node.main) collectAttrs(node.main, out);
+  if (node.cond) collectAttrs(node.cond, out);
   return out;
 }
 
 // ── NL rendering (unambiguous, for Phase B) ───────────────
-function renderLeaf(node) { return node.negated ? `NOT ${node.pos}` : node.pos; }
+function renderLeaf(node) {
+  return node.negated ? `NOT ${node.pos}` : node.pos;
+}
 
 // unambiguous=true adds parens around OR-inside-AND for Phase B standalone rules.
 // Linked Phase B rules omit them (player just parsed the structure themselves).
 function renderAST(node, unambiguous = true) {
   if (node.type === "LEAF") return renderLeaf(node);
   if (node.type === "AND") {
-    const wrap = (n) => unambiguous && n.type === "OR" ? `(${renderAST(n, true)})` : renderAST(n, unambiguous);
+    const wrap = (n) =>
+      unambiguous && n.type === "OR"
+        ? `(${renderAST(n, true)})`
+        : renderAST(n, unambiguous);
     return `${wrap(node.left)} AND ${wrap(node.right)}`;
   }
   if (node.type === "OR") {
@@ -109,9 +138,9 @@ function renderAST(node, unambiguous = true) {
 
 function highlightKeywords(text) {
   return text
-    .replace(/\bNOT\b/g,    '<span class="kw-not">NOT</span>')
-    .replace(/\bAND\b/g,    '<span class="kw-and">AND</span>')
-    .replace(/\bOR\b/g,     '<span class="kw-or">OR</span>')
+    .replace(/\bNOT\b/g, '<span class="kw-not">NOT</span>')
+    .replace(/\bAND\b/g, '<span class="kw-and">AND</span>')
+    .replace(/\bOR\b/g, '<span class="kw-or">OR</span>')
     .replace(/\bUNLESS\b/g, '<span class="kw-unless">UNLESS</span>');
 }
 
@@ -153,11 +182,15 @@ function genTrapPayload(ast) {
 // Like genTrapPayload but guaranteed to PASS the rule.
 function genPassingTrapPayload(ast) {
   const keys = [...collectAttrs(ast)];
-  const passing = Array.from({ length: 30 }, () => genPayload(ast)).filter((p) => evalAST(ast, p));
+  const passing = Array.from({ length: 30 }, () => genPayload(ast)).filter(
+    (p) => evalAST(ast, p),
+  );
 
   if (passing.length === 0) {
-    for (let bits = 0; bits < (1 << keys.length); bits++) {
-      const p = Object.fromEntries(keys.map((k, i) => [k, !!(bits & (1 << i))]));
+    for (let bits = 0; bits < 1 << keys.length; bits++) {
+      const p = Object.fromEntries(
+        keys.map((k, i) => [k, !!(bits & (1 << i))]),
+      );
       if (evalAST(ast, p)) return p;
     }
     return Object.fromEntries(keys.map((k) => [k, false]));
@@ -169,7 +202,10 @@ function genPassingTrapPayload(ast) {
   // Prefer payloads with the most "negative" (false) attrs — maximally counterintuitive
   const withNeg = passing.filter((p) => keys.some((k) => !p[k]));
   if (withNeg.length > 0) {
-    const scored = withNeg.map((p) => ({ p, n: keys.filter((k) => !p[k]).length }));
+    const scored = withNeg.map((p) => ({
+      p,
+      n: keys.filter((k) => !p[k]).length,
+    }));
     scored.sort((a, b) => b.n - a.n);
     return scored[0].p;
   }
@@ -180,25 +216,39 @@ function genPassingTrapPayload(ast) {
 function findLoophole(node, payload) {
   if (node.type === "UNLESS" && !evalAST(node.cond, payload)) {
     const condAttr = ATTRS.find((a) => a.key === node.cond.attr);
-    return { label: `UNLESS ${condAttr.pos} didn't fire`, attrs: collectAttrs(node.main) };
+    return {
+      label: `UNLESS ${condAttr.pos} didn't fire`,
+      attrs: collectAttrs(node.main),
+    };
   }
   if (node.type === "OR") {
     const lp = evalAST(node.left, payload);
     const rp = evalAST(node.right, payload);
-    if (lp && !rp) return { label: "passed via OR branch", attrs: collectAttrs(node.left) };
-    if (rp && !lp) return { label: "passed via OR branch", attrs: collectAttrs(node.right) };
+    if (lp && !rp)
+      return { label: "passed via OR branch", attrs: collectAttrs(node.left) };
+    if (rp && !lp)
+      return { label: "passed via OR branch", attrs: collectAttrs(node.right) };
   }
-  if (node.left)  { const r = findLoophole(node.left,  payload); if (r) return r; }
-  if (node.right) { const r = findLoophole(node.right, payload); if (r) return r; }
-  if (node.main)  { const r = findLoophole(node.main,  payload); if (r) return r; }
+  if (node.left) {
+    const r = findLoophole(node.left, payload);
+    if (r) return r;
+  }
+  if (node.right) {
+    const r = findLoophole(node.right, payload);
+    if (r) return r;
+  }
+  if (node.main) {
+    const r = findLoophole(node.main, payload);
+    if (r) return r;
+  }
   return { label: "all conditions satisfied", attrs: collectAttrs(node) };
 }
 
 function hasChoice(node) {
   if (node.type === "OR" || node.type === "UNLESS") return true;
-  if (node.left  && hasChoice(node.left))  return true;
+  if (node.left && hasChoice(node.left)) return true;
   if (node.right && hasChoice(node.right)) return true;
-  if (node.main  && hasChoice(node.main))  return true;
+  if (node.main && hasChoice(node.main)) return true;
   return false;
 }
 
@@ -218,28 +268,53 @@ function genExploitQuestion(level) {
   const naiveResult = evalAST(ast, allPos);
   const wrongAttrs = {};
   for (const k of ruleKeys) {
-    if (naiveResult ? target[k] === false : target[k] === true) wrongAttrs[k] = target[k];
+    if (naiveResult ? target[k] === false : target[k] === true)
+      wrongAttrs[k] = target[k];
   }
-  if (Object.keys(wrongAttrs).length === 0) wrongAttrs[ruleKeys[0]] = target[ruleKeys[0]];
+  if (Object.keys(wrongAttrs).length === 0)
+    wrongAttrs[ruleKeys[0]] = target[ruleKeys[0]];
 
   const maxWrong = effectiveLevel <= 2 ? 1 : effectiveLevel <= 3 ? 2 : 3;
-  const objKeys  = Object.keys(wrongAttrs).slice(0, maxWrong);
+  const objKeys = Object.keys(wrongAttrs).slice(0, maxWrong);
   const objAttrs = Object.fromEntries(objKeys.map((k) => [k, wrongAttrs[k]]));
 
-  const numDist  = effectiveLevel >= 4 ? 2 : effectiveLevel >= 3 ? (Math.random() < 0.5 ? 1 : 0) : 0;
-  const distAttrs = pickN(ATTRS.filter((a) => !new Set(ruleKeys).has(a.key)), numDist);
-  const distKeys  = distAttrs.map((a) => a.key);
-
-  const chipKeys   = [...ruleKeys, ...distKeys];
-  const initPayload = Object.fromEntries(
-    chipKeys.map((k) => [k, objAttrs[k] !== undefined ? objAttrs[k] : false])
+  const numDist =
+    effectiveLevel >= 4
+      ? 2
+      : effectiveLevel >= 3
+        ? Math.random() < 0.5
+          ? 1
+          : 0
+        : 0;
+  const distAttrs = pickN(
+    ATTRS.filter((a) => !new Set(ruleKeys).has(a.key)),
+    numDist,
   );
-  const objDesc = objKeys.map((k) => {
-    const attr = ATTRS.find((a) => a.key === k);
-    return objAttrs[k] ? attr.pos : attr.neg;
-  }).join(", ");
+  const distKeys = distAttrs.map((a) => a.key);
 
-  return { phase: "C", ast, ruleText: renderAST(ast, true), target, objAttrs, ruleKeys, distKeys, chipKeys, initPayload, objDesc };
+  const chipKeys = [...ruleKeys, ...distKeys];
+  const initPayload = Object.fromEntries(
+    chipKeys.map((k) => [k, objAttrs[k] !== undefined ? objAttrs[k] : false]),
+  );
+  const objDesc = objKeys
+    .map((k) => {
+      const attr = ATTRS.find((a) => a.key === k);
+      return objAttrs[k] ? attr.pos : attr.neg;
+    })
+    .join(", ");
+
+  return {
+    phase: "C",
+    ast,
+    ruleText: renderAST(ast, true),
+    target,
+    objAttrs,
+    ruleKeys,
+    distKeys,
+    chipKeys,
+    initPayload,
+    objDesc,
+  };
 }
 
 // ── Phase B: Literal question ─────────────────────────────
@@ -248,11 +323,20 @@ function genLiteralFromAST(ast, isLinked = false) {
   const payload = genTrapPayload(ast);
   // Add 1–2 distractor attributes (not referenced by the rule) as noise
   const ruleKeys = collectAttrs(ast);
-  const distractors = pickN(ATTRS.filter((a) => !ruleKeys.has(a.key)), Math.random() < 0.5 ? 1 : 2);
+  const distractors = pickN(
+    ATTRS.filter((a) => !ruleKeys.has(a.key)),
+    Math.random() < 0.5 ? 1 : 2,
+  );
   for (const d of distractors) payload[d.key] = Math.random() < 0.5;
   const result = evalAST(ast, payload);
   // Linked questions skip disambiguation parens — player just parsed the structure
-  return { phase: "B", ast, payload, result, ruleText: renderAST(ast, !isLinked) };
+  return {
+    phase: "B",
+    ast,
+    payload,
+    result,
+    ruleText: renderAST(ast, !isLinked),
+  };
 }
 
 function genLiteralQuestion(level) {
@@ -266,9 +350,13 @@ function fresh() {
   return {
     phase: "idle",
     questionIdx: 0,
-    score: 0, correct: 0, incorrect: 0,
-    literalCorrect: 0, literalTotal: 0,
-    exploitCorrect: 0, exploitTotal: 0,
+    score: 0,
+    correct: 0,
+    incorrect: 0,
+    literalCorrect: 0,
+    literalTotal: 0,
+    exploitCorrect: 0,
+    exploitTotal: 0,
     consecutiveCorrect: 0,
     level: 1,
     currentQ: null,
@@ -282,7 +370,7 @@ function fresh() {
 
 // ── Brain fill ────────────────────────────────────────────
 const brainProgress = document.querySelector(".brain-progress-fill");
-const brainFire     = document.querySelector(".brain-fire-fill");
+const brainFire = document.querySelector(".brain-fire-fill");
 
 function setBrainFill(p) {
   const inset = Math.round(88 - p * (88 - 8));
@@ -315,46 +403,61 @@ function startTimer(seconds) {
   state.timerEnd = end;
 
   function tick() {
-    const rem  = Math.max(0, state.timerEnd - performance.now());
+    const rem = Math.max(0, state.timerEnd - performance.now());
     const frac = rem / (seconds * 1000);
     bar.style.transform = `scaleX(${frac})`;
     bar.classList.toggle("urgent", frac < 0.25);
-    if (rem <= 0) { onAnswer(false, true); return; }
+    if (rem <= 0) {
+      onAnswer(false, true);
+      return;
+    }
     state.timerRaf = requestAnimationFrame(tick);
   }
   state.timerRaf = requestAnimationFrame(tick);
 }
 
 function stopTimer() {
-  if (state.timerRaf) { cancelAnimationFrame(state.timerRaf); state.timerRaf = null; }
+  if (state.timerRaf) {
+    cancelAnimationFrame(state.timerRaf);
+    state.timerRaf = null;
+  }
 }
 
 // ── Phase C: Chip rendering ───────────────────────────────
 // loopholeAttrs: Set of attr keys to highlight (post-reveal); null = interactive mode.
 function renderChips(loopholeAttrs = null) {
   const q = state.currentQ;
-  $("chip-grid").innerHTML = q.chipKeys.map((k) => {
-    const attr = ATTRS.find((a) => a.key === k);
-    const isOn      = state.playerPayload[k];
-    const isDist    = q.distKeys.includes(k);
-    const isLoophole = loopholeAttrs && loopholeAttrs.has(k);
-    const cls = ["attr-chip", "chip-toggle",
-      isOn       ? "chip-on"       : "",
-      isDist     ? "attr-distract" : "",
-      isLoophole ? "chip-loophole" : "",
-    ].filter(Boolean).join(" ");
-    return `<button class="${cls}" data-key="${k}"${loopholeAttrs ? " disabled" : ""}>${isOn ? attr.pos : attr.neg}</button>`;
-  }).join("");
+  $("chip-grid").innerHTML = q.chipKeys
+    .map((k) => {
+      const attr = ATTRS.find((a) => a.key === k);
+      const isOn = state.playerPayload[k];
+      const isDist = q.distKeys.includes(k);
+      const isLoophole = loopholeAttrs && loopholeAttrs.has(k);
+      const cls = [
+        "attr-chip",
+        "chip-toggle",
+        isOn ? "chip-on" : "",
+        isDist ? "attr-distract" : "",
+        isLoophole ? "chip-loophole" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return `<button class="${cls}" data-key="${k}"${loopholeAttrs ? " disabled" : ""}>${isOn ? attr.pos : attr.neg}</button>`;
+    })
+    .join("");
 
   if (!loopholeAttrs) {
-    $("chip-grid").querySelectorAll(".chip-toggle").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (state.phase !== "playing") return;
-        state.playerPayload[btn.dataset.key] = !state.playerPayload[btn.dataset.key];
-        triggerHaptic();
-        renderChips();
+    $("chip-grid")
+      .querySelectorAll(".chip-toggle")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (state.phase !== "playing") return;
+          state.playerPayload[btn.dataset.key] =
+            !state.playerPayload[btn.dataset.key];
+          triggerHaptic();
+          renderChips();
+        });
       });
-    });
   }
 }
 
@@ -371,7 +474,8 @@ function showQuestion(q) {
   const phaseBadge = $("phase-badge");
   phaseBadge.textContent = q.phase === "B" ? "LITERAL" : "EXPLOIT";
   phaseBadge.classList.add("visible");
-  $("q-counter").textContent = `${state.questionIdx + 1} / ${CONFIG.questionsPerSession}`;
+  $("q-counter").textContent =
+    `${state.questionIdx + 1} / ${CONFIG.questionsPerSession}`;
 
   // Reset timer bar
   const bar = $("timer-bar");
@@ -382,7 +486,7 @@ function showQuestion(q) {
   $("phase-b-area").classList.toggle("hidden", q.phase !== "B");
   $("phase-c-area").classList.toggle("hidden", q.phase !== "C");
   $("phase-b-btns").classList.toggle("hidden", q.phase !== "B");
-  $("submit-btn").classList.toggle("hidden",   q.phase !== "C");
+  $("submit-btn").classList.toggle("hidden", q.phase !== "C");
 
   if (q.phase === "C") {
     $("rule-text-c").innerHTML = highlightKeywords(q.ruleText);
@@ -400,17 +504,20 @@ function showQuestion(q) {
 
     // Show all payload keys (rule attrs + distractors); distractors styled differently
     const ruleKeys = collectAttrs(q.ast);
-    $("payload-card").innerHTML = Object.keys(q.payload).map((k) => {
-      const attr       = ATTRS.find((a) => a.key === k);
-      const isTrue     = q.payload[k];
-      const label      = isTrue ? attr.pos : attr.neg;
-      const isDistract = !ruleKeys.has(k);
-      return `<span class="attr-chip ${isTrue ? "attr-true" : "attr-false"}${isDistract ? " attr-distract" : ""}">${label}</span>`;
-    }).join("");
+    $("payload-card").innerHTML = Object.keys(q.payload)
+      .map((k) => {
+        const attr = ATTRS.find((a) => a.key === k);
+        const isTrue = q.payload[k];
+        const label = isTrue ? attr.pos : attr.neg;
+        const isDistract = !ruleKeys.has(k);
+        return `<span class="attr-chip ${isTrue ? "attr-true" : "attr-false"}${isDistract ? " attr-distract" : ""}">${label}</span>`;
+      })
+      .join("");
   }
 
-  const timeSec = (CONFIG.timeByLevel[state.level] || 5)
-    + (q.phase === "C" ? CONFIG.phaseCBonusSec : 0);
+  const timeSec =
+    (CONFIG.timeByLevel[state.level] || 5) +
+    (q.phase === "C" ? CONFIG.phaseCBonusSec : 0);
   state.phase = "playing";
   startTimer(timeSec);
 }
@@ -470,11 +577,14 @@ function onAnswer(correct, isTimeout = false) {
   state.literalTotal++;
   $("score-display").textContent = state.score;
 
-  setTimeout(() => {
-    state.questionIdx++;
-    if (state.questionIdx >= CONFIG.questionsPerSession) endSession();
-    else nextQuestion();
-  }, correct ? CONFIG.feedbackMs : CONFIG.wrongMs);
+  setTimeout(
+    () => {
+      state.questionIdx++;
+      if (state.questionIdx >= CONFIG.questionsPerSession) endSession();
+      else nextQuestion();
+    },
+    correct ? CONFIG.feedbackMs : CONFIG.wrongMs,
+  );
 }
 
 // ── Phase C: Submit ───────────────────────────────────────
@@ -483,7 +593,9 @@ function onExploitSubmit() {
   const q = state.currentQ;
   const payload = state.playerPayload;
   const passes = evalAST(q.ast, payload);
-  const objOk  = Object.keys(q.objAttrs).every((k) => payload[k] === q.objAttrs[k]);
+  const objOk = Object.keys(q.objAttrs).every(
+    (k) => payload[k] === q.objAttrs[k],
+  );
 
   if (passes && objOk) {
     state.phase = "feedback";
@@ -521,7 +633,10 @@ function onExploitSubmit() {
     if (!objOk) {
       const needed = Object.keys(q.objAttrs)
         .filter((k) => payload[k] !== q.objAttrs[k])
-        .map((k) => { const a = ATTRS.find((x) => x.key === k); return q.objAttrs[k] ? a.pos : a.neg; })
+        .map((k) => {
+          const a = ATTRS.find((x) => x.key === k);
+          return q.objAttrs[k] ? a.pos : a.neg;
+        })
         .join(", ");
       msg = `objective not met — needs: ${needed}`;
     } else {
@@ -531,15 +646,19 @@ function onExploitSubmit() {
     fb.textContent = msg;
     fb.className = "feedback-bar fb-wrong";
     setTimeout(() => {
-      if (state.phase === "playing") { fb.textContent = ""; fb.className = "feedback-bar"; }
+      if (state.phase === "playing") {
+        fb.textContent = "";
+        fb.className = "feedback-bar";
+      }
     }, 1500);
   }
 }
 
 // ── Game flow ─────────────────────────────────────────────
 function nextQuestion() {
-  if (Math.random() < CONFIG.phaseBRate) showQuestion(genLiteralQuestion(state.level));
-  else                                   showQuestion(genExploitQuestion(state.level));
+  if (Math.random() < CONFIG.phaseBRate)
+    showQuestion(genLiteralQuestion(state.level));
+  else showQuestion(genExploitQuestion(state.level));
 }
 
 function startSession() {
@@ -562,18 +681,30 @@ function endSession() {
   $("phase-b-btns").classList.add("hidden");
   $("submit-btn").classList.add("hidden");
 
-  const total      = state.correct + state.incorrect;
-  const accuracy   = total ? Math.round(state.correct / total * 100) : 0;
-  const literalAcc = state.literalTotal ? Math.round(state.literalCorrect / state.literalTotal * 100) : null;
-  const exploitAcc = state.exploitTotal ? Math.round(state.exploitCorrect / state.exploitTotal * 100) : null;
+  const total = state.correct + state.incorrect;
+  const accuracy = total ? Math.round((state.correct / total) * 100) : 0;
+  const literalAcc = state.literalTotal
+    ? Math.round((state.literalCorrect / state.literalTotal) * 100)
+    : null;
+  const exploitAcc = state.exploitTotal
+    ? Math.round((state.exploitCorrect / state.exploitTotal) * 100)
+    : null;
 
-  $("modal-score").textContent        = state.score;
-  $("modal-accuracy").textContent     = accuracy + "%";
-  $("modal-literal-acc").textContent  = literalAcc !== null ? literalAcc + "%" : "—";
-  $("modal-exploit-acc").textContent  = exploitAcc !== null ? exploitAcc + "%" : "—";
-  $("modal-level").textContent        = state.level;
+  $("modal-score").textContent = state.score;
+  $("modal-accuracy").textContent = accuracy + "%";
+  $("modal-literal-acc").textContent =
+    literalAcc !== null ? literalAcc + "%" : "—";
+  $("modal-exploit-acc").textContent =
+    exploitAcc !== null ? exploitAcc + "%" : "—";
+  $("modal-level").textContent = state.level;
 
-  saveSession({ score: state.score, accuracy, literalAcc, exploitAcc, finalLevel: state.level });
+  saveSession({
+    score: state.score,
+    accuracy,
+    literalAcc,
+    exploitAcc,
+    finalLevel: state.level,
+  });
   if (state.score >= scoreTarget) scoreTarget = state.score + 1;
 
   $("results-modal").classList.remove("hidden");
@@ -605,17 +736,33 @@ function resetSession() {
 }
 
 // ── Events ────────────────────────────────────────────────
-$("play-btn").addEventListener("click", () => { triggerHaptic(); startSession(); });
-$("submit-btn").addEventListener("click", () => { triggerHaptic(); onExploitSubmit(); });
-$("modal-close-btn").addEventListener("click", () => { triggerHaptic(); resetSession(); });
-$("stats-btn").addEventListener("click", () => { triggerHaptic(); openHistoryModal(); });
-$("close-history-btn").addEventListener("click", () => $("history-modal").classList.add("hidden"));
+$("play-btn").addEventListener("click", () => {
+  triggerHaptic();
+  startSession();
+});
+$("submit-btn").addEventListener("click", () => {
+  triggerHaptic();
+  onExploitSubmit();
+});
+$("modal-close-btn").addEventListener("click", () => {
+  triggerHaptic();
+  resetSession();
+});
+$("stats-btn").addEventListener("click", () => {
+  triggerHaptic();
+  openHistoryModal();
+});
+$("close-history-btn").addEventListener("click", () =>
+  $("history-modal").classList.add("hidden"),
+);
 
 $("deny-btn").addEventListener("click", () => {
   if (state?.phase !== "playing") return;
   triggerHaptic();
   const correct = !state.currentQ.result;
-  $(correct ? "deny-btn" : "allow-btn").classList.add(correct ? "btn-correct" : "btn-hint");
+  $(correct ? "deny-btn" : "allow-btn").classList.add(
+    correct ? "btn-correct" : "btn-hint",
+  );
   if (!correct) $("deny-btn").classList.add("btn-wrong");
   onAnswer(correct);
 });
@@ -624,8 +771,9 @@ $("allow-btn").addEventListener("click", () => {
   if (state?.phase !== "playing") return;
   triggerHaptic();
   const correct = state.currentQ.result;
-  $(correct ? "allow-btn" : "deny-btn").classList.add(correct ? "btn-correct" : "btn-hint");
+  $(correct ? "allow-btn" : "deny-btn").classList.add(
+    correct ? "btn-correct" : "btn-hint",
+  );
   if (!correct) $("allow-btn").classList.add("btn-wrong");
   onAnswer(correct);
 });
-

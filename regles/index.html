@@ -1,47 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Regles</title>
-    <link rel="icon" href="icon.png">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
+    <link rel="icon" href="icon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div id="app">
-        <header>
-            <div class="header-main">
-                <a href="../" class="app-name">REGLES <span id="app-version" class="version-text"></span></a>
-                <div class="header-info">
-                    <span id="level-display">Level 1 / 10</span>
-                </div>
-                <div class="brain-container">
-                    <div class="brain-base">&#xe74e;</div>
-                    <div class="brain-progress-fill">&#xe74e;</div>
-                    <div class="brain-fire-fill">&#xe74e;</div>
-                    <canvas id="fire-canvas"></canvas>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <div id="grid"></div>
-        </main>
-
-        <div id="overlay" class="active">
-            <img id="overlay-icon" src="icon.png" alt="" class="overlay-icon">
-            <h1 id="overlay-title"><a href="../" style="text-decoration:none;color:inherit">REGLES</a></h1>
-            <p id="overlay-desc">Clear the board following the active rule. Rules stack — only the new one is shown each time. Remember the rest.</p>
-            <div id="overlay-rule" class="overlay-rule hidden"></div>
-            <div id="overlay-stats" class="overlay-stats hidden"></div>
-            <button id="overlay-btn" class="primary-btn">Start</button>
-            <a id="hub-link" href="../" class="modal-hub-link hidden">← Back to hub</a>
+      <header>
+        <div class="header-main">
+          <a href="../" class="app-name"
+            >REGLES <span id="app-version" class="version-text"></span
+          ></a>
+          <div class="header-info">
+            <span id="level-display">Level 1 / 10</span>
+          </div>
+          <div class="brain-container">
+            <div class="brain-base">&#xe74e;</div>
+            <div class="brain-progress-fill">&#xe74e;</div>
+            <div class="brain-fire-fill">&#xe74e;</div>
+            <canvas id="fire-canvas"></canvas>
+          </div>
         </div>
+      </header>
+
+      <main>
+        <div id="grid"></div>
+      </main>
+
+      <div id="overlay" class="active">
+        <img id="overlay-icon" src="icon.png" alt="" class="overlay-icon" />
+        <h1 id="overlay-title">
+          <a href="../" style="text-decoration: none; color: inherit">REGLES</a>
+        </h1>
+        <p id="overlay-desc">
+          Clear the board following the active rule. Rules stack — only the new
+          one is shown each time. Remember the rest.
+        </p>
+        <div id="overlay-rule" class="overlay-rule hidden"></div>
+        <div id="overlay-stats" class="overlay-stats hidden"></div>
+        <button id="overlay-btn" class="primary-btn">Start</button>
+        <a id="hub-link" href="../" class="modal-hub-link hidden"
+          >← Back to hub</a
+        >
+      </div>
     </div>
 
     <script type="module" src="game.js"></script>
-</body>
+  </body>
 </html>

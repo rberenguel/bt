@@ -22,7 +22,7 @@ export const APP_ORDER = [
   "summum",
   "entrellat",
   "flux",
-
+  "topos",
 ];
 
 const APPS = [
@@ -38,7 +38,14 @@ const APPS = [
       { key: "level", label: "Level", unit: "", invertColor: false },
       { key: "pctPos", label: "Pos", unit: "%", invertColor: false },
       { key: "pctCol", label: "Col", unit: "%", invertColor: false },
-      { key: "dOverall", label: "d'", desc: "Sensitivity", unit: "", invertColor: false, format: (v) => v !== null ? v.toFixed(2) : "—" },
+      {
+        key: "dOverall",
+        label: "d'",
+        desc: "Sensitivity",
+        unit: "",
+        invertColor: false,
+        format: (v) => (v !== null ? v.toFixed(2) : "—"),
+      },
     ],
     sessionTitle: (s) =>
       "N-" +
@@ -101,18 +108,18 @@ const APPS = [
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
   },
-    {
+  {
     id: "llei",
     name: "Llei",
     path: "./llei/",
-     icon: "./llei/icon.png",
+    icon: "./llei/icon.png",
     color: "#34d399",
     storageKey: "llei_history",
     keyMetric: (s) => s.metrics.score + "/5 puzzles",
     metricDefs: [
-      { key: "score",      label: "Score",    unit: "",  invertColor: false },
-      { key: "accuracy",   label: "Accuracy", unit: "%", invertColor: false },
-      { key: "finalLevel", label: "Level",    unit: "",  invertColor: false },
+      { key: "score", label: "Score", unit: "", invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
     ],
   },
   {
@@ -124,16 +131,28 @@ const APPS = [
     storageKey: "regles_history",
     keyMetric: (s) => s.metrics.errorRate + "% err",
     metricDefs: [
-      { key: "errorRate", label: "Errors", desc: "Wrong taps", unit: "%", invertColor: true },
+      {
+        key: "errorRate",
+        label: "Errors",
+        desc: "Wrong taps",
+        unit: "%",
+        invertColor: true,
+      },
       {
         key: "avgShiftLatency",
         label: "SSL",
         desc: "Shift Latency",
         unit: "s",
         invertColor: true,
-        format: (v) => v !== null ? v.toFixed(2) : "—",
+        format: (v) => (v !== null ? v.toFixed(2) : "—"),
       },
-      { key: "interferenceRate", label: "IER", desc: "Interference", unit: "%", invertColor: true },
+      {
+        key: "interferenceRate",
+        label: "IER",
+        desc: "Interference",
+        unit: "%",
+        invertColor: true,
+      },
     ],
   },
   {
@@ -156,7 +175,7 @@ const APPS = [
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
     ],
   },
-  
+
   {
     id: "attn",
     name: "Attn",
@@ -233,11 +252,11 @@ const APPS = [
     storageKey: "precis_history",
     keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
     metricDefs: [
-      { key: "score",      label: "Score",   unit: "",  invertColor: false },
-      { key: "accuracy",   label: "Overall", unit: "%", invertColor: false },
-      { key: "scopeAcc",   label: "Scope",   unit: "%", invertColor: false },
+      { key: "score", label: "Score", unit: "", invertColor: false },
+      { key: "accuracy", label: "Overall", unit: "%", invertColor: false },
+      { key: "scopeAcc", label: "Scope", unit: "%", invertColor: false },
       { key: "literalAcc", label: "Literal", unit: "%", invertColor: false },
-      { key: "finalLevel", label: "Level",   unit: "",  invertColor: false },
+      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
     ],
   },
   {
@@ -296,10 +315,34 @@ const APPS = [
     keyMetric: (s) => s.metrics.pmHitRate + "% PM",
     metricDefs: [
       { key: "pmHitRate", label: "PM hits", unit: "%", invertColor: false },
-      { key: "falseAlarmRate", label: "False alarms", unit: "%", invertColor: true },
+      {
+        key: "falseAlarmRate",
+        label: "False alarms",
+        unit: "%",
+        invertColor: true,
+      },
       { key: "missRate", label: "Misses", unit: "%", invertColor: true },
       { key: "rtCost", label: "RT cost", unit: "ms", invertColor: true },
       { key: "level", label: "Level", unit: "", invertColor: false },
+    ],
+  },
+  {
+    id: "topos",
+    name: "Topos",
+    path: "./topos/",
+    icon: "./topos/icon.png",
+    color: "#268bd2",
+    storageKey: "topos_history",
+    keyMetric: (s) => Math.round(s.metrics.accuracy) + "% acc",
+    metricDefs: [
+      {
+        key: "accuracy",
+        label: "Acc",
+        desc: "Correctness",
+        unit: "%",
+        invertColor: false,
+      },
+      { key: "score", label: "Score", unit: "", invertColor: false },
     ],
   },
   {
@@ -311,9 +354,24 @@ const APPS = [
     storageKey: "safata_history",
     keyMetric: (s) => s.metrics.redAccuracy + "% red",
     metricDefs: [
-      { key: "redAccuracy",     label: "Red accuracy",       unit: "%", invertColor: false },
-      { key: "yellowAccuracy",  label: "Yellow accuracy",    unit: "%", invertColor: false },
-      { key: "tilesReachedRed", label: "Contexts memorised", unit: "",  invertColor: false },
+      {
+        key: "redAccuracy",
+        label: "Red accuracy",
+        unit: "%",
+        invertColor: false,
+      },
+      {
+        key: "yellowAccuracy",
+        label: "Yellow accuracy",
+        unit: "%",
+        invertColor: false,
+      },
+      {
+        key: "tilesReachedRed",
+        label: "Contexts memorised",
+        unit: "",
+        invertColor: false,
+      },
     ],
   },
 ];
@@ -401,7 +459,7 @@ function renderStreak(streak) {
     const t = Math.min(1, (streak - 1) / 9);
     const r = Math.round(251 + (185 - 251) * t);
     const g = Math.round(191 - 191 * t);
-    const b = Math.round(36  -  36 * t);
+    const b = Math.round(36 - 36 * t);
     const color = `rgb(${r},${g},${b})`;
     el.innerHTML = `<span class="streak-flame-wrap"><canvas id="streak-fire-canvas"></canvas><i class="ph-light ph-flame" style="color:${color};position:relative;z-index:1;vertical-align:-0.15em;font-size:1.62em"></i></span> ${streak}-day streak`;
     el.style.display = "";
@@ -416,7 +474,8 @@ function renderStreak(streak) {
 let _sfParticles = [];
 let _sfIntensity = 0;
 let _sfCtx = null;
-const _sfW = 20, _sfH = 36;
+const _sfW = 20,
+  _sfH = 36;
 
 function initStreakFire(canvas, streak) {
   const dpr = window.devicePixelRatio || 1;
@@ -452,12 +511,15 @@ function streakFireLoop() {
     p.x += p.vx;
     p.y += p.vy;
     p.life -= p.decay;
-    if (p.life <= 0) { _sfParticles.splice(i, 1); continue; }
+    if (p.life <= 0) {
+      _sfParticles.splice(i, 1);
+      continue;
+    }
     _sfCtx.beginPath();
     _sfCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    if (p.life > 0.6)      _sfCtx.fillStyle = `rgba(255,255,255,${p.life})`;
+    if (p.life > 0.6) _sfCtx.fillStyle = `rgba(255,255,255,${p.life})`;
     else if (p.life > 0.3) _sfCtx.fillStyle = `rgba(255,160,20,${p.life})`;
-    else                   _sfCtx.fillStyle = `rgba(220,40,0,${p.life})`;
+    else _sfCtx.fillStyle = `rgba(220,40,0,${p.life})`;
     _sfCtx.fill();
   }
 
@@ -703,6 +765,7 @@ init();
 (async () => {
   try {
     const m = await (await fetch("manifest.json")).json();
-    if (m.version) document.getElementById("app-version").textContent = "v" + m.version;
+    if (m.version)
+      document.getElementById("app-version").textContent = "v" + m.version;
   } catch {}
 })();

@@ -60,6 +60,10 @@ Prospective memory under load. A rapid stream classification task (categorizing 
 
 Parallel context maintenance. A Command Centre grid shows up to 6 active workstreams, each assigned a unique visual classification rule. You must switch between streams to clear their pending work. Crucially, the rule is hidden after your first two visits to a stream — you must retain the specific rule bound to each stream in working memory while servicing the others.
 
+### [topos](./topos/)
+
+Topological working memory. A directed acyclic graph of six nodes (each a unique icon/colour pair) is shown for 30 seconds — memorise the structure. A 15-second distractor phase (bouncing balls) then flushes short-term verbal rehearsal and forces reliance on structural memory. Finally, five True/False questions probe reachability ("could A reach B?") and sink status ("was X a pure sink?"). The complexity-weighted score is accuracy × number of graphs, so the metric scales naturally as session difficulty increases.
+
 ### [mussol](./mussol/)
 
 Analogy reasoning. You are presented with a stem word pair and must deduce their underlying conceptual relationship. From a list of choices, you must select the pair that exhibits the exact same relationship. Features 10 questions per session with a strict 30-second timer each.

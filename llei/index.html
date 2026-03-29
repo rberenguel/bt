@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Llei</title>
     <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
     <link rel="stylesheet" href="style.css" />
@@ -11,10 +14,13 @@
   </head>
   <body>
     <div class="app-container">
-
       <!-- Header -->
       <div class="header">
-        <a href="../" class="app-name" style="text-decoration:none;color:inherit">
+        <a
+          href="../"
+          class="app-name"
+          style="text-decoration: none; color: inherit"
+        >
           Llei <span id="app-version" class="version-text"></span>
         </a>
         <button id="stats-btn" class="stats-btn" aria-label="Stats">
@@ -32,26 +38,31 @@
         <span id="q-counter" class="q-counter"></span>
         <span id="score-display" class="score-display"></span>
       </div>
-      <div class="timer-bar-track hidden" id="timer-track"><div id="timer-bar" class="timer-bar"></div></div>
+      <div class="timer-bar-track hidden" id="timer-track">
+        <div id="timer-bar" class="timer-bar"></div>
+      </div>
 
       <!-- Display area -->
       <div class="display-area">
-
         <!-- Idle overlay -->
         <div id="idle-overlay" class="idle-overlay">
           <p><strong>Llei</strong> — you are the lawmaker.</p>
-          <p>Study the examples, then write the law that separates legal from illegal.</p>
-          <p class="sub">Use: <code>AND</code>&nbsp; <code>OR</code>&nbsp; <code>NOT</code></p>
+          <p>
+            Study the examples, then write the law that separates legal from
+            illegal.
+          </p>
+          <p class="sub">
+            Use: <code>AND</code>&nbsp; <code>OR</code>&nbsp; <code>NOT</code>
+          </p>
         </div>
 
         <!-- Game area -->
         <div id="game-area" class="game-area hidden">
-
           <!-- Examples -->
           <div class="examples-grid">
             <div class="col-header valid-header">LEGAL</div>
             <div class="col-header invalid-header">ILLEGAL</div>
-            <div id="valid-col"   class="example-col"></div>
+            <div id="valid-col" class="example-col"></div>
             <div id="invalid-col" class="example-col"></div>
           </div>
 
@@ -62,7 +73,13 @@
             <!-- Editable rule display -->
             <div class="rule-area">
               <div id="rule-builder" class="rule-builder"></div>
-              <button id="rule-backspace" class="rb-ctrl" aria-label="Delete last">⌫</button>
+              <button
+                id="rule-backspace"
+                class="rb-ctrl"
+                aria-label="Delete last"
+              >
+                ⌫
+              </button>
             </div>
 
             <!-- Trash (reveals when dragging) -->
@@ -74,18 +91,73 @@
             <div class="block-section">
               <!-- Attr buttons -->
               <div class="block-row">
-                <button class="block-btn" data-action="attr" data-key="active"   style="--c:#38bdf8"><i class="ph-light ph-pulse"></i></button>
-                <button class="block-btn" data-action="attr" data-key="approved" style="--c:#4ade80"><i class="ph-light ph-check-circle"></i></button>
-                <button class="block-btn" data-action="attr" data-key="flagged"  style="--c:#f87171"><i class="ph-light ph-flag"></i></button>
-                <button class="block-btn" data-action="attr" data-key="premium"  style="--c:#fbbf24"><i class="ph-light ph-star"></i></button>
-                <button class="block-btn" data-action="attr" data-key="urgent"   style="--c:#fb923c"><i class="ph-light ph-bell"></i></button>
+                <button
+                  class="block-btn"
+                  data-action="attr"
+                  data-key="active"
+                  style="--c: #38bdf8"
+                >
+                  <i class="ph-light ph-pulse"></i>
+                </button>
+                <button
+                  class="block-btn"
+                  data-action="attr"
+                  data-key="approved"
+                  style="--c: #4ade80"
+                >
+                  <i class="ph-light ph-check-circle"></i>
+                </button>
+                <button
+                  class="block-btn"
+                  data-action="attr"
+                  data-key="flagged"
+                  style="--c: #f87171"
+                >
+                  <i class="ph-light ph-flag"></i>
+                </button>
+                <button
+                  class="block-btn"
+                  data-action="attr"
+                  data-key="premium"
+                  style="--c: #fbbf24"
+                >
+                  <i class="ph-light ph-star"></i>
+                </button>
+                <button
+                  class="block-btn"
+                  data-action="attr"
+                  data-key="urgent"
+                  style="--c: #fb923c"
+                >
+                  <i class="ph-light ph-bell"></i>
+                </button>
               </div>
               <!-- Operator buttons + clear -->
               <div class="block-row">
-                <button class="block-btn op-btn" data-action="op" data-value="AND">AND</button>
-                <button class="block-btn op-btn" data-action="op" data-value="OR">OR</button>
-                <button class="block-btn op-btn" data-action="op" data-value="NOT">NOT</button>
-<button class="block-btn paren-btn" data-action="paren">( )</button>
+                <button
+                  class="block-btn op-btn"
+                  data-action="op"
+                  data-value="AND"
+                >
+                  AND
+                </button>
+                <button
+                  class="block-btn op-btn"
+                  data-action="op"
+                  data-value="OR"
+                >
+                  OR
+                </button>
+                <button
+                  class="block-btn op-btn"
+                  data-action="op"
+                  data-value="NOT"
+                >
+                  NOT
+                </button>
+                <button class="block-btn paren-btn" data-action="paren">
+                  ( )
+                </button>
                 <button id="rule-clear" class="rb-ctrl">CLR</button>
               </div>
             </div>
@@ -96,21 +168,31 @@
             <div id="check-feedback" class="check-feedback"></div>
             <button id="check-btn" class="control-btn check-btn">CHECK</button>
           </div>
-
-        </div><!-- /game-area -->
-      </div><!-- /display-area -->
+        </div>
+        <!-- /game-area -->
+      </div>
+      <!-- /display-area -->
 
       <!-- Controls row (idle only) -->
       <div id="controls-row" class="controls-row">
         <button id="play-btn" class="control-btn play-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
         </button>
       </div>
-
-    </div><!-- /app-container -->
+    </div>
+    <!-- /app-container -->
 
     <!-- Results modal -->
     <div id="results-modal" class="modal-overlay hidden">
@@ -137,10 +219,29 @@
 
     <!-- History modal -->
     <div id="history-modal" class="modal-overlay hidden">
-      <div class="modal-content" style="padding:1rem 0;height:90vh;display:flex;flex-direction:column;overflow:hidden;width:95%;max-width:24rem;">
-        <h2 style="margin:0 1rem 0.5rem 1rem">History</h2>
-        <div id="history-list" style="flex:1 1 auto;overflow-y:auto;padding:0 1rem;position:relative;"></div>
-        <div style="padding:0 1rem;margin-top:1rem">
+      <div
+        class="modal-content"
+        style="
+          padding: 1rem 0;
+          height: 90vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          width: 95%;
+          max-width: 24rem;
+        "
+      >
+        <h2 style="margin: 0 1rem 0.5rem 1rem">History</h2>
+        <div
+          id="history-list"
+          style="
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 0 1rem;
+            position: relative;
+          "
+        ></div>
+        <div style="padding: 0 1rem; margin-top: 1rem">
           <button id="close-history-btn" class="modal-btn">Close</button>
         </div>
       </div>

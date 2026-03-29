@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.6.2";
+const CACHE_NAME = "bt-hub-v0.7.0";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -168,6 +168,13 @@ const CACHE_FILES = [
   "./tanmateix/utils/RandomUtils.js",
   "./tanmateix/utils/SpatialGrid.js",
   "./tanmateix/verification/QuestionVerifier.js",
+  "./topos/app.js",
+  "./topos/history.js",
+  "./topos/icon.png",
+  "./topos/index.html",
+  "./topos/manifest.json",
+  "./topos/storage.js",
+  "./topos/style.css",
 ];
 
 self.addEventListener("install", (event) => {

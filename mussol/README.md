@@ -15,4 +15,3 @@ Personal pun.
 ### Previous versions
 
 Earlier versions of Mussol were based on the _Analogy Question Dataset_ (CC-BY-NC-4.0). It is no longer the case, although the code still might mention some of the dataset filenames.
-

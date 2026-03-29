@@ -905,4 +905,6 @@ hr {
   text-decoration: none;
   text-align: center;
 }
-.modal-hub-link:hover { color: #94a3b8; }
+.modal-hub-link:hover {
+  color: #94a3b8;
+}

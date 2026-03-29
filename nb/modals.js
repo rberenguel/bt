@@ -229,11 +229,20 @@ export function showInstructions() {
  */
 export function showPauseStats(stats, onClose) {
   // Calculate percentages from signal-detection tallies
-  const h = stats.hits, r = stats.crs;
-  const pctPos   = stats.total > 0 ? Math.round(100 * (h.pos   + r.pos)   / stats.total) : 0;
-  const pctCol   = stats.total > 0 ? Math.round(100 * (h.col   + r.col)   / stats.total) : 0;
-  const pctLet   = stats.triple && stats.total > 0 ? Math.round(100 * (h.let   + r.let)   / stats.total) : 0;
-  const pctShape = stats.quad   && stats.total > 0 ? Math.round(100 * (h.shape + r.shape) / stats.total) : 0;
+  const h = stats.hits,
+    r = stats.crs;
+  const pctPos =
+    stats.total > 0 ? Math.round((100 * (h.pos + r.pos)) / stats.total) : 0;
+  const pctCol =
+    stats.total > 0 ? Math.round((100 * (h.col + r.col)) / stats.total) : 0;
+  const pctLet =
+    stats.triple && stats.total > 0
+      ? Math.round((100 * (h.let + r.let)) / stats.total)
+      : 0;
+  const pctShape =
+    stats.quad && stats.total > 0
+      ? Math.round((100 * (h.shape + r.shape)) / stats.total)
+      : 0;
 
   let totalFactors = 2;
   if (stats.quad) totalFactors = 4;
@@ -241,10 +250,10 @@ export function showPauseStats(stats, onClose) {
 
   const totalAnswers = stats.total * totalFactors;
   const correctAnswers = stats.quad
-    ? (h.pos + r.pos) + (h.col + r.col) + (h.let + r.let) + (h.shape + r.shape)
+    ? h.pos + r.pos + (h.col + r.col) + (h.let + r.let) + (h.shape + r.shape)
     : stats.triple
-      ? (h.pos + r.pos) + (h.col + r.col) + (h.let + r.let)
-      : (h.pos + r.pos) + (h.col + r.col);
+      ? h.pos + r.pos + (h.col + r.col) + (h.let + r.let)
+      : h.pos + r.pos + (h.col + r.col);
 
   const overall =
     totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
@@ -257,8 +266,7 @@ export function showPauseStats(stats, onClose) {
   document.getElementById("pause-overall").textContent = `Overall: ${overall}%`;
   document.getElementById("pause-position").textContent =
     `Position: ${pctPos}%`;
-  document.getElementById("pause-color").textContent =
-    `Color: ${pctCol}%`;
+  document.getElementById("pause-color").textContent = `Color: ${pctCol}%`;
 
   const pauseLetter = document.getElementById("pause-letter");
   if (stats.triple) {
@@ -299,8 +307,10 @@ export function showResults(stats) {
   // Compute overall accuracy from per-dimension pcts
   const pctDims = [stats.pctPos, stats.pctCol];
   if (stats.triple) pctDims.push(stats.pctLet);
-  if (stats.quad)   pctDims.push(stats.pctShape);
-  const percentage = Math.round(pctDims.reduce((a, b) => a + b, 0) / pctDims.length);
+  if (stats.quad) pctDims.push(stats.pctShape);
+  const percentage = Math.round(
+    pctDims.reduce((a, b) => a + b, 0) / pctDims.length,
+  );
 
   // Update modal content
   document.getElementById("results-level").textContent =
@@ -339,10 +349,12 @@ export function showResults(stats) {
       `Pos: ${stats.dPos.toFixed(2)}`,
       `Col: ${stats.dCol.toFixed(2)}`,
     ];
-    if (stats.triple && stats.dLet != null) dParts.push(`Let: ${stats.dLet.toFixed(2)}`);
-    if (stats.quad && stats.dShape != null) dParts.push(`Shp: ${stats.dShape.toFixed(2)}`);
+    if (stats.triple && stats.dLet != null)
+      dParts.push(`Let: ${stats.dLet.toFixed(2)}`);
+    if (stats.quad && stats.dShape != null)
+      dParts.push(`Shp: ${stats.dShape.toFixed(2)}`);
     dPrimeDiv.innerHTML =
-      `<p style="margin-top:0.5rem">d' ${dParts.join('\u2002\u2009')}</p>` +
+      `<p style="margin-top:0.5rem">d' ${dParts.join("\u2002\u2009")}</p>` +
       `<p>d' Overall: ${stats.dOverall.toFixed(2)}</p>`;
   } else if (dPrimeDiv) {
     dPrimeDiv.innerHTML = "";

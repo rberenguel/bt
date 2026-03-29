@@ -23,6 +23,7 @@ Do NOT start from the UI and work backwards. Start from the truth.
 
 The generated rule IS the separator. But not all rules make for good puzzles.
 Use **Gini impurity** (or information gain) to score each candidate rule:
+
 - A rule that classifies 15 VALID and 15 INVALID out of 30 is maximally interesting
 - A rule that classifies 29 VALID and 1 INVALID is degenerate — trivially gamed
 - Target: roughly balanced split, no single attribute that trivially dominates
@@ -58,9 +59,11 @@ No snap-together builder needed. Two viable approaches:
 
 **A) Pseudocode input (preferred)**
 Player types something like:
+
 ```
 approved AND NOT flagged, UNLESS urgent
 ```
+
 The app parses this using the same grammar as Precís's `renderAST` output. Evaluate the player's rule against all examples. Score = correct classifications / total.
 
 Parser grammar is small — only AND, OR, NOT, UNLESS, attribute names, parentheses. A recursive descent parser over a fixed vocabulary of ~10 terms is ~50 lines.
@@ -82,6 +85,7 @@ Primary score: **brevity × correctness**
 - "Bloated correct" (hard-codes every case individually) scores lower than "elegant correct"
 
 Track per session:
+
 - Classification accuracy (% examples correctly separated)
 - Rule complexity (condition count vs. minimum possible)
 - "Elegance delta" (how far from the optimal rule in token count)
@@ -137,6 +141,7 @@ After CHECK: show which examples pass/fail under the player's rule. Player can r
 ### Parser for pseudocode input (if going with option A)
 
 Write a simple recursive descent parser over the fixed token set:
+
 ```
 rule     → unless
 unless   → or ("UNLESS" or)?
@@ -145,6 +150,7 @@ and      → not ("AND" not)*
 not      → "NOT" atom | atom
 atom     → "(" rule ")" | ATTR_NAME
 ```
+
 ATTR_NAME is any of the ~10 known positive forms (`approved`, `flagged`, etc.) or negative forms (`unapproved`, `unflagged`, etc. → desugared to `NOT approved`).
 This is ~60 lines of JS, fully deterministic.
 
@@ -152,11 +158,11 @@ This is ~60 lines of JS, fully deterministic.
 
 ```js
 function gini(rule, population) {
-  const results = population.map(p => evalAST(rule, p));
+  const results = population.map((p) => evalAST(rule, p));
   const trueCount = results.filter(Boolean).length;
   const n = population.length;
   const p = trueCount / n;
-  return 1 - (p * p + (1 - p) * (1 - p));  // 0 = degenerate, 0.5 = perfect split
+  return 1 - (p * p + (1 - p) * (1 - p)); // 0 = degenerate, 0.5 = perfect split
 }
 ```
 
@@ -164,7 +170,7 @@ Reject rules with gini < 0.3. Regenerate until gini > 0.35.
 
 ### Essentiality check
 
-For each example, removing it and checking if the correct rule is still uniquely constrained requires enumerating alternatives. Simplification: instead of full enumeration, check if any *single-condition simplification* of the correct rule still fits all remaining examples. If yes, the example was essential to rule out that simpler wrong rule.
+For each example, removing it and checking if the correct rule is still uniquely constrained requires enumerating alternatives. Simplification: instead of full enumeration, check if any _single-condition simplification_ of the correct rule still fits all remaining examples. If yes, the example was essential to rule out that simpler wrong rule.
 
 ### Things that burned time in Precís — avoid here
 

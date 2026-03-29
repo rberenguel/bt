@@ -1,7 +1,11 @@
 import { FireSystem } from "../shared/fire.js";
 import { saveSession, getHistory } from "./storage.js";
 import { openHistoryModal } from "./history.js";
-import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
+import {
+  initHaptic,
+  triggerHaptic,
+  triggerHapticError,
+} from "../shared/haptic.js";
 
 // ── Word corpus ───────────────────────────────────────────
 const CATEGORY_PAIRS = [
@@ -9,50 +13,302 @@ const CATEGORY_PAIRS = [
     id: "living-nonliving",
     leftLabel: "Living",
     rightLabel: "Non-living",
-    left:  ["wolf","fern","moss","coral","moth","oak","crow","wasp","lynx","sage","toad","eel","gull","carp","bear","fox","rose","bee","hawk","deer"],
-    right: ["flint","quartz","ember","frost","slate","chalk","steam","cinder","bronze","shale","cobalt","sulfur","obsidian","ash","clay","iron","stone","ice","sand","coal"],
+    left: [
+      "wolf",
+      "fern",
+      "moss",
+      "coral",
+      "moth",
+      "oak",
+      "crow",
+      "wasp",
+      "lynx",
+      "sage",
+      "toad",
+      "eel",
+      "gull",
+      "carp",
+      "bear",
+      "fox",
+      "rose",
+      "bee",
+      "hawk",
+      "deer",
+    ],
+    right: [
+      "flint",
+      "quartz",
+      "ember",
+      "frost",
+      "slate",
+      "chalk",
+      "steam",
+      "cinder",
+      "bronze",
+      "shale",
+      "cobalt",
+      "sulfur",
+      "obsidian",
+      "ash",
+      "clay",
+      "iron",
+      "stone",
+      "ice",
+      "sand",
+      "coal",
+    ],
   },
   {
     id: "animal-plant",
     leftLabel: "Animal",
     rightLabel: "Plant",
-    left:  ["wolf","crane","moth","salmon","wasp","lynx","crow","toad","mink","wren","hawk","deer","bear","fox","owl","bat","bee","eel","trout","carp"],
-    right: ["fern","moss","oak","sage","reed","willow","cedar","birch","thyme","nettle","rose","ivy","pine","fir","elm","ash","bay","mint","basil","olive"],
+    left: [
+      "wolf",
+      "crane",
+      "moth",
+      "salmon",
+      "wasp",
+      "lynx",
+      "crow",
+      "toad",
+      "mink",
+      "wren",
+      "hawk",
+      "deer",
+      "bear",
+      "fox",
+      "owl",
+      "bat",
+      "bee",
+      "eel",
+      "trout",
+      "carp",
+    ],
+    right: [
+      "fern",
+      "moss",
+      "oak",
+      "sage",
+      "reed",
+      "willow",
+      "cedar",
+      "birch",
+      "thyme",
+      "nettle",
+      "rose",
+      "ivy",
+      "pine",
+      "fir",
+      "elm",
+      "ash",
+      "bay",
+      "mint",
+      "basil",
+      "olive",
+    ],
   },
   {
     id: "edible-toxic",
     leftLabel: "Edible",
     rightLabel: "Toxic",
-    left:  ["rice","bread","wheat","corn","oat","rye","bean","apple","honey","milk","grape","fig","olive","garlic","onion","mushroom","potato","carrot","walnut","egg"],
-    right: ["arsenic","cyanide","mercury","asbestos","radon","bleach","lead","venom","hemlock","methanol","chlorine","ammonia","plutonium","anthrax","ricin","thallium","polonium","strychnine","cadmium","dioxin"],
+    left: [
+      "rice",
+      "bread",
+      "wheat",
+      "corn",
+      "oat",
+      "rye",
+      "bean",
+      "apple",
+      "honey",
+      "milk",
+      "grape",
+      "fig",
+      "olive",
+      "garlic",
+      "onion",
+      "mushroom",
+      "potato",
+      "carrot",
+      "walnut",
+      "egg",
+    ],
+    right: [
+      "arsenic",
+      "cyanide",
+      "mercury",
+      "asbestos",
+      "radon",
+      "bleach",
+      "lead",
+      "venom",
+      "hemlock",
+      "methanol",
+      "chlorine",
+      "ammonia",
+      "plutonium",
+      "anthrax",
+      "ricin",
+      "thallium",
+      "polonium",
+      "strychnine",
+      "cadmium",
+      "dioxin",
+    ],
   },
   {
     id: "natural-synthetic",
     leftLabel: "Natural",
     rightLabel: "Synthetic",
-    left:  ["granite","amber","ivory","silk","wool","coral","bone","flint","cedar","basalt","quartz","clay","peat","charcoal","marble","linen","cotton","leather","wax","obsidian"],
-    right: ["nylon","kevlar","acrylic","polyester","neoprene","teflon","rayon","spandex","vinyl","silicone","mylar","cellophane","styrene","plexiglass","lycra","bakelite","epoxy","fiberglass","polystyrene","formica"],
+    left: [
+      "granite",
+      "amber",
+      "ivory",
+      "silk",
+      "wool",
+      "coral",
+      "bone",
+      "flint",
+      "cedar",
+      "basalt",
+      "quartz",
+      "clay",
+      "peat",
+      "charcoal",
+      "marble",
+      "linen",
+      "cotton",
+      "leather",
+      "wax",
+      "obsidian",
+    ],
+    right: [
+      "nylon",
+      "kevlar",
+      "acrylic",
+      "polyester",
+      "neoprene",
+      "teflon",
+      "rayon",
+      "spandex",
+      "vinyl",
+      "silicone",
+      "mylar",
+      "cellophane",
+      "styrene",
+      "plexiglass",
+      "lycra",
+      "bakelite",
+      "epoxy",
+      "fiberglass",
+      "polystyrene",
+      "formica",
+    ],
   },
   {
     id: "process-artifact",
     leftLabel: "Process",
     rightLabel: "Artifact",
-    left:  ["daemon","worker","thread","handler","broker","proxy","router","crawler","watcher","monitor","listener","poller","scanner","sender","loader","runner","parser","sweeper","reaper","emitter"],
-    right: ["blob","log","hash","index","config","token","trace","shard","record","metric","chunk","schema","digest","buffer","cert","flag","archive","doc","spec","ledger"],
+    left: [
+      "daemon",
+      "worker",
+      "thread",
+      "handler",
+      "broker",
+      "proxy",
+      "router",
+      "crawler",
+      "watcher",
+      "monitor",
+      "listener",
+      "poller",
+      "scanner",
+      "sender",
+      "loader",
+      "runner",
+      "parser",
+      "sweeper",
+      "reaper",
+      "emitter",
+    ],
+    right: [
+      "blob",
+      "log",
+      "hash",
+      "index",
+      "config",
+      "token",
+      "trace",
+      "shard",
+      "record",
+      "metric",
+      "chunk",
+      "schema",
+      "digest",
+      "buffer",
+      "cert",
+      "flag",
+      "archive",
+      "doc",
+      "spec",
+      "ledger",
+    ],
   },
   {
     id: "concrete-abstract",
     leftLabel: "Concrete",
     rightLabel: "Abstract",
-    left:  ["hammer","stone","bridge","ladder","wheel","rope","barrel","anvil","lens","needle","spring","wedge","lever","bolt","chain","hook","ring","gear","plank","brick"],
-    right: ["truth","logic","time","freedom","justice","chaos","entropy","reason","faith","doubt","pride","grief","hope","fear","duty","grace","will","fate","void","flux"],
+    left: [
+      "hammer",
+      "stone",
+      "bridge",
+      "ladder",
+      "wheel",
+      "rope",
+      "barrel",
+      "anvil",
+      "lens",
+      "needle",
+      "spring",
+      "wedge",
+      "lever",
+      "bolt",
+      "chain",
+      "hook",
+      "ring",
+      "gear",
+      "plank",
+      "brick",
+    ],
+    right: [
+      "truth",
+      "logic",
+      "time",
+      "freedom",
+      "justice",
+      "chaos",
+      "entropy",
+      "reason",
+      "faith",
+      "doubt",
+      "pride",
+      "grief",
+      "hope",
+      "fear",
+      "duty",
+      "grace",
+      "will",
+      "fate",
+      "void",
+      "flux",
+    ],
   },
 ];
 
 const COLORS = [
   { id: "neutral", css: "#e2e8f0" },
-  { id: "amber",   css: "#f59e0b" },
-  { id: "cyan",    css: "#22d3ee" },
+  { id: "amber", css: "#f59e0b" },
+  { id: "cyan", css: "#22d3ee" },
 ];
 
 // ── Config ────────────────────────────────────────────────
@@ -62,7 +318,7 @@ const CONFIG = {
   fixation: 500,
   feedback: 350,
   deadlineFallback: 1600,
-  kDeadlineInit: 3.5,  // generous start — narrows on correct streaks
+  kDeadlineInit: 3.5, // generous start — narrows on correct streaks
   kDeadlineMin: 2.0,
   kDeadlineStep: 0.15, // tighten per correct non-target trial
   kDeadlineRelax: 0.3, // loosen per miss or wrong
@@ -74,7 +330,7 @@ const LEVEL_CONFIG = [
   { targetRate: 0.15 }, // 2 — non-focal color
   { targetRate: 0.15 }, // 3 — 1 focal + 1 color
   { targetRate: 0.12 }, // 4 — 2 color
-  { targetRate: 0.10 }, // 5 — 1 focal + 2 color
+  { targetRate: 0.1 }, // 5 — 1 focal + 2 color
 ];
 
 // ── State ─────────────────────────────────────────────────
@@ -108,8 +364,15 @@ function fresh() {
 
 // ── Timers ────────────────────────────────────────────────
 let timers = [];
-const schedule = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
-const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+const schedule = (fn, ms) => {
+  const id = setTimeout(fn, ms);
+  timers.push(id);
+  return id;
+};
+const clearTimers = () => {
+  timers.forEach(clearTimeout);
+  timers = [];
+};
 
 // ── DOM ───────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -129,7 +392,8 @@ function updateProgress() {
   const total = CONFIG.baselineTrials + CONFIG.pmTrials;
   let done = 0;
   if (state.phase === "baseline") done = state.baselineIndex;
-  else if (state.phase === "pm") done = CONFIG.baselineTrials + state.trialIndex;
+  else if (state.phase === "pm")
+    done = CONFIG.baselineTrials + state.trialIndex;
   else if (state.phase === "done") done = total;
   setBrainFill(done / total);
 }
@@ -140,7 +404,8 @@ function pick(arr) {
 }
 
 function selectCategoryPair(history) {
-  const lastId = history.length > 0 ? history[history.length - 1].metrics.pairId : null;
+  const lastId =
+    history.length > 0 ? history[history.length - 1].metrics.pairId : null;
   const candidates = CATEGORY_PAIRS.filter((p) => p.id !== lastId);
   return pick(candidates.length > 0 ? candidates : CATEGORY_PAIRS);
 }
@@ -165,12 +430,18 @@ function generateRules(level, pair) {
   });
 
   switch (level) {
-    case 1: return [focalRule()];
-    case 2: return [colorRule(pick(["amber", "cyan"]))];
-    case 3: return [focalRule(), colorRule(pick(["amber", "cyan"]))];
-    case 4: return [colorRule("amber"), colorRule("cyan")];
-    case 5: return [focalRule(), colorRule("amber"), colorRule("cyan")];
-    default: return [focalRule()];
+    case 1:
+      return [focalRule()];
+    case 2:
+      return [colorRule(pick(["amber", "cyan"]))];
+    case 3:
+      return [focalRule(), colorRule(pick(["amber", "cyan"]))];
+    case 4:
+      return [colorRule("amber"), colorRule("cyan")];
+    case 5:
+      return [focalRule(), colorRule("amber"), colorRule("cyan")];
+    default:
+      return [focalRule()];
   }
 }
 
@@ -215,7 +486,10 @@ function generateStim(rules, forTarget, pair) {
 
 function generatePmTrials(rules, level, pair) {
   const total = CONFIG.pmTrials;
-  const targetCount = Math.max(3, Math.round(total * LEVEL_CONFIG[level - 1].targetRate));
+  const targetCount = Math.max(
+    3,
+    Math.round(total * LEVEL_CONFIG[level - 1].targetRate),
+  );
 
   const usable = Array.from({ length: total - 4 }, (_, i) => i + 2);
   const segSize = Math.floor(usable.length / targetCount);
@@ -254,8 +528,7 @@ function startDeadlineBar(ms) {
   bar.style.width = "100%";
   bar.style.backgroundColor = "var(--color-accent)";
   void bar.offsetWidth;
-  bar.style.transition =
-    `width ${ms}ms linear, background-color ${ms * 0.5}ms ${ms * 0.5}ms ease-in`;
+  bar.style.transition = `width ${ms}ms linear, background-color ${ms * 0.5}ms ${ms * 0.5}ms ease-in`;
   bar.style.width = "0%";
   bar.style.backgroundColor = "var(--color-red)";
 }
@@ -518,7 +791,10 @@ function respondPm(zone) {
   if (rts.length >= 3) {
     const mean = state.baselineMean;
     const variance = rts.reduce((a, b) => a + (b - mean) ** 2, 0) / rts.length;
-    state.deadline = Math.max(600, Math.round(mean + state.kDeadline * Math.sqrt(variance)));
+    state.deadline = Math.max(
+      600,
+      Math.round(mean + state.kDeadline * Math.sqrt(variance)),
+    );
   }
 
   state.trialIndex++;
@@ -535,14 +811,19 @@ function endSession() {
   setBrainFill(1);
   $("play-btn").disabled = false;
 
-  const pmHitRate = state.pmTargetTotal > 0
-    ? Math.round((state.pmHits / state.pmTargetTotal) * 100) : 0;
-  const falseAlarmRate = state.nonTargetTotal > 0
-    ? Math.round((state.falseAlarms / state.nonTargetTotal) * 100) : 0;
+  const pmHitRate =
+    state.pmTargetTotal > 0
+      ? Math.round((state.pmHits / state.pmTargetTotal) * 100)
+      : 0;
+  const falseAlarmRate =
+    state.nonTargetTotal > 0
+      ? Math.round((state.falseAlarms / state.nonTargetTotal) * 100)
+      : 0;
   const missRate = Math.round((state.allMisses / CONFIG.pmTrials) * 100);
-  const pmMeanRt = state.pmBlockRts.length > 0
-    ? state.pmBlockRts.reduce((a, b) => a + b, 0) / state.pmBlockRts.length
-    : state.baselineMean;
+  const pmMeanRt =
+    state.pmBlockRts.length > 0
+      ? state.pmBlockRts.reduce((a, b) => a + b, 0) / state.pmBlockRts.length
+      : state.baselineMean;
   const rtCost = Math.round(pmMeanRt - state.baselineMean);
 
   $("modal-targets").textContent = `${state.pmHits} / ${state.pmTargetTotal}`;
@@ -551,7 +832,8 @@ function endSession() {
   $("modal-miss-rate").textContent = missRate + "%";
   $("modal-rt-cost").textContent = (rtCost >= 0 ? "+" : "") + rtCost + " ms";
   $("modal-level").textContent = state.level;
-  $("modal-pair").textContent = state.categoryPair.leftLabel + " / " + state.categoryPair.rightLabel;
+  $("modal-pair").textContent =
+    state.categoryPair.leftLabel + " / " + state.categoryPair.rightLabel;
   $("modal-deadline").textContent = state.deadline + " ms";
 
   saveSession({
@@ -662,9 +944,10 @@ $("stats-btn").addEventListener("click", () => {
   openHistoryModal();
 });
 
-$("close-history-btn").addEventListener("click", () =>
-  $("history-modal").classList.add("hidden"),
-);
+$("close-history-btn").addEventListener("click", () => {
+  triggerHaptic();
+  $("history-modal").classList.add("hidden");
+});
 
 // ── Init ──────────────────────────────────────────────────
 async function initVersion() {

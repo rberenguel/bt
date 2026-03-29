@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>topos</title>
+    <link rel="stylesheet" href="../shared/fonts/inter.css" />
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <header>
+      <a href="../" class="game-title">topos</a>
+      <div class="header-right">
+        <div id="status-text">Ready</div>
+        <button class="stats-btn" id="stats-btn" aria-label="Stats">
+          <i class="ph-light ph-chart-bar"></i>
+        </button>
+      </div>
+    </header>
+
+    <div id="timer-container" class="hidden">
+      <div id="progress-bar"></div>
+    </div>
+
+    <div id="game-area">
+      <svg id="edge-layer" class="hidden">
+        <defs>
+          <marker
+            id="arrowhead"
+            markerUnits="userSpaceOnUse"
+            markerWidth="20"
+            markerHeight="16"
+            refX="20"
+            refY="8"
+            orient="auto"
+          >
+            <path d="M0,0 L20,8 L0,16 Z" fill="#586e75" />
+          </marker>
+        </defs>
+        <g id="edges-container"></g>
+      </svg>
+
+      <div id="node-layer" class="hidden"></div>
+      <div id="distractor-layer" class="hidden"></div>
+
+      <div id="intro-panel" class="ui-panel">
+        <p>Memorize the topology. Nodes flow top-to-bottom.</p>
+        <button class="primary" id="start-btn">Start Sequence</button>
+      </div>
+
+      <div id="question-panel" class="ui-panel hidden">
+        <div id="q-network" class="network-name">Network Alpha</div>
+        <div id="q-text" class="question-text"></div>
+        <div class="btn-group">
+          <button id="true-btn">True</button>
+          <button id="false-btn">False</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="results-section" class="hidden">
+      <h2>Sequence Complete</h2>
+      <p id="score-text"></p>
+      <div id="recap-list"></div>
+      <button class="primary" id="play-again-btn">Play Again</button>
+      <a href="../" class="hub-link">← Back to hub</a>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>History</h2>
+        <div
+          id="history-list"
+          style="flex: 1 1 auto; overflow-y: auto; padding: 0 1rem"
+        ></div>
+        <div style="padding: 0 1rem; margin-top: 1rem">
+          <button id="close-history-btn" class="modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
