@@ -875,13 +875,14 @@ function handleZoneTap(zone) {
 
 function bindZone(id, zone) {
   const el = $(id);
-  el.addEventListener("pointerdown", (e) => {
+  el.addEventListener("click", (e) => {
     if (el.disabled) return;
     e.preventDefault();
     el.classList.add("pressed");
     triggerHaptic();
     handleZoneTap(zone);
   });
+  
 }
 
 bindZone("zone-left", "left");
@@ -908,7 +909,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ── Controls ──────────────────────────────────────────────
-$("play-btn").addEventListener("pointerdown", (e) => {
+$("play-btn").addEventListener("click", (e) => {
   e.preventDefault();
   if ($("play-btn").disabled) return;
   triggerHaptic();
@@ -916,13 +917,13 @@ $("play-btn").addEventListener("pointerdown", (e) => {
   startBaseline();
 });
 
-$("reset-btn").addEventListener("pointerdown", (e) => {
+$("reset-btn").addEventListener("click", (e) => {
   e.preventDefault();
   triggerHaptic();
   resetSession();
 });
 
-$("intention-confirm-btn").addEventListener("pointerdown", (e) => {
+$("intention-confirm-btn").addEventListener("click", (e) => {
   e.preventDefault();
   triggerHaptic();
   state.intentionIndex++;
@@ -933,7 +934,7 @@ $("intention-confirm-btn").addEventListener("pointerdown", (e) => {
   }
 });
 
-$("modal-close-btn").addEventListener("pointerdown", (e) => {
+$("modal-close-btn").addEventListener("click", (e) => {
   e.preventDefault();
   triggerHaptic();
   resetSession();
