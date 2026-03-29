@@ -24,13 +24,14 @@ const DOMAINS = [
         return s.metrics.level * dims.length * (meanAcc / 100);
       }, invert: false },
       { id: "regles",  metric: s => s.metrics.errorRate, invert: true  },
+      { id: "safata",  metric: s => s.metrics.redAccuracy, invert: false },
     ],
   },
   {
     label: "Spatial",
     games: [
       { id: "rot",       metric: s => s.metrics.score,    invert: false },
-      { id: "entrellat", metric: s => s.metrics.solved,   invert: false },
+      { id: "entrellat", metric: s => s.metrics.accuracy, invert: false },
       { id: "dotmatrix", metric: s => s.metrics.accuracy, invert: false },
     ],
   },
@@ -53,6 +54,9 @@ const DOMAINS = [
     label: "Attention",
     games: [
       { id: "attn", metric: s => s.metrics.eb, invert: false },
+      { id: "safata", metric: s => s.metrics.redAccuracy, invert: false },
+      { id: "flux", metric: s => s.metrics.pmHitRate, invert: false },
+      { id: "clauer",  metric: s => s.metrics.cpm, invert: false },
     ],
   },
   {
@@ -63,10 +67,17 @@ const DOMAINS = [
   },
 ];
 
-const STALE_MS = 14 * 24 * 60 * 60 * 1000;
+const STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const RECENT_N = 5;
 
 // ── Scoring ────────────────────────────────────────────────────────────────────
+//
+// Score = performancePercentile × recencyFactor
+//   performancePercentile: where does the recent mean sit vs all history (0–1)
+//   recencyFactor: 1.0 if played today, decays linearly to 0.0 at 7 days
+//
+// This makes the radar drop toward 0 both when a domain hasn't been trained
+// recently and when recent scores are declining vs historical performance.
 
 function computeGameScore(sessions, metricFn, invert) {
   if (!sessions || sessions.length === 0) return { score: null, lastTs: null };
@@ -86,10 +97,17 @@ function computeGameScore(sessions, metricFn, invert) {
   const recent = allValues.slice(-RECENT_N);
   const recentMean = recent.reduce((a, b) => a + b, 0) / recent.length;
 
-  let pct = allValues.filter(v => v < recentMean).length / allValues.length;
+  // Mid-rank percentile: ties count as 0.5 so a consistent performer
+  // scores ~0.5 rather than collapsing to 0.
+  const below = allValues.filter(v => v < recentMean).length;
+  const equal = allValues.filter(v => v === recentMean).length;
+  let pct = (below + equal * 0.5) / allValues.length;
   if (invert) pct = 1 - pct;
 
-  return { score: pct, lastTs };
+  const daysSinceLast = (Date.now() - lastTs) / (24 * 60 * 60 * 1000);
+  const recency = Math.pow(0.5, daysSinceLast / 7); // halves every 7 days, never reaches 0
+
+  return { score: 1 - pct * recency, lastTs };
 }
 
 function computeDomains(appDataMap) {
@@ -111,7 +129,7 @@ function computeDomains(appDataMap) {
 
     return {
       label: domain.label,
-      score: bestScore ?? 0,
+      score: bestScore ?? 1,
       stale: bestTs === null || Date.now() - bestTs > STALE_MS,
     };
   });
@@ -141,7 +159,7 @@ function ptsAttr(pts) {
 }
 
 function buildSVG(domains) {
-  const svg = el("svg", { viewBox: "-30 -10 360 320", width: "100%", style: "max-width:280px;display:block;margin:0 auto" });
+  const svg = el("svg", { viewBox: "-55 -20 460 340", width: "100%", style: "display:block;margin:0 auto" });
 
   // Grid rings
   for (const frac of [0.25, 0.5, 0.75, 1.0]) {
@@ -181,15 +199,30 @@ function buildSVG(domains) {
   for (const [i, [x, y]] of spokePoints(LABEL_R).entries()) {
     const { label, stale } = domains[i];
     const anchor = x < CX - 4 ? "end" : x > CX + 4 ? "start" : "middle";
+    const fill = "#999";
+
     svg.appendChild(el("text", {
       x: x.toFixed(2),
       y: y.toFixed(2),
       "text-anchor": anchor,
       "dominant-baseline": "middle",
-      "font-size": "10",
+      "font-size": "14",
       "font-family": "Inter Display, Inter, system-ui, sans-serif",
-      fill: stale ? "#555" : "#999",
+      fill,
     })).textContent = label;
+
+    const gameNames = DOMAINS[i].games
+      .map(g => g.id[0].toUpperCase() + g.id.slice(1))
+      .join(" · ");
+    svg.appendChild(el("text", {
+      x: x.toFixed(2),
+      y: (y + 15).toFixed(2),
+      "text-anchor": anchor,
+      "dominant-baseline": "middle",
+      "font-size": "9",
+      "font-family": "Inter Display, Inter, system-ui, sans-serif",
+      fill: "#666",
+    })).textContent = gameNames;
   }
 
   return svg;

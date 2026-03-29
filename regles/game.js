@@ -1,6 +1,11 @@
 import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
 import { FireSystem } from "../shared/fire.js";
 import { saveSessionRecord } from "./storage.js";
+import {
+    COLORS, ICONS, TILE_COUNT, MAX_NUM, DIM_SIZE,
+    BASE_RULES, FILTER_RULES,
+    generateBoard as sharedGenerateBoard, forceTileToMatchRule,
+} from "../shared/rules/engine.js";
 
 (async () => {
   try {
@@ -9,43 +14,9 @@ import { saveSessionRecord } from "./storage.js";
   } catch {}
 })();
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-const COLORS = [
-    { id: "Red",    hex: "var(--c-red)"    },
-    { id: "Blue",   hex: "var(--c-blue)"   },
-    { id: "Green",  hex: "var(--c-green)"  },
-    { id: "Yellow", hex: "var(--c-yellow)" },
-];
-
-const ICONS = ["ph-alien", "ph-bug", "ph-ghost", "ph-robot", "ph-rocket", "ph-skull"];
-
-const TILE_COUNT     = 12;
-const MAX_NUM        = 9;  // Single digits — eliminates visual parsing overhead,
-                            // forces duplicates (1–9 into 12 slots), makes sorting
-                            // absolute rather than relative, isolating set-shift cost.
 const SESSION_LEVELS = 10; // Levels 1–10: stack grows to 9 filter rules + base rule.
-
-// ── Rules engine ──────────────────────────────────────────────────────────────
-
-const BASE_RULES = [
-    { id: "ASC",  text: "Tap Ascending",  isValid: (t, b) => t.number === Math.min(...b.map(x => x.number)) },
-    { id: "DESC", text: "Tap Descending", isValid: (t, b) => t.number === Math.max(...b.map(x => x.number)) },
-];
-
-// Each rule belongs to a dimension. The hard constraint is: never exhaust a
-// dimension (i.e. use all its options), because that would mean every tile is
-// claimed by some rule in that dimension — leaving nothing meaningful for the
-// rules below or for the base rule. The limit is always (dimension_size - 1).
-const DIM_SIZE = { parity: 2, color: 4, icon: 6, number: 9 };
-
-const FILTER_RULES = [
-    { id: "ODD",  text: "Tap Odds",  dim: "parity", isValid: (t) => t.number % 2 !== 0 },
-    { id: "EVEN", text: "Tap Evens", dim: "parity", isValid: (t) => t.number % 2 === 0 },
-    ...COLORS.map(c => ({ id: `COL_${c.id}`, text: `Tap ${c.id}`,                 dim: "color",  isValid: (t) => t.color.id === c.id })),
-    ...ICONS.map(i  => ({ id: `ICO_${i}`,    text: `Tap ${i.replace("ph-", "")}`,  dim: "icon",   isValid: (t) => t.icon === i })),
-    ...[1,2,3,4,5,6,7,8,9].map(n => ({ id: `NUM_${n}`, text: `Tap ${n}s`, dim: "number", isValid: (t) => t.number === n })),
-];
 
 // ── Game state ────────────────────────────────────────────────────────────────
 
@@ -203,41 +174,7 @@ function startPlayingPhase() {
 // ── Board generation ──────────────────────────────────────────────────────────
 
 function generateBoard() {
-    // MAX_NUM=9, TILE_COUNT=12 → duplicates are guaranteed and intentional.
-    const nums = Array.from({ length: TILE_COUNT }, () => Math.floor(Math.random() * MAX_NUM) + 1);
-
-    state.board = nums
-        .sort(() => Math.random() - 0.5)
-        .map((n, i) => ({
-            id:    "t" + i,
-            number: n,
-            color:  COLORS[Math.floor(Math.random() * COLORS.length)],
-            icon:   ICONS[Math.floor(Math.random() * ICONS.length)],
-        }));
-
-    // Ensure every filter rule in the stack has ≥1 matching tile.
-    for (const rule of state.rules) {
-        if (rule.id === "ASC" || rule.id === "DESC") continue;
-        if (!state.board.some(t => rule.isValid(t, state.board))) {
-            forceTileToMatchRule(state.board[Math.floor(Math.random() * state.board.length)], rule);
-        }
-    }
-}
-
-function forceTileToMatchRule(target, rule) {
-    if (rule.id.startsWith("COL_")) {
-        target.color = COLORS.find(c => c.id === rule.id.replace("COL_", ""));
-    } else if (rule.id.startsWith("ICO_")) {
-        target.icon = rule.id.replace("ICO_", "");
-    } else if (rule.id === "ODD") {
-        const odds = [1, 3, 5, 7, 9];
-        target.number = odds[Math.floor(Math.random() * odds.length)];
-    } else if (rule.id === "EVEN") {
-        const evens = [2, 4, 6, 8];
-        target.number = evens[Math.floor(Math.random() * evens.length)];
-    } else if (rule.id.startsWith("NUM_")) {
-        target.number = parseInt(rule.id.replace("NUM_", ""), 10);
-    }
+    state.board = sharedGenerateBoard(state.rules);
 }
 
 // ── Rendering ────────────────────────────────────────────────────────────────

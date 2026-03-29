@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Safata</title>
+    <link rel="icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app">
+        <header>
+            <div class="header-main">
+                <a href="../" class="app-name">SAFATA <span id="app-version" class="version-text"></span></a>
+                <div class="header-info">
+                    <span id="status-display"></span>
+                </div>
+                <button id="history-btn" class="header-icon-btn" title="History" aria-label="History">
+                    <i class="ph-light ph-chart-bar"></i>
+                </button>
+                <div class="brain-container">
+                    <div class="brain-base">&#xe74e;</div>
+                    <div class="brain-progress-fill">&#xe74e;</div>
+                    <div class="brain-fire-fill">&#xe74e;</div>
+                    <canvas id="fire-canvas"></canvas>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="cc-view">
+                <div id="cc-grid"></div>
+            </div>
+            <div id="task-view" class="hidden">
+                <div id="task-container"></div>
+            </div>
+        </main>
+
+        <div id="overlay" class="active">
+            <img id="overlay-icon" src="icon.png" alt="" class="overlay-icon">
+            <h1 id="overlay-title"><a href="../" style="text-decoration:none;color:inherit">SAFATA</a></h1>
+            <p id="overlay-desc">Manage multiple workstreams. Each window has its own rule — learn them, then remember as you switch contexts.</p>
+            <div id="overlay-stats" class="overlay-stats hidden"></div>
+            <button id="overlay-btn" class="primary-btn">Start</button>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div id="history-modal-title">Safata — History</div>
+            <div id="history-list"></div>
+            <button id="close-history-btn">Close</button>
+        </div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>

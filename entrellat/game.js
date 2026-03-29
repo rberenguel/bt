@@ -21,30 +21,18 @@ const PALETTE = [
 ];
 
 // --- SESSION TRACKING ---
+const ROUNDS_PER_SESSION = 5;
 let sessionSolved = 0;
 let sessionFailed = 0;
-let sessionDirty = false; // true once at least one answer has been given
+let roundsPlayed = 0;
 
-function saveCurrentSession() {
-    if (!sessionDirty) return;
-    saveSession({
-        solved: sessionSolved,
-        failed: sessionFailed,
-        total: sessionSolved + sessionFailed,
-    });
-    sessionDirty = false;
+function showEndScreen() {
+    const accuracy = Math.round((sessionSolved / ROUNDS_PER_SESSION) * 100);
+    saveSession({ solved: sessionSolved, failed: sessionFailed, total: ROUNDS_PER_SESSION, accuracy });
+    document.getElementById('end-score').textContent = `${sessionSolved} / ${ROUNDS_PER_SESSION}`;
+    document.getElementById('end-accuracy').textContent = `${accuracy}%`;
+    document.getElementById('end-screen').classList.add('visible');
 }
-
-// Save on page hide / unload
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveCurrentSession();
-});
-window.addEventListener('pagehide', saveCurrentSession);
-
-document.getElementById("app-title").addEventListener("click", e => {
-	triggerHaptic()
-	saveCurrentSession();
-})
 
 // --- GAME STATE ---
 let score = 0;
@@ -296,7 +284,7 @@ function resolveLevel(selectedIndex) {
     const selectedOption = currentOptions[selectedIndex];
     const cards = document.querySelectorAll('.option-card');
 
-    sessionDirty = true;
+    roundsPlayed++;
 
     if (selectedOption.isCorrect) {
         sessionSolved++;
@@ -342,8 +330,12 @@ function resolveLevel(selectedIndex) {
     targetQuaternion.setFromEuler(new THREE.Euler(targetXRot, targetYRot, 0, 'YXZ'));
 
     resolveTimeout = setTimeout(() => {
-        startLevel();
-    }, 3500);
+        if (roundsPlayed >= ROUNDS_PER_SESSION) {
+            showEndScreen();
+        } else {
+            startLevel();
+        }
+    }, 1500);
 }
 
 // --- INPUT ---
@@ -352,7 +344,11 @@ document.querySelectorAll('.option-card').forEach(card => {
         if (isResolving) {
             triggerHaptic();
             clearTimeout(resolveTimeout);
-            startLevel();
+            if (roundsPlayed >= ROUNDS_PER_SESSION) {
+                showEndScreen();
+            } else {
+                startLevel();
+            }
             return;
         }
         const idx = parseInt(card.getAttribute('data-index'));
@@ -497,6 +493,21 @@ document.getElementById('stats-btn').addEventListener('click', () => {
 document.getElementById('close-history-btn').addEventListener('click', () => {
     triggerHaptic();
     document.getElementById('history-modal').classList.add('hidden');
+});
+
+// --- END SCREEN ACTIONS ---
+document.getElementById('hub-link').addEventListener('click', () => { triggerHaptic(); });
+
+document.getElementById('play-again-btn').addEventListener('click', () => {
+    triggerHaptic();
+    sessionSolved = 0;
+    sessionFailed = 0;
+    roundsPlayed = 0;
+    score = 0;
+    document.getElementById('score').innerText = 0;
+    document.getElementById('end-screen').classList.remove('visible');
+    isResolving = false;
+    startLevel();
 });
 
 // --- INIT ---

@@ -48,6 +48,22 @@ Inductive rule learning. A set of labeled examples is shown — some LEGAL, some
 
 Set-shifting under memory load. A rule stack grows one rule per level over 10 levels — only the new rule is shown; all prior rules must be held in working memory. Tiles are cleared by tapping whichever one satisfies the current active rule; once all valid tiles for that rule are gone, the next rule in the stack becomes active. Tracks error rate, set-shift latency (time from rule change to first correct tap), and interference error rate (wrong taps that would have been valid under the prior rule).
 
+### [dotmatrix](./dotmatrix/)
+
+Visual sequence puzzle. A dot grid evolves over time according to a hidden rule (e.g. move, rotate). You are shown four frames of the sequence and must deduce the rule to identify the correct 5th frame out of four options. Evaluates pattern recognition and spatial extrapolation.
+
+### [flux](./flux/)
+
+Prospective memory under load. A rapid stream classification task (categorizing words as, for example, 'natural' or 'crafted' by tapping left or right) is combined with dormant intentions (e.g. "if you see an elm, tap center"). Trains the ability to hold an intention in working memory while performing an absorbing ongoing activity.
+
+### [safata](./safata/)
+
+Parallel context maintenance. A Command Centre grid shows up to 6 active workstreams, each assigned a unique visual classification rule. You must switch between streams to clear their pending work. Crucially, the rule is hidden after your first two visits to a stream — you must retain the specific rule bound to each stream in working memory while servicing the others.
+
+### [mussol](./mussol/)
+
+Analogy reasoning. You are presented with a stem word pair and must deduce their underlying conceptual relationship. From a list of choices, you must select the pair that exhibits the exact same relationship. Features 10 questions per session with a strict 30-second timer each.
+
 ## Structure
 
 ```

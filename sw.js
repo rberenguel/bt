@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.5.3";
+const CACHE_NAME = "bt-hub-v0.6.0";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -87,6 +87,15 @@ const CACHE_FILES = [
   "./regles/manifest.json",
   "./regles/storage.js",
   "./regles/style.css",
+  "./safata/game.js",
+  "./safata/history.js",
+  "./safata/icon.png",
+  "./safata/index.html",
+  "./safata/manifest.json",
+  "./safata/storage.js",
+  "./safata/style.css",
+  "./shared/rules/engine.js",
+  "./shared/rules/ui.js",
   "./rot/app.js",
   "./rot/history.js",
   "./rot/icon.png",

@@ -6,6 +6,25 @@ import { openRadarModal } from "./radar.js";
 
 // ── App registry ──────────────────────────────────────────────────────────────
 
+export const APP_ORDER = [
+  "nb",
+  "tanmateix",
+  "rot",
+  "dotmatrix",
+  "safata",
+  "llei",
+  "regles",
+  "mussol",
+  "attn",
+  "clauer",
+  "stop",
+  "precis",
+  "summum",
+  "entrellat",
+  "flux",
+
+];
+
 const APPS = [
   {
     id: "nb",
@@ -281,6 +300,20 @@ const APPS = [
       { key: "missRate", label: "Misses", unit: "%", invertColor: true },
       { key: "rtCost", label: "RT cost", unit: "ms", invertColor: true },
       { key: "level", label: "Level", unit: "", invertColor: false },
+    ],
+  },
+  {
+    id: "safata",
+    name: "Safata",
+    path: "./safata/",
+    icon: "./safata/icon.png",
+    color: "#FF595E",
+    storageKey: "safata_history",
+    keyMetric: (s) => s.metrics.redAccuracy + "% red",
+    metricDefs: [
+      { key: "redAccuracy",     label: "Red accuracy",       unit: "%", invertColor: false },
+      { key: "yellowAccuracy",  label: "Yellow accuracy",    unit: "%", invertColor: false },
+      { key: "tilesReachedRed", label: "Contexts memorised", unit: "",  invertColor: false },
     ],
   },
 ];
@@ -565,7 +598,7 @@ async function init() {
   // Load all session data
   const nbSessions = await loadNbSessions();
 
-  const appData = await Promise.all(
+  let appData = await Promise.all(
     APPS.map(async (app) => ({
       app,
       sessions:
@@ -576,6 +609,12 @@ async function init() {
             : [],
     })),
   );
+
+  appData.sort((a, b) => {
+    const ai = APP_ORDER.indexOf(a.app.id);
+    const bi = APP_ORDER.indexOf(b.app.id);
+    return (ai !== -1 ? ai : 999) - (bi !== -1 ? bi : 999);
+  });
 
   // Cross-app streak
   const daySets = appData.map(({ sessions }) => daysWithSessions(sessions));

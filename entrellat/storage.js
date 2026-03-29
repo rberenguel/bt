@@ -11,6 +11,7 @@ export function saveSession(data) {
       solved: data.solved,
       failed: data.failed,
       total: data.total,
+      accuracy: data.accuracy,
     },
   });
 }
