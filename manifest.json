@@ -1,7 +1,7 @@
 {
   "name": "BT",
-  "version": "0.6.1",
-  "short_name": "Train",
+  "version": "0.6.2",
+  "short_name": "BT",
   "description": "Brain training apps hub",
   "start_url": "./",
   "scope": "./",

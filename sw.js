@@ -1,6 +1,6 @@
 // Generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.6.1";
+const CACHE_NAME = "bt-hub-v0.6.2";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -51,6 +51,7 @@ const CACHE_FILES = [
   "./index.html",
   "./llei/app.js",
   "./llei/history.js",
+  "./llei/icon.png",
   "./llei/index.html",
   "./llei/manifest.json",
   "./llei/storage.js",
@@ -74,6 +75,7 @@ const CACHE_FILES = [
   "./nb/modals.js",
   "./nb/nb.js",
   "./nb/style.css",
+  "./radar.js",
   "./precis/app.js",
   "./precis/history.js",
   "./precis/icon.png",

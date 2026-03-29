@@ -67,17 +67,22 @@ const DOMAINS = [
   },
 ];
 
-const STALE_MS = 7 * 24 * 60 * 60 * 1000;
-const RECENT_N = 5;
+const STALE_MS   = 7  * 24 * 60 * 60 * 1000;
+const RECENT_MS  = 7  * 24 * 60 * 60 * 1000; // "this week"
+const WINDOW_MS  = 21 * 24 * 60 * 60 * 1000; // baseline window
 
 // ── Scoring ────────────────────────────────────────────────────────────────────
 //
-// Score = performancePercentile × recencyFactor
-//   performancePercentile: where does the recent mean sit vs all history (0–1)
-//   recencyFactor: 1.0 if played today, decays linearly to 0.0 at 7 days
+// score = 1 − perf × recency
 //
-// This makes the radar drop toward 0 both when a domain hasn't been trained
-// recently and when recent scores are declining vs historical performance.
+// perf:    compares recentMean (last 7 days) to windowMean (last 21 days).
+//          perf = min(1, ratio/2) anchors at 0.5 when recent == baseline.
+//          At 2× baseline → perf = 1 → score ≈ 0 (no attention needed).
+//          At 0.5× baseline → perf = 0.25 → score ≈ 0.75 (needs attention).
+//          If no sessions in the last 7 days, perf defaults to 0.5 and
+//          recency alone drives the score up.
+//
+// recency: halves every 7 days. Played today → ~1. Two weeks ago → ~0.25.
 
 function computeGameScore(sessions, metricFn, invert) {
   if (!sessions || sessions.length === 0) return { score: null, lastTs: null };
@@ -91,29 +96,38 @@ function computeGameScore(sessions, metricFn, invert) {
 
   if (pairs.length === 0) return { score: null, lastTs: null };
 
-  const allValues = pairs.map(p => p.v);
+  const now = Date.now();
   const lastTs = pairs[pairs.length - 1].ts;
 
-  const recent = allValues.slice(-RECENT_N);
-  const recentMean = recent.reduce((a, b) => a + b, 0) / recent.length;
+  // Baseline: last 21 days, falling back to all history if too few sessions
+  const windowPairs = pairs.filter(p => p.ts >= now - WINDOW_MS);
+  const baselinePairs = windowPairs.length > 0 ? windowPairs : pairs;
+  const windowMean = baselinePairs.reduce((s, p) => s + p.v, 0) / baselinePairs.length;
 
-  // Mid-rank percentile: ties count as 0.5 so a consistent performer
-  // scores ~0.5 rather than collapsing to 0.
-  const below = allValues.filter(v => v < recentMean).length;
-  const equal = allValues.filter(v => v === recentMean).length;
-  let pct = (below + equal * 0.5) / allValues.length;
-  if (invert) pct = 1 - pct;
+  // Recent: last 7 days
+  const recentValues = pairs.filter(p => p.ts >= now - RECENT_MS).map(p => p.v);
 
-  const daysSinceLast = (Date.now() - lastTs) / (24 * 60 * 60 * 1000);
-  const recency = Math.pow(0.5, daysSinceLast / 7); // halves every 7 days, never reaches 0
+  let perf;
+  if (recentValues.length === 0) {
+    perf = 0.5; // no sessions this week; recency drives the score
+  } else {
+    const recentMean = recentValues.reduce((a, b) => a + b, 0) / recentValues.length;
+    const ratio = invert
+      ? (recentMean > 0 ? windowMean / recentMean : 1)
+      : (windowMean > 0 ? recentMean / windowMean : 1);
+    perf = Math.min(1, ratio / 2);
+  }
 
-  return { score: 1 - pct * recency, lastTs };
+  const daysSinceLast = (now - lastTs) / (24 * 60 * 60 * 1000);
+  const recency = Math.pow(0.5, daysSinceLast / 7); // halves every 7 days
+
+  return { score: 1 - perf * recency, lastTs };
 }
 
 function computeDomains(appDataMap) {
   return DOMAINS.map(domain => {
-    let bestScore = null;
-    let bestTs = null;
+    const scores = [];
+    let latestTs = null;
 
     for (const g of domain.games) {
       const { score, lastTs } = computeGameScore(
@@ -121,16 +135,22 @@ function computeDomains(appDataMap) {
         g.metric,
         g.invert,
       );
-      if (score !== null && (bestScore === null || score > bestScore)) {
-        bestScore = score;
-        bestTs = lastTs;
+      if (score !== null) {
+        scores.push(score);
+        if (lastTs !== null && (latestTs === null || lastTs > latestTs)) {
+          latestTs = lastTs;
+        }
       }
     }
 
+    const domainScore = scores.length > 0
+      ? scores.reduce((a, b) => a + b, 0) / scores.length
+      : null;
+
     return {
       label: domain.label,
-      score: bestScore ?? 1,
-      stale: bestTs === null || Date.now() - bestTs > STALE_MS,
+      score: domainScore ?? 1,
+      stale: latestTs === null || Date.now() - latestTs > STALE_MS,
     };
   });
 }
@@ -166,8 +186,8 @@ function buildSVG(domains) {
     svg.appendChild(el("polygon", {
       points: ptsAttr(spokePoints(R * frac)),
       fill: "none",
-      stroke: frac === 1.0 ? "#555" : "#404040",
-      "stroke-width": frac === 1.0 ? "1" : "0.5",
+      stroke: frac === 0.5 ? "#166534" : frac === 1.0 ? "#555" : "#404040",
+      "stroke-width": frac === 0.5 ? "1.5" : frac === 1.0 ? "1" : "0.5",
     }));
   }
 
@@ -175,6 +195,10 @@ function buildSVG(domains) {
   for (const [x, y] of spokePoints(R)) {
     svg.appendChild(el("line", { x1: CX, y1: CY, x2: x.toFixed(2), y2: y.toFixed(2), stroke: "#404040", "stroke-width": "0.5" }));
   }
+
+  // Top 3 worst domains
+  const sorted = [...domains].sort((a, b) => b.score - a.score);
+  const top3 = new Set(sorted.slice(0, 3).map(d => d.label));
 
   // Data polygon
   const dataPts = domains.map(({ score }, i) => {
@@ -191,15 +215,17 @@ function buildSVG(domains) {
     "stroke-linejoin": "round",
   }));
 
-  for (const [x, y] of dataPts) {
-    svg.appendChild(el("circle", { cx: x.toFixed(2), cy: y.toFixed(2), r: "3", fill: "#818cf8" }));
+  for (const [i, [x, y]] of dataPts.entries()) {
+    const bad = top3.has(domains[i].label);
+    svg.appendChild(el("circle", { cx: x.toFixed(2), cy: y.toFixed(2), r: bad ? "4" : "3", fill: bad ? "#c4b5fd" : "#818cf8" }));
   }
 
   // Labels
   for (const [i, [x, y]] of spokePoints(LABEL_R).entries()) {
-    const { label, stale } = domains[i];
+    const { label } = domains[i];
     const anchor = x < CX - 4 ? "end" : x > CX + 4 ? "start" : "middle";
-    const fill = "#999";
+    const bad = top3.has(label);
+    const fill = bad ? "#c4b5fd" : "#999";
 
     svg.appendChild(el("text", {
       x: x.toFixed(2),
@@ -237,6 +263,11 @@ export function openRadarModal(appData) {
   const container = document.getElementById("radar-chart-container");
   container.innerHTML = "";
   container.appendChild(buildSVG(domains));
+
+  const desc = document.createElement("p");
+  desc.textContent = "Larger spokes mean an area needs more attention — either recent performance is below your usual or you haven't trained it lately. The green ring marks your average baseline. Highlighted labels are the top 3 areas to focus on.";
+  desc.style.cssText = "margin:12px 16px 0;font-size:14px;color:#666;line-height:1.5;text-align:center;";
+  container.appendChild(desc);
 
   document.getElementById("radar-modal").classList.remove("hidden");
 }

@@ -398,11 +398,70 @@ function lastSessionDate(sessions) {
 function renderStreak(streak) {
   const el = document.getElementById("streak");
   if (streak > 0) {
-    el.textContent = "🔥 " + streak + "-day streak";
+    const t = Math.min(1, (streak - 1) / 9);
+    const r = Math.round(251 + (185 - 251) * t);
+    const g = Math.round(191 - 191 * t);
+    const b = Math.round(36  -  36 * t);
+    const color = `rgb(${r},${g},${b})`;
+    el.innerHTML = `<span class="streak-flame-wrap"><canvas id="streak-fire-canvas"></canvas><i class="ph-light ph-flame" style="color:${color};position:relative;z-index:1;vertical-align:-0.15em;font-size:1.62em"></i></span> ${streak}-day streak`;
     el.style.display = "";
+    initStreakFire(document.getElementById("streak-fire-canvas"), streak);
   } else {
     el.style.display = "none";
   }
+}
+
+// ── Streak fire particles ──────────────────────────────────────────────────────
+
+let _sfParticles = [];
+let _sfIntensity = 0;
+let _sfCtx = null;
+const _sfW = 20, _sfH = 36;
+
+function initStreakFire(canvas, streak) {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = _sfW * dpr;
+  canvas.height = _sfH * dpr;
+  _sfCtx = canvas.getContext("2d");
+  _sfCtx.scale(dpr, dpr);
+  _sfIntensity = Math.min(1, streak / 10);
+  _sfParticles = [];
+  requestAnimationFrame(streakFireLoop);
+}
+
+function streakFireLoop() {
+  if (!_sfCtx || !document.getElementById("streak-fire-canvas")) return;
+
+  _sfCtx.clearRect(0, 0, _sfW, _sfH);
+
+  const maxP = 3 + Math.floor(10 * _sfIntensity);
+  if (_sfParticles.length < maxP && Math.random() < _sfIntensity) {
+    _sfParticles.push({
+      x: _sfW / 2 + (Math.random() - 0.5) * _sfW * 0.7,
+      y: _sfH - 2,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -(Math.random() * 0.9 + 0.4),
+      size: Math.random() * 0.9 + 0.3,
+      life: 1.0,
+      decay: Math.random() * 0.04 + 0.02,
+    });
+  }
+
+  for (let i = _sfParticles.length - 1; i >= 0; i--) {
+    const p = _sfParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= p.decay;
+    if (p.life <= 0) { _sfParticles.splice(i, 1); continue; }
+    _sfCtx.beginPath();
+    _sfCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    if (p.life > 0.6)      _sfCtx.fillStyle = `rgba(255,255,255,${p.life})`;
+    else if (p.life > 0.3) _sfCtx.fillStyle = `rgba(255,160,20,${p.life})`;
+    else                   _sfCtx.fillStyle = `rgba(220,40,0,${p.life})`;
+    _sfCtx.fill();
+  }
+
+  requestAnimationFrame(streakFireLoop);
 }
 
 function renderCards(appData) {
@@ -640,3 +699,10 @@ async function init() {
 }
 
 init();
+
+(async () => {
+  try {
+    const m = await (await fetch("manifest.json")).json();
+    if (m.version) document.getElementById("app-version").textContent = "v" + m.version;
+  } catch {}
+})();

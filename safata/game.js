@@ -75,6 +75,7 @@ setBrainFill(0);
     } catch {}
 })();
 
+document.getElementById("hub-link").addEventListener("click", triggerHaptic);
 DOM.oBtn.addEventListener("click", () => {
     triggerHaptic();
     if (screen === "IDLE" || screen === "DONE") startSession();
@@ -349,6 +350,7 @@ function endSession() {
     DOM.oStats.classList.remove("hidden");
 
     DOM.oBtn.textContent = "Play Again";
+    document.getElementById("hub-link").classList.remove("hidden");
     DOM.overlay.classList.add("active");
 }
 

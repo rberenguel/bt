@@ -36,20 +36,44 @@ body {
 }
 
 header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
-  text-align: center;
 }
 
 header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.version-text {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  font-weight: 400;
 }
 
 #streak {
-  margin-top: 0.4rem;
-  font-size: 0.95rem;
-  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.streak-flame-wrap {
+  position: relative;
+  display: inline-block;
+}
+#streak-fire-canvas {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 36px;
+  pointer-events: none;
 }
 
 /* ── App grid ─────────────────────────────────────────────────── */

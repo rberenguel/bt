@@ -332,3 +332,6 @@ main {
     #overlay-title { font-size: 1.4rem; }
 }
 
+.modal-hub-link { display: block; margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-500); text-decoration: none; text-align: center; }
+.modal-hub-link:hover { color: var(--text-400); }
+

@@ -90,12 +90,14 @@ function showOverlay({ icon = true, title, desc, ruleText = null, stats = null, 
     }
 
     DOM.oBtn.textContent = btn;
+    document.getElementById("hub-link").classList.toggle("hidden", btn !== "Play Again");
     DOM.overlay.classList.add("active");
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 DOM.oBtn.addEventListener("click", handleOverlayClick);
+document.getElementById("hub-link").addEventListener("click", triggerHaptic);
 
 function handleOverlayClick() {
     triggerHaptic();
