@@ -87,12 +87,17 @@ const WINDOW_MS = 21 * 24 * 60 * 60 * 1000; // baseline window
 
 // ── Scoring ────────────────────────────────────────────────────────────────────
 //
-// score = 1 − perf × recency
+// score = 1 − (perf × recency)^1.5
+//
+// The exponent > 1 amplifies small values of perf×recency so that stale or
+// low-performing items push harder outward.  Values near 1 (played today,
+// great performance) are barely affected; values near 0 (not played in weeks)
+// are pulled closer to 0 so 1 − result approaches 1 more aggressively.
 //
 // perf:    compares recentMean (last 7 days) to windowMean (last 21 days).
 //          perf = min(1, ratio/2) anchors at 0.5 when recent == baseline.
 //          At 2× baseline → perf = 1 → score ≈ 0 (no attention needed).
-//          At 0.5× baseline → perf = 0.25 → score ≈ 0.75 (needs attention).
+//          At 0.5× baseline → perf = 0.25 → score ≈ 0.92 (needs attention).
 //          If no sessions in the last 7 days, perf defaults to 0.5 and
 //          recency alone drives the score up.
 //
@@ -145,7 +150,7 @@ function computeGameScore(sessions, metricFn, invert) {
   const daysSinceLast = (now - lastTs) / (24 * 60 * 60 * 1000);
   const recency = Math.pow(0.5, daysSinceLast / 7); // halves every 7 days
 
-  return { score: 1 - perf * recency, lastTs };
+  return { score: 1 - Math.pow(perf * recency, 1.5), lastTs };
 }
 
 function computeDomains(appDataMap) {
