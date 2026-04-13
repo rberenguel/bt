@@ -7,32 +7,55 @@ import { openHistoryModal } from "./history.js";
 
 // ── Tuning constants ──────────────────────────────────────────────────────────
 
-const N_ACTIVE_TILES = 6; // Active workstreams at session start
-const RULE_VISIBLE_VISITS = 2; // Visits 0 and 1 show the rule; 2+ hide it
-const RED_COMPLETIONS_TARGET = 10; // Session ends after this many recall tasks
+const N_ACTIVE_TILES = 9; // Total workstreams in the session
+const RULE_VISIBLE_VISITS = 1; // Visit 0 shows the rule; 1+ hide it
+const RED_COMPLETIONS_TARGET = 25; // Session ends after this many recall tasks
 const P_REWORK = 0.6; // Probability a completed tile re-lights next turn
-const COOLDOWN_K = 2; // Number of other tiles that must be visited before re-lighting
+const COOLDOWN_K = 3; // Number of other tiles that must be visited before re-lighting
 
-// ── CC tile definitions (positions 0–8 in the 3×3 grid) ──────────────────────
+// Day arc: tiles unlock in waves as visits accumulate (simulates a slow morning → chaotic afternoon)
+const WAVE_SCHEDULE = [2, 1, 1, 1, 1, 1, 1, 1]; // tiles per wave, must sum to N_ACTIVE_TILES
+const WAVE_TRIGGER_VISITS = 1; // every visit unlocks the next tile until full board
+
+// ── CC tile definitions — 24 available, 12 picked randomly each session ───────
+// Icons are intentionally abstract — semantic but not work-literal
 
 const CC_TILE_DEFS = [
-  { icon: "ph-terminal", label: "terminal" },
-  { icon: "ph-bug", label: "bug" },
-  { icon: "ph-clock", label: "clock" },
-  { icon: "ph-database", label: "database" },
-  { icon: "ph-file-code", label: "files" },
-  { icon: "ph-gear", label: "config" },
-  { icon: "ph-robot", label: "robot" },
-  { icon: "ph-cloud", label: "cloud" },
-  { icon: "ph-git-branch", label: "git" },
+  { icon: "ph-crown" },
+  { icon: "ph-moon-stars" },
+  { icon: "ph-mountains" },
+  { icon: "ph-person-simple-hike" },
+  { icon: "ph-anchor" },
+  { icon: "ph-compass" },
+  { icon: "ph-diamond" },
+  { icon: "ph-flame" },
+  { icon: "ph-leaf" },
+  { icon: "ph-feather" },
+  { icon: "ph-snowflake" },
+  { icon: "ph-lighthouse" },
+  { icon: "ph-planet" },
+  { icon: "ph-waves" },
+  { icon: "ph-butterfly" },
+  { icon: "ph-skull" },
+  { icon: "ph-eye" },
+  { icon: "ph-key" },
+  { icon: "ph-boat" },
+  { icon: "ph-sun" },
+  { icon: "ph-umbrella" },
+  { icon: "ph-cactus" },
+  { icon: "ph-guitar" },
+  { icon: "ph-hourglass" },
 ];
+
+const N_TILE_DEFS = 12; // how many of the 24 to use each session
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-let tiles = []; // Array of 9 tile descriptors
+let tiles = []; // Array of 12 tile descriptors
 let screen = "IDLE"; // "IDLE" | "CC" | "TASK" | "DONE"
 let currentTileId = null;
 let taskScreenInst = null;
+let currentWave = 0; // highest wave unlocked so far
 let met = freshMetrics();
 
 function freshMetrics() {
@@ -82,7 +105,7 @@ DOM.oBtn.addEventListener("click", () => {
   if (screen === "IDLE" || screen === "DONE") startSession();
 });
 
-document.getElementById("history-btn")?.addEventListener("click", () => {
+document.getElementById("brain-container")?.addEventListener("click", () => {
   triggerHaptic();
   openHistoryModal();
 });
@@ -116,31 +139,50 @@ function startSession() {
 }
 
 function initSession() {
+  currentWave = 0;
+
   // Shuffle positions and pick N_ACTIVE_TILES of them
-  const positions = Array.from({ length: 9 }, (_, i) => i).sort(
+  const positions = Array.from({ length: 12 }, (_, i) => i).sort(
     () => Math.random() - 0.5,
   );
   const activeSet = new Set(positions.slice(0, N_ACTIVE_TILES));
 
   // One unique rule per active tile
   const rules = pickRules(N_ACTIVE_TILES);
-  let ruleIdx = 0;
 
-  const shuffledDefs = [...CC_TILE_DEFS].sort(() => Math.random() - 0.5);
+  // Build wave assignments: e.g. [0,0,1,1,2,3,3,4,4], then shuffle
+  // so wave membership is random across tile positions
+  const waveAssignments = WAVE_SCHEDULE.flatMap((count, w) =>
+    Array(count).fill(w),
+  ).sort(() => Math.random() - 0.5);
 
-  tiles = shuffledDefs.map((def, i) => ({
-    id: i,
-    icon: def.icon,
-    label: def.label,
-    active: activeSet.has(i),
-    rule: activeSet.has(i) ? rules[ruleIdx++] : null,
-    idleColor: Math.random() < 0.5 ? "blue" : "green",
-    visitCount: 0,
-    hasWork: activeSet.has(i), // all active tiles start lit
-    justProcessed: false,
-    cooldown: 0,
-    turnsLit: 0,
-  }));
+  const shuffledDefs = [...CC_TILE_DEFS]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, N_TILE_DEFS);
+
+  let activeCount = 0;
+  tiles = shuffledDefs.map((def, i) => {
+    const isActive = activeSet.has(i);
+    const wave = isActive ? waveAssignments[activeCount] : null;
+    const rule = isActive ? rules[activeCount] : null;
+    if (isActive) activeCount++;
+    const isWave0 = isActive && wave === 0;
+
+    return {
+      id: i,
+      icon: def.icon,
+      active: isActive,
+      rule,
+      wave,
+      staged: isActive && !isWave0, // waves 1+ wait for their unlock
+      idleColor: Math.random() < 0.5 ? "blue" : "green",
+      visitCount: 0,
+      hasWork: isWave0, // only wave-0 tiles start lit
+      justProcessed: false,
+      cooldown: 0,
+      turnsLit: 0,
+    };
+  });
 
   screen = "CC";
   showCC();
@@ -163,20 +205,16 @@ function renderCC() {
     btn.className = "cc-tile";
     btn.dataset.id = tile.id;
 
-    if (!tile.active) {
+    if (!tile.active || tile.staged) {
       btn.classList.add("cc-tile--inactive");
       btn.disabled = true;
     } else if (!tile.hasWork) {
       btn.classList.add(`cc-tile--idle-${tile.idleColor}`);
       btn.disabled = true;
-      btn.innerHTML =
-        `<i class="ph-light ${tile.icon}"></i>` +
-        `<span class="cc-tile-label">${tile.label}</span>`;
+      btn.innerHTML = `<i class="ph-light ${tile.icon}"></i>`;
     } else if (tile.visitCount >= RULE_VISIBLE_VISITS) {
       btn.classList.add("cc-tile--red");
-      btn.innerHTML =
-        `<i class="ph-light ${tile.icon}"></i>` +
-        `<span class="cc-tile-label">${tile.label}</span>`;
+      btn.innerHTML = `<i class="ph-light ${tile.icon}"></i>`;
       btn.addEventListener(
         "click",
         (e) => {
@@ -187,9 +225,7 @@ function renderCC() {
       );
     } else {
       btn.classList.add("cc-tile--yellow");
-      btn.innerHTML =
-        `<i class="ph-light ${tile.icon}"></i>` +
-        `<span class="cc-tile-label">${tile.label}</span>`;
+      btn.innerHTML = `<i class="ph-light ${tile.icon}"></i>`;
       btn.addEventListener(
         "click",
         (e) => {
@@ -219,7 +255,7 @@ function enterTaskScreen(tile) {
   screen = "TASK";
   DOM.ccView.classList.add("hidden");
   DOM.taskView.classList.remove("hidden");
-  DOM.status.textContent = tile.label;
+  DOM.status.textContent = "";
 
   if (taskScreenInst) {
     taskScreenInst.destroy();
@@ -233,7 +269,7 @@ function enterTaskScreen(tile) {
     rule: tile.rule,
     showRule,
     contextIcon: tile.icon,
-    contextLabel: tile.label,
+    contextLabel: tile.icon.replace("ph-", ""),
     onComplete: (result) => onTaskComplete(result, showRule),
   });
 }
@@ -269,6 +305,18 @@ function onTaskComplete(result, wasRuleVisible) {
   }
 }
 
+// ── Wave unlock ───────────────────────────────────────────────────────────────
+
+function unlockWave(wave) {
+  tiles.forEach((t) => {
+    if (t.active && t.staged && t.wave === wave) {
+      t.staged = false;
+      t.hasWork = true;
+      t.turnsLit = 0;
+    }
+  });
+}
+
 // ── Turn update algorithm ─────────────────────────────────────────────────────
 
 function runTurnUpdate(tileId) {
@@ -280,9 +328,9 @@ function runTurnUpdate(tileId) {
 
   let inboxBlocked = false;
 
-  // Update state for all OTHER active tiles
+  // Update state for all OTHER active, non-staged tiles
   tiles.forEach((t) => {
-    if (t.active && t.id !== tileId) {
+    if (t.active && !t.staged && t.id !== tileId) {
       if (t.hasWork) {
         // If it's already lit, age it. If ignored too long, block inbox
         t.turnsLit = (t.turnsLit || 0) + 1;
@@ -300,7 +348,13 @@ function runTurnUpdate(tileId) {
   // Re-light eligible idle tiles if the inbox isn't blocked by an old task
   if (!inboxBlocked) {
     tiles.forEach((t) => {
-      if (t.active && t.id !== tileId && !t.hasWork && t.cooldown === 0) {
+      if (
+        t.active &&
+        !t.staged &&
+        t.id !== tileId &&
+        !t.hasWork &&
+        t.cooldown === 0
+      ) {
         if (Math.random() < P_REWORK) {
           t.hasWork = true;
           t.turnsLit = 0;
@@ -310,8 +364,12 @@ function runTurnUpdate(tileId) {
   }
 
   // Invariant: at least one lit tile must exist (T excluded — it just did work).
-  if (!tiles.some((t) => t.active && t.hasWork && t.id !== tileId)) {
-    const candidates = tiles.filter((t) => t.active && t.id !== tileId);
+  if (
+    !tiles.some((t) => t.active && !t.staged && t.hasWork && t.id !== tileId)
+  ) {
+    const candidates = tiles.filter(
+      (t) => t.active && !t.staged && t.id !== tileId,
+    );
     if (candidates.length > 0) {
       const picked = candidates[Math.floor(Math.random() * candidates.length)];
       picked.hasWork = true;
@@ -320,6 +378,13 @@ function runTurnUpdate(tileId) {
       tile.hasWork = true; // only one active tile; re-light immediately
       tile.turnsLit = 0;
     }
+  }
+
+  // Unlock the next wave if enough visits have accumulated
+  const waveTarget = Math.floor(met.totalVisits / WAVE_TRIGGER_VISITS);
+  while (currentWave < waveTarget && currentWave < WAVE_SCHEDULE.length - 1) {
+    currentWave++;
+    unlockWave(currentWave);
   }
 }
 

@@ -882,7 +882,6 @@ function bindZone(id, zone) {
     triggerHaptic();
     handleZoneTap(zone);
   });
-  
 }
 
 bindZone("zone-left", "left");

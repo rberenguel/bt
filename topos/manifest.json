@@ -1,6 +1,6 @@
 {
   "name": "Topos",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "short_name": "Topos",
   "description": "Topological working memory training",
   "start_url": "./index.html",

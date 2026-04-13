@@ -131,6 +131,7 @@ header {
   font-size: 4rem;
   line-height: 1;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .brain-base {
@@ -225,16 +226,8 @@ main {
 }
 
 .cc-tile i {
-  font-size: 2rem;
+  font-size: 2.4rem;
   line-height: 1;
-}
-
-.cc-tile-label {
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.8;
 }
 
 /* Inactive (not part of this session) */
@@ -795,7 +788,7 @@ main {
     gap: 7px;
   }
   .cc-tile i {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
   .tile-number,
   .tile i {

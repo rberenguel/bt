@@ -41,13 +41,13 @@ function generateGraph(name) {
   let nodes = [];
   let edges = [];
 
-  let availableCombos = [];
+  let allCombos = [];
   COLORS.forEach((c) =>
-    ICONS.forEach((i) => availableCombos.push({ color: c, icon: i })),
+    ICONS.forEach((i) => allCombos.push({ color: c, icon: i })),
   );
-  availableCombos = availableCombos
-    .sort(() => 0.5 - Math.random())
-    .slice(0, numNodes);
+  allCombos = allCombos.sort(() => 0.5 - Math.random());
+  let availableCombos = allCombos.slice(0, numNodes);
+  let phantomCombos = allCombos.slice(numNodes);
 
   let layerMap = [[], [], [], []];
   let unassigned = [...availableCombos];
@@ -70,7 +70,7 @@ function generateGraph(name) {
   nodes.forEach((u) => {
     let potentialTargets = nodes.filter((v) => v.layer > u.layer);
     potentialTargets.forEach((v) => {
-      let prob = v.layer - u.layer === 1 ? 0.6 : 0.2;
+      let prob = v.layer - u.layer === 1 ? 0.35 : 0.05;
       if (Math.random() < prob) {
         edges.push({ from: u.id, to: v.id });
         u.out.push(v.id);
@@ -89,7 +89,7 @@ function generateGraph(name) {
     }
   });
 
-  return { name, nodes, edges, layers: layerMap };
+  return { name, nodes, edges, layers: layerMap, phantomCombos };
 }
 
 function canReach(graph, startId, targetId) {
@@ -107,6 +107,49 @@ function canReach(graph, startId, targetId) {
   return false;
 }
 
+function canReachWithout(graph, startId, targetId, excludeId) {
+  if (startId === excludeId) return false;
+  let visited = new Set();
+  let queue = [startId];
+  while (queue.length > 0) {
+    let current = queue.shift();
+    if (current === targetId) return true;
+    if (!visited.has(current)) {
+      visited.add(current);
+      let node = graph.nodes.find((n) => n.id === current);
+      node.out.forEach((neighbor) => {
+        if (neighbor !== excludeId) queue.push(neighbor);
+      });
+    }
+  }
+  return false;
+}
+
+// Returns true/false if X is a bottleneck for Y, null if not a useful question.
+function isBottleneckFor(graph, nodeId, targetId) {
+  let nodeObj = graph.nodes.find((n) => n.id === nodeId);
+  let targetObj = graph.nodes.find((n) => n.id === targetId);
+  if (nodeObj.layer >= targetObj.layer) return null;
+  if (!canReach(graph, nodeId, targetId)) return null;
+
+  let candidates = graph.nodes.filter(
+    (n) => n.id !== nodeId && n.id !== targetId && n.layer < targetObj.layer,
+  );
+  for (let c of candidates) {
+    if (canReachWithout(graph, c.id, targetId, nodeId)) return false;
+  }
+  return true;
+}
+
+// Returns true if removing nodeId leaves otherId with no direct in-edges, null if not useful.
+function wouldLoseAllInputs(graph, nodeId, otherId) {
+  let directPredecessors = graph.edges
+    .filter((e) => e.to === otherId)
+    .map((e) => e.from);
+  if (!directPredecessors.includes(nodeId)) return null;
+  return directPredecessors.filter((id) => id !== nodeId).length === 0;
+}
+
 function cap(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -118,6 +161,7 @@ function formatNodeHtml(n) {
 function generateQuestionsForGraph(graph) {
   let pool = [];
 
+  // Basic reachability
   for (let i = 0; i < graph.nodes.length; i++) {
     for (let j = 0; j < graph.nodes.length; j++) {
       if (i !== j && graph.nodes[i].layer < graph.nodes[j].layer) {
@@ -132,6 +176,7 @@ function generateQuestionsForGraph(graph) {
     }
   }
 
+  // Sink detection
   graph.nodes.forEach((n) => {
     pool.push({
       network: graph.name,
@@ -140,21 +185,64 @@ function generateQuestionsForGraph(graph) {
     });
   });
 
-  let uniqueIcons = [...new Set(graph.nodes.map((n) => n.icon))];
-  uniqueIcons.forEach((icon) => {
-    let nodesOfIcon = graph.nodes.filter((n) => n.icon === icon);
-    if (nodesOfIcon.length > 1) {
-      let allSinks = nodesOfIcon.every((n) => n.out.length === 0);
+  // Bottleneck questions
+  for (let i = 0; i < graph.nodes.length; i++) {
+    for (let j = 0; j < graph.nodes.length; j++) {
+      if (i !== j) {
+        let result = isBottleneckFor(
+          graph,
+          graph.nodes[i].id,
+          graph.nodes[j].id,
+        );
+        if (result !== null) {
+          pool.push({
+            network: graph.name,
+            text: `Was the ${formatNodeHtml(graph.nodes[i])} the <em>only</em> way to reach the ${formatNodeHtml(graph.nodes[j])}?`,
+            answer: result,
+          });
+        }
+      }
+    }
+  }
+
+  // Input dependency questions
+  graph.edges.forEach((e) => {
+    let sourceNode = graph.nodes.find((n) => n.id === e.from);
+    let targetNode = graph.nodes.find((n) => n.id === e.to);
+    let result = wouldLoseAllInputs(graph, e.from, e.to);
+    if (result !== null) {
       pool.push({
         network: graph.name,
-        text: `Were ALL <span class="q-node"><i class="ph-light ph-${icon}"></i> ${cap(icon)}</span> nodes acting as sinks?`,
-        answer: allSinks,
+        text: `If the ${formatNodeHtml(sourceNode)} went offline, would the ${formatNodeHtml(targetNode)} lose <em>all</em> its direct inputs?`,
+        answer: result,
       });
     }
   });
 
+  // Phantom node questions (nodes that were not in the graph) — cap at 2
+  if (graph.phantomCombos && graph.phantomCombos.length > 0) {
+    let shuffledPhantoms = [...graph.phantomCombos].sort(
+      () => 0.5 - Math.random(),
+    );
+    let phantomCount = 0;
+    for (let phantom of shuffledPhantoms) {
+      if (phantomCount >= 2) break;
+      let realNode =
+        graph.nodes[Math.floor(Math.random() * graph.nodes.length)];
+      let useAsSource = Math.random() < 0.5;
+      pool.push({
+        network: graph.name,
+        text: useAsSource
+          ? `Could the ${formatNodeHtml(phantom)} reach the ${formatNodeHtml(realNode)}?`
+          : `Could the ${formatNodeHtml(realNode)} reach the ${formatNodeHtml(phantom)}?`,
+        answer: false,
+      });
+      phantomCount++;
+    }
+  }
+
   pool = pool.sort(() => 0.5 - Math.random());
-  return pool.slice(0, 5);
+  return pool.slice(0, 6);
 }
 
 // ── Graph rendering ───────────────────────────────────────────────────────────
