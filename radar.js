@@ -77,7 +77,17 @@ const DOMAINS = [
   },
   {
     label: "Verbal",
-    games: [{ id: "mussol", metric: (s) => s.metrics.accuracy, invert: false }],
+    games: [
+      { id: "mussol", metric: (s) => s.metrics.accuracy, invert: false },
+      {
+        id: "graner",
+        metric: (s) =>
+          s.metrics.possible > 0
+            ? (s.metrics.words / s.metrics.possible) * 100
+            : null,
+        invert: false,
+      },
+    ],
   },
 ];
 

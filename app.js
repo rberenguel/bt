@@ -15,6 +15,7 @@ export const APP_ORDER = [
   "llei",
   "regles",
   "mussol",
+  "graner",
   "attn",
   "clauer",
   "stop",
@@ -173,6 +174,20 @@ const APPS = [
       },
       { key: "correct", label: "Correct", unit: "", invertColor: false },
       { key: "incorrect", label: "Wrong", unit: "", invertColor: true },
+    ],
+  },
+
+  {
+    id: "graner",
+    name: "Graner",
+    path: "./graner/",
+    icon: "./graner/icon.png",
+    color: "#f97316",
+    storageKey: "graner_history",
+    keyMetric: (s) => s.metrics.words + " words",
+    metricDefs: [
+      { key: "words", label: "Words", unit: "", invertColor: false },
+      { key: "possible", label: "Possible", unit: "", invertColor: false },
     ],
   },
 

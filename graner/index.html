@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Graner</title>
+    <link rel="stylesheet" href="../shared/fonts/inter.css" />
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="header-stats">
+        <div
+          class="stat-label"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-right: 0.5rem;
+            width: 100%;
+          "
+        >
+          <a href="../" style="text-decoration: none; color: inherit"
+            >Graner <span id="app-version" class="version-text"></span
+          ></a>
+          <button
+            id="stats-btn"
+            aria-label="Stats"
+            style="
+              background: none;
+              border: none;
+              padding: 0;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div class="brain-container" id="battery-icon">
+              <div class="brain-base">&#xe74e;</div>
+              <div class="brain-progress-fill">&#xe74e;</div>
+              <div class="brain-fire-fill">&#xe74e;</div>
+              <canvas id="fire-canvas"></canvas>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div id="timer-bar" class="progress-bar"></div>
+      </div>
+
+      <div id="game-area" style="display: none">
+        <div id="word-count" class="word-count">0 / 0</div>
+
+        <div id="zone-answer" class="zone-answer">
+          <span class="answer-hint">tap letters to build a word</span>
+        </div>
+
+        <div id="zone-pool" class="zone-pool"></div>
+
+        <div class="btn-row">
+          <button id="btn-clear" class="clear-btn" aria-label="Clear">
+            <span class="ph-light ph-backspace"></span>
+          </button>
+        </div>
+
+        <div id="found-words" class="found-words"></div>
+      </div>
+    </div>
+
+    <!-- Results modal -->
+    <div id="results-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Time's up!</h2>
+        <div class="modal-stats">
+          <div class="modal-stat">
+            <span class="label">Words found:</span>
+            <span id="modal-words">0</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Total possible:</span>
+            <span id="modal-possible">0</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Found:</span>
+            <span><span id="modal-pct">0</span>%</span>
+          </div>
+        </div>
+        <button id="modal-play-again" class="modal-btn">Play again</button>
+        <a href="../" class="modal-hub-link">← Back to hub</a>
+      </div>
+    </div>
+
+    <!-- History modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div
+        class="modal-content"
+        style="
+          padding: 1rem 0;
+          height: 90vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          width: 95%;
+          max-width: 24rem;
+        "
+      >
+        <h2 style="margin: 0 1rem 0.5rem 1rem">History</h2>
+        <div
+          id="history-list"
+          style="flex: 1 1 auto; overflow-y: auto; padding: 0 1rem"
+        ></div>
+        <div style="padding: 0 1rem; margin-top: 1rem">
+          <button id="close-history-btn" class="modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intro overlay -->
+    <div id="intro" class="intro-overlay">
+      <div class="intro-content">
+        <img src="icon.png" alt="Graner" class="intro-icon" />
+        <h1 class="intro-title">
+          <a href="../" style="text-decoration: none; color: inherit">Graner</a>
+          <span id="app-version-intro" class="version-text"></span>
+        </h1>
+        <p class="intro-tagline">Word sprint</p>
+        <ul class="intro-rules">
+          <li>7 letters · 90 seconds</li>
+          <li>Tap to place letters, tap again to remove</li>
+          <li>Find 5 and 6 letter words</li>
+          <li>Same letters, as many words as you can</li>
+        </ul>
+        <button id="play-btn" class="intro-play-btn">Play</button>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

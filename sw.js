@@ -1,6 +1,6 @@
-// Generated with get_cache.go — run `go run get_cache.go` to regenerate.
-// Dynamic fetch() targets added manually (not reachable via import graph).
-const CACHE_NAME = "bt-hub-v0.7.3";
+// CACHE_FILES: generated with get_cache.go — run `go run get_cache.go` to regenerate.
+// DYNAMIC_FILES: fetch() targets not reachable via import graph — maintain by hand.
+const CACHE_NAME = "bt-hub-v0.8.0";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -43,6 +43,11 @@ const CACHE_FILES = [
   "./flux/manifest.json",
   "./flux/storage.js",
   "./flux/style.css",
+  "./graner/app.js",
+  "./graner/icon.png",
+  "./graner/index.html",
+  "./graner/manifest.json",
+  "./graner/style.css",
   "./dotmatrix/favicon.ico",
   "./dotmatrix/icon.png",
   "./dotmatrix/index.html",
@@ -177,11 +182,16 @@ const CACHE_FILES = [
   "./topos/style.css",
 ];
 
+// Dynamic fetch() targets — not reachable via import graph.
+const DYNAMIC_FILES = [
+  './graner/dict/dictionary.json',
+];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      for (const url of CACHE_FILES) {
+      for (const url of [...CACHE_FILES, ...DYNAMIC_FILES]) {
         try {
           await cache.add(url);
         } catch (err) {

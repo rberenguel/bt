@@ -58,11 +58,15 @@ Prospective memory under load. A rapid stream classification task (categorizing 
 
 ### [safata](./safata/)
 
-Parallel context maintenance. A Command Centre grid shows up to 6 active workstreams, each assigned a unique visual classification rule. You must switch between streams to clear their pending work. Crucially, the rule is hidden after your first two visits to a stream — you must retain the specific rule bound to each stream in working memory while servicing the others.
+Parallel context maintenance. A Command Centre grid shows up to 9 active workstreams, each assigned a unique visual classification rule. You must switch between streams to clear their pending work. Crucially, the rule is hidden after your first two visits to a stream — you must retain the specific rule bound to each stream in working memory while servicing the others.
 
 ### [topos](./topos/)
 
 Topological working memory. A directed acyclic graph of six nodes (each a unique icon/colour pair) is shown for 30 seconds — memorise the structure. A 15-second distractor phase (bouncing balls) then flushes short-term verbal rehearsal and forces reliance on structural memory. Finally, five True/False questions probe reachability ("could A reach B?") and sink status ("was X a pure sink?"). The complexity-weighted score is accuracy × number of graphs, so the metric scales naturally as session difficulty increases.
+
+### [graner](./graner/)
+
+90-second anagram word sprint. A fixed pool of 7 letters is shown; tap to place letters into the answer zone, tap again to remove them. Find as many 5 and 6-letter words as you can before time runs out. The same pool is available for the full session — letters are never consumed. Score is the number of unique valid words found. Brain fill tracks found words vs. total possible.
 
 ### [mussol](./mussol/)
 

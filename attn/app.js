@@ -210,16 +210,16 @@ function handleBallClick(obj) {
     triggerHaptic();
     obj.element.classList.add("correct");
     currentTargets = currentTargets.filter((t) => t !== obj);
-    expectedClicks--;
     correctClicks++;
   } else {
     triggerHapticError();
     obj.element.classList.add("wrong");
-    currentTargets.forEach((t) => t.element.classList.add("correct"));
-    expectedClicks = 0;
   }
 
+  expectedClicks--;
+
   if (expectedClicks === 0) {
+    currentTargets.forEach((t) => t.element.classList.add("correct"));
     const finalCorrect = correctClicks;
     schedule(() => {
       objects.forEach((o) => o.element.classList.remove("correct", "wrong"));
