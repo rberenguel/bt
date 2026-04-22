@@ -105,9 +105,9 @@ const WINDOW_MS = 21 * 24 * 60 * 60 * 1000; // baseline window
 // are pulled closer to 0 so 1 − result approaches 1 more aggressively.
 //
 // perf:    compares recentMean (last 7 days) to windowMean (last 21 days).
-//          perf = min(1, ratio/2) anchors at 0.5 when recent == baseline.
-//          At 2× baseline → perf = 1 → score ≈ 0 (no attention needed).
-//          At 0.5× baseline → perf = 0.25 → score ≈ 0.92 (needs attention).
+//          perf = min(1, ratio) anchors at 1 when recent == baseline, so a
+//          game played today at normal level scores ≈ 0 (no attention needed).
+//          At 0.5× baseline → perf = 0.5 → score ≈ 0.65 (needs attention).
 //          If no sessions in the last 7 days, perf defaults to 0.5 and
 //          recency alone drives the score up.
 //
@@ -154,7 +154,7 @@ function computeGameScore(sessions, metricFn, invert) {
       : windowMean > 0
         ? recentMean / windowMean
         : 1;
-    perf = Math.min(1, ratio / 2);
+    perf = Math.min(1, ratio);
   }
 
   const daysSinceLast = (now - lastTs) / (24 * 60 * 60 * 1000);
