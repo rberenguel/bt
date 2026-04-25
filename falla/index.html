@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Falla</title>
+    <link rel="stylesheet" href="../shared/fonts/phosphor/phosphor.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div class="app-container">
+
+      <div class="header">
+        <a href="../" class="app-name">
+          Falla <span id="app-version" class="version-text"></span>
+        </a>
+        <div class="header-right">
+          <button id="stats-btn" class="stats-btn" aria-label="Stats">
+            <div class="brain-container">
+              <div class="brain-base">&#xe74e;</div>
+              <div class="brain-progress-fill">&#xe74e;</div>
+              <div class="brain-fire-fill">&#xe74e;</div>
+              <canvas id="fire-canvas"></canvas>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="top-row">
+        <span id="q-counter" class="q-counter"></span>
+        <span id="score-display" class="score-display"></span>
+      </div>
+      <div class="timer-bar-track">
+        <div id="timer-bar" class="timer-bar"></div>
+      </div>
+
+      <div class="game-area" id="game-area">
+        <div id="game-board"></div>
+      </div>
+
+    </div>
+
+    <!-- Results modal -->
+    <div id="results-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Done</h2>
+        <div class="modal-stats">
+          <div class="modal-stat">
+            <span class="label">Score</span>
+            <span id="modal-score">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Accuracy</span>
+            <span id="modal-accuracy">—</span>
+          </div>
+          <div class="modal-stat">
+            <span class="label">Level reached</span>
+            <span id="modal-level">—</span>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="modal-btn">Play again</button>
+        <a href="../" class="modal-hub-link">← Back to hub</a>
+      </div>
+    </div>
+
+    <!-- History modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+      <div class="modal-content" style="padding:1rem 0;height:90vh;display:flex;flex-direction:column;overflow:hidden;width:95%;max-width:24rem;">
+        <h2 style="margin:0 1rem 0.5rem 1rem">History</h2>
+        <div id="history-list" style="flex:1 1 auto;overflow-y:auto;padding:0 1rem;position:relative;"></div>
+        <div style="padding:0 1rem;margin-top:1rem;">
+          <button id="close-history-btn" class="modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help modal -->
+    <div id="help-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h2>Falla</h2>
+        <div class="help-body">
+          <p>Each row shows a sequence of 12-segment figures.</p>
+          <p><strong>Rule:</strong> exactly 1 segment changes per step.</p>
+          <p>One cell breaks this rule — tap it to score.</p>
+          <p class="help-note">Figures are randomly rotated.<br>Mentally align them to verify each transition.</p>
+        </div>
+        <button id="btn-close-help" class="modal-btn">Start</button>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -43,6 +43,7 @@ const DOMAINS = [
       { id: "rot", metric: (s) => s.metrics.score, invert: false },
       { id: "entrellat", metric: (s) => s.metrics.accuracy, invert: false },
       { id: "dotmatrix", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "falla", metric: (s) => s.metrics.accuracy, invert: false },
     ],
   },
   {
@@ -52,6 +53,7 @@ const DOMAINS = [
       { id: "precis", metric: (s) => s.metrics.accuracy, invert: false },
       { id: "llei", metric: (s) => s.metrics.accuracy, invert: false },
       { id: "fil", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "falla", metric: (s) => s.metrics.accuracy, invert: false },
       // graph traversal inference, weighted by complexity (see Memory)
       {
         id: "topos",

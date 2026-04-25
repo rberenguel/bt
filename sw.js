@@ -1,6 +1,6 @@
 // CACHE_FILES: generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // DYNAMIC_FILES: fetch() targets not reachable via import graph — maintain by hand.
-const CACHE_NAME = "bt-hub-v0.8.4";
+const CACHE_NAME = "bt-hub-v0.8.5";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",
@@ -36,6 +36,13 @@ const CACHE_FILES = [
   "./entrellat/manifest.json",
   "./entrellat/storage.js",
   "./entrellat/style.css",
+  "./falla/app.js",
+  "./falla/history.js",
+  "./falla/icon.png",
+  "./falla/index.html",
+  "./falla/manifest.json",
+  "./falla/storage.js",
+  "./falla/style.css",
   "./fil/app.js",
   "./fil/history.js",
   "./fil/icon.png",
