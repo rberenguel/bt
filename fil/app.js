@@ -10,18 +10,18 @@ const CONFIG = {
   wrongStep: 1,
 };
 
-// level → { pool, bugProb, baseTime, perLine }
-// pool: 'simple' = dangling-alias only (2 tabs), 'all' = all generators (3 tabs)
+// level → { bugProb, baseTime, perLine }
 // time = baseTime + totalLines × perLine
+// Fil lines cost more than Tanmateix premises: icon grammar + tab switching overhead
 const LEVELS = [
-  { pool: 'simple', bugProb: 0.85, baseTime: 10,  perLine: 2.5 }, // 1
-  { pool: 'simple', bugProb: 0.70, baseTime:  9,  perLine: 2.2 }, // 2
-  { pool: 'simple', bugProb: 0.55, baseTime:  8,  perLine: 2.0 }, // 3
-  { pool: 'all',    bugProb: 0.60, baseTime:  7,  perLine: 1.7 }, // 4
-  { pool: 'all',    bugProb: 0.50, baseTime:  6,  perLine: 1.5 }, // 5
-  { pool: 'all',    bugProb: 0.40, baseTime:  5,  perLine: 1.3 }, // 6
-  { pool: 'all',    bugProb: 0.30, baseTime:  4.5,perLine: 1.1 }, // 7
-  { pool: 'all',    bugProb: 0.22, baseTime:  4,  perLine: 1.0 }, // 8
+  { bugProb: 0.85, baseTime: 18,  perLine: 3.0 }, // 1 → 7-line eg: ~39s
+  { bugProb: 0.70, baseTime: 16,  perLine: 2.7 }, // 2
+  { bugProb: 0.55, baseTime: 14,  perLine: 2.4 }, // 3
+  { bugProb: 0.60, baseTime: 12,  perLine: 2.1 }, // 4
+  { bugProb: 0.50, baseTime: 10,  perLine: 1.8 }, // 5
+  { bugProb: 0.40, baseTime:  8,  perLine: 1.6 }, // 6
+  { bugProb: 0.30, baseTime:  7,  perLine: 1.4 }, // 7
+  { bugProb: 0.22, baseTime:  6,  perLine: 1.2 }, // 8 → 9-line eg: ~17s
 ];
 const MAX_LEVEL = LEVELS.length;
 
@@ -164,9 +164,8 @@ function genDanglingAlias(hasBug) {
 const ALL_GENERATORS = [genDeepMutation, genDeepLeak, genIllegalDeepFree, genDanglingAlias];
 
 function generateScenario(level) {
-  const { pool, bugProb } = LEVELS[level - 1];
+  const { bugProb } = LEVELS[level - 1];
   const hasBug = Math.random() < bugProb;
-  if (pool === 'simple') return genDanglingAlias(hasBug);
   return randItem(ALL_GENERATORS)(hasBug);
 }
 
