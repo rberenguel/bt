@@ -114,83 +114,62 @@ const WINDOW_MS = 21 * 24 * 60 * 60 * 1000; // baseline window
 //
 // recency: halves every 7 days. Played today → ~1. Two weeks ago → ~0.25.
 
-function computeGameScore(sessions, metricFn, invert) {
-  if (!sessions || sessions.length === 0) return { score: null, lastTs: null };
-
-  const pairs = sessions.flatMap((s) => {
-    try {
-      const v = metricFn(s);
-      return v != null && isFinite(v) ? [{ v, ts: s.timestamp }] : [];
-    } catch {
-      return [];
-    }
-  });
-
-  if (pairs.length === 0) return { score: null, lastTs: null };
-
-  const now = Date.now();
-  const lastTs = pairs[pairs.length - 1].ts;
-
-  // Baseline: last 21 days, falling back to all history if too few sessions
-  const windowPairs = pairs.filter((p) => p.ts >= now - WINDOW_MS);
-  const baselinePairs = windowPairs.length > 0 ? windowPairs : pairs;
-  const windowMean =
-    baselinePairs.reduce((s, p) => s + p.v, 0) / baselinePairs.length;
-
-  // Recent: last 7 days
-  const recentValues = pairs
-    .filter((p) => p.ts >= now - RECENT_MS)
-    .map((p) => p.v);
-
-  let perf;
-  if (recentValues.length === 0) {
-    perf = 0.5; // no sessions this week; recency drives the score
-  } else {
-    const recentMean =
-      recentValues.reduce((a, b) => a + b, 0) / recentValues.length;
-    const ratio = invert
-      ? recentMean > 0
-        ? windowMean / recentMean
-        : 1
-      : windowMean > 0
-        ? recentMean / windowMean
-        : 1;
-    perf = Math.min(1, ratio);
-  }
-
-  const daysSinceLast = (now - lastTs) / (24 * 60 * 60 * 1000);
-  const recency = Math.pow(0.5, daysSinceLast / 7); // halves every 7 days
-
-  return { score: 1 - Math.pow(perf * recency, 1.5), lastTs };
-}
-
 function computeDomains(appDataMap) {
+  const now = Date.now();
+
   return DOMAINS.map((domain) => {
-    const scores = [];
+    // Normalize each game's values to its own baseline so sessions from
+    // different games are comparable. Pool everything at the domain level,
+    // then derive a single perf + recency for the whole domain.
+    const allPairs = []; // { normalizedV, ts }
     let latestTs = null;
 
     for (const g of domain.games) {
-      const { score, lastTs } = computeGameScore(
-        appDataMap.get(g.id) || [],
-        g.metric,
-        g.invert,
-      );
-      if (score !== null) {
-        scores.push(score);
-        if (lastTs !== null && (latestTs === null || lastTs > latestTs)) {
-          latestTs = lastTs;
+      const sessions = appDataMap.get(g.id) || [];
+      const pairs = sessions.flatMap((s) => {
+        try {
+          const v = g.metric(s);
+          return v != null && isFinite(v) ? [{ v, ts: s.timestamp }] : [];
+        } catch {
+          return [];
         }
+      });
+      if (pairs.length === 0) continue;
+
+      const windowPairs = pairs.filter((p) => p.ts >= now - WINDOW_MS);
+      const baselinePairs = windowPairs.length > 0 ? windowPairs : pairs;
+      const windowMean =
+        baselinePairs.reduce((s, p) => s + p.v, 0) / baselinePairs.length;
+      if (windowMean === 0) continue;
+
+      for (const { v, ts } of pairs) {
+        const normalizedV = g.invert
+          ? v > 0 ? windowMean / v : 1
+          : v / windowMean;
+        allPairs.push({ normalizedV, ts });
+        if (latestTs === null || ts > latestTs) latestTs = ts;
       }
     }
 
-    const domainScore =
-      scores.length > 0
-        ? scores.reduce((a, b) => a + b, 0) / scores.length
-        : null;
+    if (allPairs.length === 0) {
+      return { label: domain.label, score: 1, stale: true };
+    }
+
+    const recentNorm = allPairs
+      .filter((p) => p.ts >= now - RECENT_MS)
+      .map((p) => p.normalizedV);
+
+    const perf =
+      recentNorm.length === 0
+        ? 0.5
+        : Math.min(1, recentNorm.reduce((a, b) => a + b, 0) / recentNorm.length);
+
+    const daysSinceLast = (now - latestTs) / (24 * 60 * 60 * 1000);
+    const recency = Math.pow(0.5, daysSinceLast / 7);
 
     return {
       label: domain.label,
-      score: domainScore ?? 1,
+      score: 1 - Math.pow(perf * recency, 1.5),
       stale: latestTs === null || Date.now() - latestTs > STALE_MS,
     };
   });
