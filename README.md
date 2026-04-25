@@ -72,6 +72,10 @@ Topological working memory. A directed acyclic graph of six nodes (each a unique
 
 Analogy reasoning. You are presented with a stem word pair and must deduce their underlying conceptual relationship. From a list of choices, you must select the pair that exhibits the exact same relationship. Features 10 questions per session with a strict 30-second timer each.
 
+### [fil](./fil/)
+
+Memory lifecycle tracer. A snippet of multi-file logic is presented as IDE tabs — each tab is a function that may allocate, borrow, consume, mutate, flush, or free a heap resource. Find the exact line where an ownership contract breaks: a free on a dirty resource, a borrow that tries to free, a consume that leaks, or a read through a dangling alias. If the code is safe, confirm with "No Errors". Ten rounds per session; difficulty increases from single-scenario two-tab puzzles to mixed three-tab scenarios with fewer guaranteed bugs.
+
 ## Structure
 
 ```

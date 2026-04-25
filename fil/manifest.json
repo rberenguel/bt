@@ -1,0 +1,17 @@
+{
+  "name": "Fil",
+  "short_name": "Fil",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "version": "0.1.0",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

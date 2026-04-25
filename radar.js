@@ -51,6 +51,7 @@ const DOMAINS = [
       { id: "tanmateix", metric: (s) => s.metrics.accuracy, invert: false },
       { id: "precis", metric: (s) => s.metrics.accuracy, invert: false },
       { id: "llei", metric: (s) => s.metrics.accuracy, invert: false },
+      { id: "fil", metric: (s) => s.metrics.accuracy, invert: false },
       // graph traversal inference, weighted by complexity (see Memory)
       {
         id: "topos",

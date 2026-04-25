@@ -24,6 +24,7 @@ export const APP_ORDER = [
   "entrellat",
   "flux",
   "topos",
+  "fil",
 ];
 
 const APPS = [
@@ -387,6 +388,20 @@ const APPS = [
         unit: "",
         invertColor: false,
       },
+    ],
+  },
+  {
+    id: "fil",
+    name: "Fil",
+    path: "./fil/",
+    icon: "./fil/icon.png",
+    color: "#64748b",
+    storageKey: "fil_history",
+    keyMetric: (s) => s.metrics.score + "/10",
+    metricDefs: [
+      { key: "score", label: "Score", unit: "/10", invertColor: false },
+      { key: "accuracy", label: "Accuracy", unit: "%", invertColor: false },
+      { key: "finalLevel", label: "Level", unit: "", invertColor: false },
     ],
   },
 ];
