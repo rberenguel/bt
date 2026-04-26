@@ -3,7 +3,7 @@ import { saveSession } from "./storage.js";
 import { openHistoryModal } from "./history.js";
 import { initHaptic, triggerHaptic, triggerHapticError } from "../shared/haptic.js";
 
-const ROUNDS = 10;
+const ROUNDS = 5;
 const COLS = 6;
 
 // Level → { maxRows, time (seconds) }
