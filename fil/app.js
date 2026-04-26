@@ -163,10 +163,17 @@ function genDanglingAlias(hasBug) {
 
 const ALL_GENERATORS = [genDeepMutation, genDeepLeak, genIllegalDeepFree, genDanglingAlias];
 
+let lastGenerator = null;
+
 function generateScenario(level) {
   const { bugProb } = LEVELS[level - 1];
   const hasBug = Math.random() < bugProb;
-  return randItem(ALL_GENERATORS)(hasBug);
+  const pool = ALL_GENERATORS.length > 1
+    ? ALL_GENERATORS.filter(g => g !== lastGenerator)
+    : ALL_GENERATORS;
+  const gen = randItem(pool);
+  lastGenerator = gen;
+  return gen(hasBug);
 }
 
 // ── State ───────────────────────────────────────────────────

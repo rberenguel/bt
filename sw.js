@@ -1,6 +1,6 @@
 // CACHE_FILES: generated with get_cache.go — run `go run get_cache.go` to regenerate.
 // DYNAMIC_FILES: fetch() targets not reachable via import graph — maintain by hand.
-const CACHE_NAME = "bt-hub-v0.8.5";
+const CACHE_NAME = "bt-hub-v0.8.6";
 const CACHE_FILES = [
   "./app.js",
   "./attn/app.js",

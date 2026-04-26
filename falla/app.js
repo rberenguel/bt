@@ -8,14 +8,14 @@ const COLS = 6;
 
 // Level → { maxRows, time (seconds) }
 const LEVELS = [
-  { maxRows: 5, time: 40 },
-  { maxRows: 5, time: 34 },
+  { maxRows: 5, time: 45 },
+  { maxRows: 5, time: 39 },
+  { maxRows: 6, time: 33 },
   { maxRows: 6, time: 28 },
-  { maxRows: 6, time: 23 },
-  { maxRows: 7, time: 19 },
-  { maxRows: 7, time: 16 },
-  { maxRows: 8, time: 13 },
-  { maxRows: 9, time: 11 },
+  { maxRows: 7, time: 24 },
+  { maxRows: 7, time: 21 },
+  { maxRows: 8, time: 18 },
+  { maxRows: 9, time: 16 },
 ];
 const MAX_LEVEL = LEVELS.length;
 

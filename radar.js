@@ -100,21 +100,20 @@ const WINDOW_MS = 21 * 24 * 60 * 60 * 1000; // baseline window
 
 // ── Scoring ────────────────────────────────────────────────────────────────────
 //
-// score = 1 − (perf × recency)^1.5
+// score = clamp(1 − 0.5 × perf × recency, 0, 1)
 //
-// The exponent > 1 amplifies small values of perf×recency so that stale or
-// low-performing items push harder outward.  Values near 1 (played today,
-// great performance) are barely affected; values near 0 (not played in weeks)
-// are pulled closer to 0 so 1 − result approaches 1 more aggressively.
+// Baseline is 0.5: a domain trained regularly at your usual level sits at 0.5.
+// Score rises above 0.5 when you haven't trained lately or are performing below
+// your baseline; it falls below 0.5 when you are exceeding your baseline.
 //
-// perf:    compares recentMean (last 7 days) to windowMean (last 21 days).
-//          perf = min(1, ratio) anchors at 1 when recent == baseline, so a
-//          game played today at normal level scores ≈ 0 (no attention needed).
-//          At 0.5× baseline → perf = 0.5 → score ≈ 0.65 (needs attention).
-//          If no sessions in the last 7 days, perf defaults to 0.5 and
+// perf:    recentMean / windowMean (not capped, so > 1 when you're above your
+//          own 21-day average).  perf=1 → neutral.  perf=2 → score≈0 (great).
+//          perf=0.5 → score=0.75 (struggling).
+//          If no sessions in the last 7 days, perf defaults to 1 and
 //          recency alone drives the score up.
 //
 // recency: halves every 7 days. Played today → ~1. Two weeks ago → ~0.25.
+//          At normal perf, no play for 7 days → score=0.75; 14 days → 0.875.
 
 function computeDomains(appDataMap) {
   const now = Date.now();
@@ -163,15 +162,15 @@ function computeDomains(appDataMap) {
 
     const perf =
       recentNorm.length === 0
-        ? 0.5
-        : Math.min(1, recentNorm.reduce((a, b) => a + b, 0) / recentNorm.length);
+        ? 1
+        : recentNorm.reduce((a, b) => a + b, 0) / recentNorm.length;
 
     const daysSinceLast = (now - latestTs) / (24 * 60 * 60 * 1000);
     const recency = Math.pow(0.5, daysSinceLast / 7);
 
     return {
       label: domain.label,
-      score: 1 - Math.pow(perf * recency, 1.5),
+      score: Math.max(0, Math.min(1, 1 - 0.5 * perf * recency)),
       stale: latestTs === null || Date.now() - latestTs > STALE_MS,
     };
   });
@@ -321,7 +320,7 @@ export function openRadarModal(appData) {
 
   const desc = document.createElement("p");
   desc.textContent =
-    "Larger spokes mean an area needs more attention — either recent performance is below your usual or you haven't trained it lately. The green ring marks your average baseline. Highlighted labels are the top 3 areas to focus on.";
+    "The green ring is your baseline (0.5). Spokes beyond it mean an area needs attention — you haven't trained it lately or performance is below your usual. Spokes inside it mean you're exceeding your baseline. Highlighted labels are the top 3 areas to focus on.";
   desc.style.cssText =
     "margin:12px 16px 0;font-size:14px;color:#666;line-height:1.5;text-align:center;";
   container.appendChild(desc);
