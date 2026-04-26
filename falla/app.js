@@ -9,13 +9,13 @@ const COLS = 6;
 // Level → { maxRows, time (seconds) }
 const LEVELS = [
   { maxRows: 5, time: 60 },
-  { maxRows: 5, time: 55 },
-  { maxRows: 6, time: 50 },
-  { maxRows: 6, time: 48 },
-  { maxRows: 7, time: 45 },
-  { maxRows: 7, time: 40 },
-  { maxRows: 8, time: 37 },
-  { maxRows: 9, time: 35 },
+  { maxRows: 5, time: 57 },
+  { maxRows: 6, time: 57 },
+  { maxRows: 6, time: 55 },
+  { maxRows: 7, time: 55 },
+  { maxRows: 7, time: 54 },
+  { maxRows: 8, time: 54 },
+  { maxRows: 9, time: 54 },
 ];
 const MAX_LEVEL = LEVELS.length;
 
