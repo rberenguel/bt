@@ -309,7 +309,11 @@ const COLORS = [
   { id: "neutral", css: "#e2e8f0" },
   { id: "amber", css: "#f59e0b" },
   { id: "cyan", css: "#22d3ee" },
+  { id: "rose", css: "#f43f5e" },
+  { id: "violet", css: "#9333ea" },
 ];
+
+const COLOR_IDS = ["amber", "cyan", "rose", "violet"];
 
 // ── Config ────────────────────────────────────────────────
 const CONFIG = {
@@ -429,17 +433,20 @@ function generateRules(level, pair) {
     text: `Tap center if anything is ${colorId}`,
   });
 
+  const pickColors = (n) =>
+    [...COLOR_IDS].sort(() => Math.random() - 0.5).slice(0, n).map(colorRule);
+
   switch (level) {
     case 1:
       return [focalRule()];
     case 2:
-      return [colorRule(pick(["amber", "cyan"]))];
+      return pickColors(1);
     case 3:
-      return [focalRule(), colorRule(pick(["amber", "cyan"]))];
+      return [focalRule(), ...pickColors(1)];
     case 4:
-      return [colorRule("amber"), colorRule("cyan")];
+      return pickColors(2);
     case 5:
-      return [focalRule(), colorRule("amber"), colorRule("cyan")];
+      return [focalRule(), ...pickColors(2)];
     default:
       return [focalRule()];
   }

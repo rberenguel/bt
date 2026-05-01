@@ -1,7 +1,7 @@
 {
-  "name": "Flow",
-  "version": "0.0.1",
-  "short_name": "Flow",
+  "name": "Flux",
+  "version": "0.0.2",
+  "short_name": "Flux",
   "description": "Stream classification with dormant intentions",
   "start_url": "./index.html",
   "display": "standalone",

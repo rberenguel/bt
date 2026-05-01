@@ -18,7 +18,6 @@ export const APP_ORDER = [
   "graner",
   "attn",
   "clauer",
-  "stop",
   "precis",
   "summum",
   "entrellat",
@@ -324,7 +323,7 @@ const APPS = [
   },
   {
     id: "flux",
-    name: "Flow",
+    name: "Flux",
     path: "./flux/",
     icon: "./flux/icon.png",
     color: "#6366f1",
@@ -596,6 +595,15 @@ function renderCards(appData) {
     card.className = "app-card" + (hasHistory ? " has-history" : "");
     card.style.setProperty("--app-color", app.color);
 
+    // Staleness stripe: muted green (fresh) → red (stale), 0–14 days
+    const lastTs = sessions.length ? sessions[sessions.length - 1].timestamp : 0;
+    const daysSinceLast = lastTs ? (Date.now() - lastTs) / 86400000 : 30;
+    const t = Math.min(1, Math.max(0, daysSinceLast / 14));
+    const r = Math.round(72 + (220 - 72) * t);
+    const g = Math.round(148 + (38 - 148) * t);
+    const b = Math.round(80 + (38 - 80) * t);
+    card.style.borderTop = `3px solid rgb(${r},${g},${b})`;
+
     card.innerHTML =
       '<div class="app-name">' +
       app.name +
@@ -776,11 +784,8 @@ async function init() {
     })),
   );
 
-  appData.sort((a, b) => {
-    const ai = APP_ORDER.indexOf(a.app.id);
-    const bi = APP_ORDER.indexOf(b.app.id);
-    return (ai !== -1 ? ai : 999) - (bi !== -1 ? bi : 999);
-  });
+  appData = appData.filter(({ app }) => APP_ORDER.includes(app.id));
+  appData.sort((a, b) => APP_ORDER.indexOf(a.app.id) - APP_ORDER.indexOf(b.app.id));
 
   // Cross-app streak
   const daySets = appData.map(({ sessions }) => daysWithSessions(sessions));

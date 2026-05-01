@@ -65,8 +65,8 @@ const DOMAINS = [
   {
     label: "Inhibition",
     games: [
-      { id: "stop", metric: (s) => s.metrics.stopAcc, invert: false },
       { id: "flux", metric: (s) => s.metrics.pmHitRate, invert: false },
+      { id: "safata", metric: (s) => s.metrics.redAccuracy, invert: false },
     ],
   },
   {
