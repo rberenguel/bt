@@ -1,6 +1,6 @@
 {
   "name": "Graner",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "short_name": "Graner",
   "description": "90-second anagram word sprint",
   "start_url": "./index.html",

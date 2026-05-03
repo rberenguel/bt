@@ -182,6 +182,10 @@ function handlePoolTap(id) {
       .join("")
       .toLowerCase();
     if (found.has(word)) {
+      const hasLonger = [...solutions].some(
+        (s) => s.length > word.length && s.startsWith(word)
+      );
+      if (hasLonger) return;
       flashAnswer("already");
     } else if (solutions.has(word)) {
       found.add(word);
@@ -208,6 +212,7 @@ function handleClear() {
   renderPool();
   renderAnswer();
 }
+
 
 function flashAnswer(type) {
   animating = true;
@@ -260,6 +265,24 @@ function endSession() {
   $("modal-possible").textContent = solutions.size;
   $("modal-pct").textContent =
     solutions.size > 0 ? Math.round((found.size / solutions.size) * 100) : 0;
+
+  const missed = [...solutions].filter((w) => !found.has(w)).sort();
+  const missedContainer = $("modal-missed");
+  missedContainer.innerHTML = "";
+  if (missed.length > 0) {
+    missed.forEach((w) => {
+      const tag = document.createElement("a");
+      tag.className = "missed-word-tag";
+      tag.textContent = w.toUpperCase();
+      tag.href = `https://en.wiktionary.org/wiki/${encodeURIComponent(w.toLowerCase())}`;
+      tag.target = "_blank";
+      tag.rel = "noopener noreferrer";
+      missedContainer.appendChild(tag);
+    });
+    $("modal-missed-section").classList.remove("hidden");
+  } else {
+    $("modal-missed-section").classList.add("hidden");
+  }
 
   storage.save({
     timestamp: Date.now(),
